@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Privacy",
-  description: "What this shop collects, why, who else sees it, and how to get it deleted.",
-};
+export const metadata = pageMetadata({
+  title: "Privacy",
+  description:
+    "What this shop collects, why, who else sees it, and how to get it deleted.",
+  path: "/privacy",
+});
 
 /* Esta página describe lo que el código hace de verdad, comprobado contra él:
    no hay analítica, no hay rastreadores, las tipografías se auto-alojan y el

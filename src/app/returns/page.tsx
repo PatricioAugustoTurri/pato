@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Returns and exchanges",
-  description: "Fourteen days to change your mind, and what to do if a print arrives damaged.",
-};
+export const metadata = pageMetadata({
+  title: "Returns and Exchanges",
+  description:
+    "Fourteen days to change your mind, and what to do if a print arrives damaged.",
+  path: "/returns",
+});
 
 export default function ReturnsPage() {
   return (

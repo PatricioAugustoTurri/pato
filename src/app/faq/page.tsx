@@ -3,11 +3,14 @@ import { formatPrice } from "@/lib/money";
 import { CATALOG_SIZES } from "@/lib/photo-variants";
 import { getArchiveCounts } from "@/lib/photos";
 import { sizeDimensions } from "@/lib/sizes";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Frequently asked questions",
-  description: "Sizes, prices, shipping and accounts — the things people ask before ordering a print.",
-};
+export const metadata = pageMetadata({
+  title: "Frequently Asked Questions",
+  description:
+    "Print sizes and prices, shipping to Italy and the EU, delivery times and accounts — the things people ask before ordering.",
+  path: "/faq",
+});
 
 /* Solo se responde lo que el sistema sostiene. Los precios salen de
    `CATALOG_SIZES`, que es la lista con la que el servidor arma las variantes de

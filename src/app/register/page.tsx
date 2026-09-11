@@ -5,8 +5,9 @@ import AuthFormSkeleton from "@/components/AuthFormSkeleton";
 import RegisterForm from "./components/RegisterForm";
 
 export const metadata = {
-  title: "Create an account · Pato Turri",
+  title: "Create an account",
   description: "Create a Pato Turri account to order prints.",
+  robots: { index: false, follow: true },
 };
 
 /* La puerta gemela de /login, con la misma pared y el mismo mostrador. Pide

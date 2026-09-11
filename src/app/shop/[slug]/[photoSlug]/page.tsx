@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -10,10 +11,16 @@ import PhotoPlate from "@/app/shop/[slug]/[photoSlug]/components/PhotoPlate";
 import PurchasePanel from "@/app/shop/[slug]/[photoSlug]/components/PurchasePanel";
 import WorkNote from "@/app/shop/[slug]/[photoSlug]/components/WorkNote";
 import type { PhotoDetailRow, PhotoVariant } from "@/types/PhotoType";
+import JsonLd from "@/components/JsonLd";
+import { metaDescription, pageMetadata } from "@/lib/seo";
+import { breadcrumbSchema, productSchema } from "@/lib/structured-data";
 
 type Neighbour = { id: number; name: string; slug: string; images: unknown };
 
-async function getPhotoDetail(slug: string, photoSlug: string): Promise<PhotoDetailRow | null> {
+/* `cache` porque esta consulta se pide dos veces por visita —una para los
+   metadatos y otra para dibujar la obra— y son dos viajes a la base para
+   traer exactamente la misma fila. React la resuelve una sola vez por pedido. */
+const getPhotoDetail = cache(async (slug: string, photoSlug: string): Promise<PhotoDetailRow | null> => {
   const { rows } = await pool.query<Omit<PhotoDetailRow, "variants">>(
     `SELECT p.id,
             p.name,
@@ -42,7 +49,7 @@ async function getPhotoDetail(slug: string, photoSlug: string): Promise<PhotoDet
   );
 
   return { ...photo, variants };
-}
+});
 
 /* Sin esto la obra es un callejon sin salida: se mira, se agrega al carrito y
    la unica salida es el boton de atras del navegador. Tres vecinas de la misma
@@ -79,17 +86,44 @@ export async function generateMetadata({
   }
 
   if (!photo) {
-    return { title: "Pato Turri | Shop" };
+    return { title: "Shop" };
   }
 
   const title = cleanTitle(photo.name);
-  const description = photo.description || "A photograph from the archive, printed to order.";
+  /* El título de la obra va solo, sin la marca pegada adelante: la plantilla
+     del layout raíz ya agrega " · Pato Turri". Lo que buscaba alguien es el
+     nombre de la fotografía, y es lo primero que tiene que leerse. */
+  const place = titleNamesPlace(title, photo.pais) ? "" : photo.pais;
 
-  return {
-    title: `Pato Turri | ${title}`,
+  const lowest = photo.variants.length
+    ? Math.min(...photo.variants.map((variant) => Number(variant.price)))
+    : null;
+
+  /* Si el autor escribió su nota, esa es la descripción. Si no, se arma una
+     con lo que la base sí sabe: colección, lugar y precio de entrada. Nada de
+     papel ni de laboratorio, que no está confirmado. */
+  const description = photo.description
+    ? metaDescription(photo.description)
+    : metaDescription(
+        `${title}, a photograph from the ${photo.categoryName} collection by Pato Turri` +
+          `${place ? `, made in ${place}` : ""}. Fine art print` +
+          `${lowest ? `, from €${lowest}` : ""}, shipped across the EU.`,
+      );
+
+  return pageMetadata({
+    /* El título de la obra va solo, sin el país colgado atrás. Los títulos del
+       autor ya miden 46 caracteres de mediana y llegan a 66; con " · Pato
+       Turri" detrás, sumarle "— Argentina" los deja cortados en Google en
+       todos los casos. El país sigue estando donde se lee: en la página, en la
+       cartela bajo el título, y en la descripción cuando no hay nota del
+       autor. */
+    title,
     description,
-    openGraph: { title: `Pato Turri | ${title}`, description, type: "website" },
-  };
+    path: `/shop/${photo.categorySlug}/${photo.slug}`,
+    /* La obra es su propia vista previa. Compartir el enlace de una fotografía
+       y que aparezca una tarjeta genérica es perder lo único que vende. */
+    images: [normalizePhotoImage(photo.images)].filter(Boolean),
+  });
 }
 
 export default async function PhotoDetailPage({
@@ -120,8 +154,36 @@ export default async function PhotoDetailPage({
     getNeighbours(photo.categorySlug, photo.id),
   ]);
 
+  const prices = photo.variants.map((variant) => Number(variant.price));
+  const path = `/shop/${photo.categorySlug}/${photo.slug}`;
+
   return (
     <main className="work-page">
+      {/* Lo que ya dice la pantalla, en el formato que lee Google: el título,
+          la nota del autor, la imagen, el rango de precios de los tres tamaños
+          y si queda stock. Nada inventado — los precios salen de las mismas
+          `photo_variants` con las que el servidor cobra. */}
+      {prices.length > 0 && (
+        <JsonLd
+          data={productSchema({
+            name: title,
+            description: photo.description || imageAlt,
+            image: imageUrl,
+            path,
+            prices,
+            inStock: photo.variants.some((variant) => variant.stock > 0),
+          })}
+        />
+      )}
+      {/* Las mismas migas que se dibujan abajo, dichas una vez más para que el
+          resultado de búsqueda pueda mostrar la ruta en vez de la URL cruda. */}
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Shop", path: "/shop" },
+          { name: photo.categoryName, path: `/shop/${photo.categorySlug}` },
+          { name: title, path },
+        ])}
+      />
       {/* Mirar y comprar, en la misma pantalla. Antes el selector de tamano y
           el boton vivian debajo de 1.400 caracteres de descripcion: en la
           pagina cuyo unico trabajo es vender una copia, comprar quedaba fuera
