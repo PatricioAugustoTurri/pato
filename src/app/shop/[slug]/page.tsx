@@ -5,7 +5,7 @@ import { normalizePhotoImage } from "@/lib/photo-image";
 import { getImageRatio } from "@/lib/image-shape";
 import CategoryHero from "@/app/shop/[slug]/components/CategoryHero";
 import CategoryRoom from "@/app/shop/[slug]/components/CategoryRoom";
-import type { Edition, HungPhoto } from "@/app/shop/[slug]/components/CategoryRoom";
+import type { HungPhoto } from "@/app/shop/[slug]/components/CategoryRoom";
 import type { PhotoDetailRow } from "@/types/PhotoType";
 
 type CategoryDetailRow = {
@@ -46,42 +46,6 @@ async function getPhotosForCategory(categoryId: number): Promise<PhotoDetailRow[
   }
 }
 
-/* Los tamanos y su precio salen de `photo_variants`, que es donde el checkout
-   los re-tarifa: si algun dia dejan de ser uniformes, la sala lo dice sola en
-   vez de mentir con una constante escrita en la vista. Se muestran solo si esta
-   coleccion cobra un unico precio por tamano; con precios mezclados el bloque
-   se calla, porque una cifra por coleccion ya no seria verdad. */
-const SIZE_NOTE: Record<string, string> = {
-  A4: "21 × 29.7 cm",
-  A3: "29.7 × 42 cm",
-  A2: "42 × 59.4 cm",
-};
-
-async function getEditions(categoryId: number): Promise<Edition[]> {
-  try {
-    const { rows } = await pool.query<{ size: string; price: string; spread: number }>(
-      `SELECT v.size,
-              min(v.price)::text                  AS price,
-              count(DISTINCT v.price)::int        AS spread
-       FROM photo_variants v
-       JOIN photos p ON p.id = v.photo_id
-       WHERE p.category_id = $1
-       GROUP BY v.size
-       ORDER BY min(v.price) ASC`,
-      [categoryId],
-    );
-
-    if (rows.length === 0 || rows.some((row) => row.spread > 1)) return [];
-
-    return rows.map((row) => ({
-      size: SIZE_NOTE[row.size] ? `${row.size} · ${SIZE_NOTE[row.size]}` : row.size,
-      price: `€${Math.round(Number(row.price))}`,
-    }));
-  } catch {
-    return [];
-  }
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -112,10 +76,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     notFound();
   }
 
-  const [photos, editions] = await Promise.all([
-    getPhotosForCategory(category.id),
-    getEditions(category.id),
-  ]);
+  const photos = await getPhotosForCategory(category.id);
 
   /* La proporcion real de cada obra, no una caja fija: el catalogo es casi
      mitad horizontal y mitad vertical, asi que cualquier recorte uniforme le
@@ -140,7 +101,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         categorySlug={category.slug}
         description={category.descripcion || ""}
         photos={hung}
-        editions={editions}
       />
     </main>
   );

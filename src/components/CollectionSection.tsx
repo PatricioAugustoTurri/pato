@@ -39,7 +39,7 @@ export default async function CollectionSection() {
   return (
     <section className="home-section home-pick" id="coleccion">
       <div className="home-pick-head">
-        <h2>La selección <i>de este mes.</i></h2>
+        <h2>This month&apos;s <i>selection.</i></h2>
       </div>
 
       <div className="home-picks" data-count={photos.length}>

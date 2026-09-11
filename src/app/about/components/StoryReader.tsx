@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CHAPTERS, PAGE_TITLE, STORY_INDEX, UI } from "@/app/about/story";
+import { countryLabel } from "@/lib/countries";
 
 export type AnchoredPhoto = {
   slug: string;
@@ -13,10 +14,11 @@ export type AnchoredPhoto = {
   ratio: number;
 };
 
-/* La página abre en español: es el original y la voz del autor. El texto en
-   inglés sigue escrito en story.ts y los tipos siguen siendo bilingües — lo
-   único que se retiró es el conmutador, que vuelve más adelante. */
-const LANG = "es" as const;
+/* La página abre en inglés, que es el idioma del sitio. El texto en castellano
+   —el original, la voz del autor— sigue escrito entero en story.ts y los tipos
+   siguen siendo bilingües: cambiar esta constante alcanza para volver, y el
+   conmutador puede reaparecer sin reescribir nada. */
+const LANG = "en" as const;
 
 const COVER = "/Pato/R0000371.jpg";
 
@@ -95,7 +97,7 @@ export default function StoryReader({ photos }: { photos: Record<string, Anchore
                       {/* El pie vive dentro de la obra, como los lomos de la
                           tienda: la fotografia no cede ancho a un rotulo. */}
                       <span className="story-plate-meta">
-                        <small>{photo.pais}</small>
+                        <small>{countryLabel(photo.pais)}</small>
                         <b>{photo.name}</b>
                       </span>
                     </Link>

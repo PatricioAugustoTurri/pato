@@ -295,10 +295,10 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
 .home-section { padding: clamp(78px, 9vw, 132px) 5vw; }
 /* Filete solo ENTRE franjas: el hero entrega su propio borde de sombra. */
 .home-section + .home-section { border-top: 1px solid rgba(244,241,235,.16); }
-.home h2 { color: var(--paper); margin-bottom: 0; }
+.home h1, .home h2 { color: var(--paper); margin-bottom: 0; }
 /* Sobre tinta el acento terracota se apaga (--accent-text mide 1.9:1 contra
    --ink). La italica de la portada toma el mismo crema que la del hero. */
-.home h2 i { color: var(--cream-300); }
+.home h1 i, .home h2 i { color: var(--cream-300); }
 .home .text-link { border-bottom-color: rgba(244,241,235,.34); color: var(--paper); margin-bottom: 0; }
 .home .text-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
 
@@ -306,6 +306,11 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
 /* La franja de obra sangra de borde a borde, asi que el padding lateral de la
    seccion se anula aca y lo recupera cada encabezado. */
 .home-roll { padding-left: 0; padding-right: 0; }
+/* La franja de destinos no tenia titulo propio. Toma el mismo juego que
+   `.home-pick-head` —titulo y filete—, pero con gotera propia: `.home-roll`
+   no lleva padding lateral porque los muros sangran hasta el borde. */
+.home-roll-head { border-bottom: 1px solid rgba(244,241,235,.22); margin: 0 5vw clamp(40px, 5vw, 72px); padding-bottom: 20px; }
+.home-roll-head h1, .home-roll-head h2 { font-size: clamp(36px, 5vw, 84px); letter-spacing: -.036em; line-height: .9; max-width: 17ch; text-wrap: balance; }
 .home-chapter { position: relative; --mast: clamp(64px, 10.6vw, 152px); }
 .home-chapter + .home-chapter { margin-top: clamp(72px, 9vw, 132px); }
 /* Alineado por arriba, no por la base: el relato tiene que quedar por encima
@@ -316,7 +321,7 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
    cruza el borde superior de su propia franja, mitad sobre tinta y mitad
    sobre la fotografia. Se queda por debajo del hero a proposito —172px alli,
    152px aca— para que la portada siga teniendo una sola voz principal. */
-.home-chapter-mark h2 { font-size: var(--mast); letter-spacing: -.045em; line-height: .82; }
+.home-chapter-mark h2, .home-chapter-mark h3 { color: var(--paper); font-family: var(--font-heading); font-size: var(--mast); font-weight: 500; letter-spacing: -.045em; line-height: .82; margin-bottom: 0; }
 /* Cifra del archivo, no rotulo decorativo: va DEBAJO del nombre del pais. */
 .home-chapter-count { color: var(--cream-200); font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin: 18px 0 0; text-transform: uppercase; }
 .home-chapter-note { color: var(--cream-200); font-size: 15.5px; line-height: 1.78; margin: 0; max-width: 46ch; }
@@ -389,7 +394,19 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
 /* --- Portada · el cierre --------------------------------------------------- */
 /* Sin fotografia: la unica franja de la portada que es solo voz. La imagen que
    habia aca era stock de Unsplash, y el sitio solo muestra obra propia. */
-.home-colophon { align-items: start; padding-bottom: clamp(54px, 6vw, 88px); display: grid; gap: clamp(28px, 4vw, 72px); grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); }
+.home-colophon { align-items: start; padding-bottom: clamp(54px, 6vw, 88px); display: grid; gap: clamp(28px, 4vw, 72px); grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); overflow: hidden; position: relative; }
+/* La franja de cierre es fotografica, como el hero. El filete de arriba se
+   retira: DESIGN.md dice que la union entre dos materiales es un cambio de
+   material y no un borde, y una linea encima de una fotografia es justo el
+   marco que el sistema le saca a las fotografias. */
+.home-section + .home-colophon { border-top: 0; }
+.home-colophon-media { inset: 0; position: absolute; z-index: 0; }
+.home-colophon-media img { object-fit: cover; }
+/* Velo profundo: la obra queda de atmosfera y el texto conserva el contraste
+   que tenia sobre tinta plana. Medido contra la zona mas clara de la foto
+   —el cielo—, la copia en cream-200 da 5,5:1 y el titulo en paper 7,1:1. */
+.home-colophon:before { background: linear-gradient(rgba(37,35,31,.93), rgba(37,35,31,.80)); content: ''; inset: 0; position: absolute; z-index: 1; }
+.home-colophon > h2, .home-colophon-copy { position: relative; z-index: 2; }
 .home-colophon h2 { font-size: clamp(46px, 8.4vw, 126px); letter-spacing: -.044em; line-height: .86; max-width: 11ch; }
 /* La segunda linea entra sangrada: la frase se lee en dos tiempos, que es como
    esta escrita ("Viajar lento." / "Mirar mejor."). */
@@ -461,6 +478,7 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
   .home-chapter { --mast: clamp(36px, 8vw, 70px); }
   .home-colophon h2 { font-size: clamp(33px, 7.4vw, 62px); letter-spacing: -.032em; }
   .home-pick-head h2 { font-size: clamp(27px, 5.6vw, 46px); }
+  .home-roll-head h1, .home-roll-head h2 { font-size: clamp(27px, 5.6vw, 46px); }
   /* Apilado, espejar pondria el relato encima de su propio pais. */
   .home-chapter-head, .home-chapter[data-mirrored] .home-chapter-head { align-items: stretch; flex-direction: column; gap: 14px; }
   .home-chapter[data-mirrored] .home-chapter-mark { text-align: left; }
@@ -504,10 +522,21 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
   .home-chapter-note { font-size: 15px; line-height: 1.72; }
   .home-wall, .home-chapter[data-mirrored] .home-wall { grid-template-columns: 1fr; }
   .home-wall[data-count="3"] > :first-child { grid-column: auto; }
+
+  /* En el telefono el muro cae a una sola columna, y cuatro obras apiladas
+     convierten cada capitulo en un scroll largo antes de llegar al pais
+     siguiente: el indice deja de leerse como indice. Se muestran las dos
+     primeras, que son las que el capitulo ya jerarquiza.
+
+     La obra viaja como `background-image`, no como <img>, asi que una placa
+     oculta NO se descarga: el recorte ahorra dos fotografias por pais en la
+     conexion donde mas cuestan. */
+  .home-wall > .home-plate:nth-child(n + 3) { display: none; }
   /* Una obra por fila a ancho completo: la altura sale del ancho de la pantalla
      y no de un piso fijo, asi que el recorte es el mismo en un 390 y en un 430. */
   .home-plate, .home-wall[data-count="1"] .home-plate, .home-wall[data-count="3"] > :first-child { height: clamp(230px, 66vw, 310px); }
   .home-pick-head { padding-bottom: 16px; }
+  .home-roll-head { margin-left: 7vw; margin-right: 7vw; padding-bottom: 16px; }
   .home-picks { margin-top: clamp(24px, 6vw, 34px); }
   .home-pick-rest { grid-template-columns: 1fr; }
   /* Apiladas las tres en una columna, la jerarquia de la seleccion solo puede
@@ -667,7 +696,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 
 /* El cartel de sala. La voz del autor primero y grande; la ficha de impresion
    al costado, en mono, del tamano de una etiqueta. */
-.room-entry { display: grid; gap: clamp(38px, 5vw, 88px); grid-template-columns: minmax(0, 1fr) auto; margin: 0 auto; max-width: 1280px; padding: clamp(70px, 8vw, 128px) 5vw clamp(64px, 7vw, 112px); }
+.room-entry { display: grid; gap: clamp(38px, 5vw, 88px); grid-template-columns: minmax(0, 1fr); margin: 0 auto; max-width: 1280px; padding: clamp(70px, 8vw, 128px) 5vw clamp(64px, 7vw, 112px); }
 .room-statement { max-width: 64ch; min-width: 0; }
 .room-statement-lead { color: var(--paper); font-family: var(--font-heading); font-size: clamp(25px, 3vw, 42px); font-weight: 500; letter-spacing: -.025em; line-height: 1.14; margin: 0; text-wrap: pretty; }
 .room-statement-rest { color: var(--cream-200); font-size: 15.5px; line-height: 1.82; margin: clamp(22px, 2.6vw, 34px) 0 0; }
@@ -675,12 +704,6 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 /* El precio es identico en las 41 obras del archivo, asi que no es un dato de
    la obra: es una condicion de la sala. Va una vez, en la pared, no repetido
    veintiuna veces debajo de cada fotografia. */
-.room-editions { border-top: 1px solid var(--footer-line); min-width: 210px; padding-top: 15px; }
-.room-editions h2 { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; font-weight: 400; letter-spacing: .12em; line-height: 1.4; margin: 0 0 15px; text-transform: uppercase; }
-.room-editions dl { display: flex; flex-direction: column; gap: 9px; margin: 0; }
-.room-editions div { display: flex; gap: 20px; justify-content: space-between; }
-.room-editions dt { color: var(--footer-link); font-family: var(--font-mono); font-size: 11px; }
-.room-editions dd { color: var(--paper); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; margin: 0; }
 
 /* El colgado. Cada pared es un par de obras cuyo ancho es su propia proporcion:
    por eso las dos miden lo mismo de alto y ninguna se recorta. Las paredes
@@ -736,8 +759,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .room-empty-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
 
 @media (max-width: 900px) {
-  .room-entry { grid-template-columns: minmax(0, 1fr); }
-  .room-editions { max-width: 340px; }
+  
 }
 /* Angosto, una obra por pared: dos verticales en 390px darian 170px de ancho y
    la cartela no entraria. El escalonado tambien se apaga, porque en una sola
@@ -1054,7 +1076,10 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 
 /* `contain` dentro de una caja de alto fijo: la proporcion es parte de lo que se
    esta comprando. Cover recortaria una vertical a la mitad. */
-.cart-line-plate { aspect-ratio: 1; position: relative; width: 100%; }
+/* La placa es identica en el carrito y en el libro de pedidos, y es la unica
+   medida que comparten: se declara una vez para que el parentesco quede dicho
+   en el CSS en vez de quedar copiado. */
+.cart-line-plate, .order-line-plate { aspect-ratio: 1; position: relative; width: 100%; }
 
 .cart-line-what { min-width: 0; }
 .cart-line-what h2 { color: var(--paper); font-family: var(--font-heading); font-size: clamp(20px, 1.9vw, 27px); font-weight: 500; letter-spacing: -.022em; line-height: 1.08; margin: 0 0 9px; }
@@ -1134,6 +1159,10 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .cart-note p a:hover { border-bottom-color: var(--accent); color: var(--accent); }
 .cart-note .text-link { border-bottom-color: rgba(244,241,235,.34); color: var(--paper); margin-bottom: 0; }
 .cart-note .text-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+/* Dos salidas del mismo peso. `.text-link` es inline-flex, asi que sin esto
+   quedarian pegadas; con el margen se separan y envuelven solas en pantalla
+   angosta. */
+.cart-note .text-link + .text-link { margin-left: 26px; }
 
 /* Fantasmas con la altura real de una linea, para que nada salte cuando
    localStorage contesta. */
@@ -1228,12 +1257,67 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .contact-success > p { color: var(--cream-200); font-size: 15px; line-height: 1.7; margin-bottom: 30px; max-width: 38ch; }
 .contact-success button { background: transparent; border: 1px solid rgba(244,241,235,.32); border-radius: 0; color: var(--paper); height: 44px; }
 .contact-success button:hover { border-color: var(--paper); }
-.auth-page { align-items: center; background: var(--cream-200); display: flex; justify-content: center; min-height: calc(100vh - 88px); padding: 90px 7vw; }
-.auth-form-wrap { background: var(--paper); max-width: 420px; padding: clamp(28px, 5vw, 50px); width: 100%; }
-.auth-form-wrap h1 { font-size: clamp(32px, 5vw, 44px); margin-bottom: 28px; }
-.auth-detail { color: var(--text-muted); font-size: 14px; margin: -14px 0 28px; }
+/* --- La sala de la cuenta --------------------------------------------------
+   Login y registro eran una tarjeta de papel centrada sobre crema: la unica
+   caja flotante del sitio, y justo en el paso previo al checkout. Ahora son
+   una sala como las demas —pared de tinta con una obra real, mostrador de
+   crema con el formulario—, que es el mismo reparto del carrito y de la ficha
+   de obra. `/account` siguio el mismo camino despues, con su propio juego
+   `.order-*`: no es una puerta, es el libro de pedidos de quien ya entro. */
+.auth-room { align-items: stretch; background: var(--ink); display: grid; grid-template-columns: minmax(0, 1fr) clamp(360px, 32vw, 480px); min-height: calc(100svh - 88px); }
+
+/* La pared. Aca la fotografia es arquitectura, no mercaderia, asi que recorta
+   con `cover` en vez de conservar su proporcion: es el cuarto, no el producto. */
+.auth-wall { display: flex; flex-direction: column; justify-content: flex-end; min-width: 0; overflow: hidden; padding: clamp(56px, 6vw, 92px) clamp(32px, 4vw, 64px) clamp(38px, 4vw, 58px); position: relative; }
+.auth-wall img { inset: 0; object-fit: cover; position: absolute; z-index: 0; }
+/* El velo. La obra tiene que seguir leyendose como fotografia mientras el
+   titulo apoya encima: dos paradas, como los heroes del catalogo. */
+.auth-wall:after { background: linear-gradient(rgba(18,15,12,.30), rgba(18,15,12,.62) 38%, rgba(18,15,12,.90)); content: ''; inset: 0; position: absolute; z-index: 1; }
+.auth-wall > * { position: relative; z-index: 2; }
+.auth-wall h1 { color: var(--paper); font-size: clamp(46px, 6vw, 86px); margin: 0; max-width: 11ch; text-wrap: balance; }
+.auth-wall h1 i { color: var(--cream-300); }
+.auth-wall p { color: var(--cream-200); font-size: 15.5px; line-height: 1.75; margin: clamp(18px, 2vw, 26px) 0 0; max-width: 34ch; }
+
+/* Sin fotografia —el admin, o la base caida— la pared sigue siendo pared:
+   tinta plena. El velo sobra cuando no hay nada que velar. */
+.auth-wall.is-plain:after { content: none; }
+
+/* Credito de la obra. No es un rotulo: dice de quien es la pared que se esta
+   mirando, y enlaza a esa obra. */
+.auth-credit { align-items: baseline; border-top: 1px solid var(--footer-line); color: var(--cream-300); display: flex; flex-wrap: wrap; font-family: var(--font-mono); font-size: 9.5px; gap: 5px 13px; letter-spacing: .12em; margin-top: clamp(34px, 4vw, 52px); padding-top: 14px; text-transform: uppercase; }
+.auth-credit b { color: var(--accent); font-weight: 400; }
+.auth-credit a { border-bottom: 1px solid var(--cream-300); color: var(--cream-300); }
+.auth-credit a:hover { border-bottom-color: var(--paper); color: var(--paper); }
+.auth-credit a:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+
+/* El mostrador. Centrado en vertical porque un formulario corto en una columna
+   alta queda varado arriba; el carrito no lo necesita porque su lista crece. */
+.auth-counter { background: var(--cream-100); display: flex; flex-direction: column; justify-content: center; padding: clamp(56px, 6vw, 92px) clamp(28px, 2.8vw, 46px); }
+.auth-counter-inner { width: 100%; }
+.auth-counter [data-slot="skeleton"] { background: var(--cream-200); border-radius: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* El unico momento animado de la pagina: la obra se asienta. Arranca visible
+     —nunca desde opacidad cero— asi que si la animacion no corre, no falta nada. */
+  .auth-wall img { animation: auth-settle var(--dur-slow) var(--ease) both; }
+}
+@keyframes auth-settle { from { transform: scale(1.055); } to { transform: scale(1); } }
+
+@media (max-width: 900px) {
+  /* La pared pasa de columna a banda: sigue siendo lo primero que se ve, pero
+     deja de empujar el formulario fuera de la pantalla. */
+  .auth-room { grid-template-columns: 100%; min-height: 0; }
+  .auth-wall { min-height: clamp(290px, 44svh, 400px); padding: clamp(40px, 9vw, 56px) 5vw clamp(30px, 7vw, 40px); }
+  .auth-wall h1 { font-size: clamp(40px, 9vw, 58px); }
+  .auth-counter { justify-content: flex-start; padding: clamp(38px, 8vw, 54px) 5vw clamp(56px, 12vw, 78px); }
+}
+
+@media (max-width: 700px) {
+  .auth-wall, .auth-counter { padding-left: 7vw; padding-right: 7vw; }
+}
+
 .auth-switch { color: var(--text-muted); font-size: 13px; margin-top: 22px; }
-.auth-switch a { border-bottom: 1px solid var(--accent); color: var(--ink); }
+.auth-switch a { border-bottom: 1px solid var(--accent-text); color: var(--ink); }
 
 /* --- Formularios de cuenta -------------------------------------------------
    Login, registro y cuenta tomaban prestadas las clases del formulario de
@@ -1245,34 +1329,218 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .auth-field { display: flex; flex-direction: column; gap: 8px; }
 .auth-field label { color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
 .auth-field input { background: var(--paper); border: 1px solid var(--line); border-radius: 0; color: var(--ink); font-family: var(--font-sans); font-size: 15px; height: 46px; padding: 0 13px; }
-.auth-field input::placeholder { color: var(--text-faint); }
+.auth-field input::placeholder { color: var(--text-muted); }
 .auth-field input:hover { border-color: var(--line-soft); }
 .auth-field input:focus-visible { border-color: var(--accent-text); box-shadow: none; outline: none; }
 .auth-field input[aria-invalid="true"] { border-color: var(--error); box-shadow: none; }
+.auth-hint { color: var(--text-muted); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
 .auth-error { color: var(--error); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
 .auth-submit { background: var(--ink); border: 0; border-radius: 0; color: var(--paper); font-size: 13px; height: 46px; justify-content: center; margin-top: 4px; width: 100%; }
 .auth-submit:hover:not(:disabled) { background: var(--accent-text); }
 .auth-submit:disabled { cursor: progress; opacity: .55; }
-.auth-submit:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.auth-submit:focus-visible { box-shadow: none; outline: 2px solid var(--ink); outline-offset: 3px; }
 
-/* Entrar con Google. Misma altura y mismo canto que el boton principal —el
-   camino es otro, la forma no— pero con contorno en vez de relleno: el sitio
-   tiene su propio sistema de cuentas y el email sigue siendo la puerta de casa.
-   La G va a sus cuatro colores: es marca de un tercero y se reproduce como es. */
-.google-button { align-items: center; background: var(--paper); border: 1px solid var(--line-soft); color: var(--ink); cursor: pointer; display: flex; font-family: inherit; font-size: 13px; gap: 11px; height: 46px; justify-content: center; margin-bottom: 22px; width: 100%; }
-.google-button svg { height: 18px; width: 18px; }
-.google-button:hover:not(:disabled) { background: var(--cream-hover); border-color: var(--ink); }
-.google-button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.google-button:disabled { cursor: progress; opacity: .6; }
-
-/* Separador con la palabra adentro: dice que son dos caminos a la misma cuenta,
-   no dos formularios distintos. El filete se dibuja a los lados del texto. */
-.auth-or { align-items: center; color: var(--text-faint); display: flex; font-family: var(--font-mono); font-size: 9px; gap: 14px; letter-spacing: .12em; margin-bottom: 22px; text-transform: uppercase; }
-.auth-or:before, .auth-or:after { background: var(--line); content: ''; flex: 1; height: 1px; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .google-button, .auth-field input, .auth-submit { transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .auth-field input, .auth-submit { transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
 }
+/* --- El libro de pedidos ---------------------------------------------------
+   La misma sala de dos materiales que el carrito, porque es el mismo tipo de
+   contenido: una lista de copias con cifras al costado. La pared de tinta lleva
+   las obras —son fotografias— y el mostrador de crema lleva la identidad, que
+   es contabilidad.
+
+   Clases propias en vez de reusar `.cart-*`: la fila del carrito esta soldada a
+   sus controles (el `align-items: start` existe para anclar `Remove` abajo, y
+   la regla de 900px reserva una tercera pista para el mismo boton), y un pedido
+   no tiene ni stepper ni `Remove`. Reusar la clase seria heredar dos reglas que
+   existen para controles que aca no estan, y dejar que un retoque del carrito
+   reescriba en silencio una pagina sobre los recibos de la gente. */
+.order-room { align-items: stretch; background: var(--ink); display: grid; grid-template-columns: minmax(0, 1fr) clamp(340px, 30vw, 452px); min-height: calc(100svh - 88px); }
+.order-wall { min-width: 0; padding: clamp(56px, 6vw, 92px) clamp(32px, 4vw, 64px) clamp(70px, 8vw, 110px); }
+
+/* La ranura mono lleva dato —cuantos pedidos, cuantas copias—, no etiqueta. En
+   el estado sin pedidos no se dibuja: ahi solo repetiria el titulo, que es la
+   definicion de un rotulo de adorno. */
+.order-count { color: var(--accent); font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin: 0 0 20px; min-height: 1lh; text-transform: uppercase; }
+.order-room h1 { color: var(--paper); font-size: clamp(46px, 6vw, 86px); margin-bottom: clamp(34px, 4vw, 52px); }
+.order-room h1 i { color: var(--accent); }
+
+.order-ledger { display: flex; flex-direction: column; }
+/* El filete de abajo cierra el libro; los de arriba los pone cada cabecera. */
+.order-ledger > .order:last-of-type { border-bottom: 1px solid var(--footer-line); }
+
+/* Cabecera del pedido: numero, fecha y estado en una sola linea de base. */
+.order-head { align-items: baseline; border-top: 1px solid var(--footer-line); display: flex; flex-wrap: wrap; gap: 5px 18px; padding: clamp(20px, 2.2vw, 26px) 0 0; }
+.order-no { color: var(--paper); font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 400; letter-spacing: .1em; margin: 0; }
+.order-date { color: var(--cream-300); font-family: var(--font-mono); font-size: 9.5px; font-variant-numeric: tabular-nums; letter-spacing: .1em; text-transform: uppercase; }
+
+/* Una palabra, nunca un evento con fecha: la base no guarda `updated_at`, asi
+   que "enviado el tal dia" no existe y un rastro de puntos dibujaria casillas
+   para marcas de tiempo que nunca se registraron.
+
+   La terracota queda reservada al unico estado que significa "algo no
+   termino". Sobre tinta mide 5,71:1, que es el fondo que le corresponde. */
+.order-status { color: var(--cream-300); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; margin-left: auto; text-transform: uppercase; }
+.order-status[data-status="pending"] { color: var(--accent); }
+
+.order-lines { display: flex; flex-direction: column; }
+.order-line { align-items: start; display: grid; gap: 0 clamp(20px, 2.4vw, 32px); grid-template-columns: clamp(96px, 11vw, 132px) minmax(0, 1fr) auto; padding: clamp(22px, 2.4vw, 30px) 0; }
+/* Dentro de un pedido las copias tambien se separan con filete: el sistema
+   tiene un solo grosor de filete sobre tinta, y dos copias pegadas se leerian
+   como una. */
+.order-line + .order-line { border-top: 1px solid var(--footer-line); }
+
+.order-line-what { min-width: 0; }
+/* `h3`: el `h2` de esta pagina es el numero de pedido. Baja un escalon respecto
+   del titulo del carrito, que no tiene encabezado intermedio arriba. */
+.order-line-what h3 { color: var(--paper); font-family: var(--font-heading); font-size: clamp(18px, 1.6vw, 23px); font-weight: 500; letter-spacing: -.022em; line-height: 1.08; margin: 0 0 9px; }
+/* Subrayado en reposo y `text-decoration` en vez de borde, por el mismo motivo
+   que en el carrito: en tactil no hay hover, y un borde se dibuja una vez por
+   linea de caja, asi que un titulo que envuelve quedaria con dos filetes
+   adentro en una pagina donde un filete significa "esto separa dos cosas". */
+.order-line-what h3 a { color: inherit; text-decoration: underline; text-decoration-color: var(--footer-line); text-decoration-thickness: 1px; text-underline-offset: 5px; transition: color var(--dur-fast) var(--ease), text-decoration-color var(--dur-fast) var(--ease); }
+.order-line-what h3 a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.order-line-what h3 a:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+.order-line-spec { color: var(--cream-300); font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; letter-spacing: .04em; margin: 0; }
+/* Lleva un dato, y por eso existe: la obra ya no esta a la venta. El resto de
+   la linea —talle, cantidad, precio— sigue siendo cierto igual. */
+.order-line-gone { color: var(--footer-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; margin: 9px 0 0; text-transform: uppercase; }
+.order-line-money { color: var(--paper); font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* La aritmetica viaja con SU pedido, en la pared. Es la unica desviacion real
+   respecto del carrito: alla hay un solo mostrador porque hay una sola cuenta,
+   aca hay N cuentas y N no colapsan en un panel. */
+.order-foot { border-top: 1px solid var(--footer-line); display: flex; flex-wrap: wrap; gap: 6px 24px; justify-content: flex-end; margin: 0; padding: clamp(14px, 1.6vw, 18px) 0 clamp(24px, 2.6vw, 32px); }
+.order-foot > div { display: flex; gap: 10px; }
+.order-foot dt { color: var(--footer-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; }
+.order-foot dd { color: var(--cream-200); font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; margin: 0; }
+.order-foot .is-total dd { color: var(--paper); font-size: 13px; }
+
+/* El mostrador, pegajoso como el del carrito: el libro puede ser mas largo que
+   la pantalla y la identidad no tiene por que irse con el. */
+.order-counter { background: var(--cream-100); padding: clamp(56px, 6vw, 92px) clamp(28px, 2.8vw, 46px) clamp(40px, 4vw, 62px); }
+.order-counter-inner { display: flex; flex-direction: column; position: sticky; top: clamp(24px, 3vw, 40px); }
+/* Rotulo de panel, como `.cart-counter-legend`. No es un rotulo encima de un
+   titulo: el `h1` de esta pagina vive en la pared, del otro lado. */
+.order-counter-legend { color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; margin: 0 0 18px; text-transform: uppercase; }
+.order-who { color: var(--ink); font-family: var(--font-heading); font-size: clamp(20px, 1.9vw, 27px); font-weight: 500; letter-spacing: -.022em; line-height: 1.08; margin: 0 0 7px; }
+/* Un email no es ni cifra ni etiqueta, asi que no va en mono. */
+.order-mail { color: var(--ink-soft); font-size: 14px; margin: 0 0 clamp(22px, 2.4vw, 30px); overflow-wrap: anywhere; }
+
+.order-facts { display: flex; flex-direction: column; margin: 0; }
+.order-facts div { border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 13px 0; }
+.order-facts div:last-child { border-bottom: 1px solid var(--line); }
+.order-facts dt { color: var(--text-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; }
+.order-facts dd { color: var(--ink); font-family: var(--font-mono); font-size: 10.5px; font-variant-numeric: tabular-nums; margin: 0; text-align: right; }
+
+/* Historia, no ficha editable: no existen direcciones guardadas en el sistema,
+   asi que el rotulo dice exactamente lo que este dato es —a donde fue el ultimo
+   pedido— y no lleva ningun lapiz que prometa cambiarla. */
+.order-address { color: var(--text-muted); font-size: 12.5px; line-height: 1.7; margin: clamp(18px, 2vw, 24px) 0 0; }
+.order-address b { color: var(--ink); display: block; font-family: var(--font-mono); font-size: 9.5px; font-weight: 400; letter-spacing: .1em; margin-bottom: 6px; text-transform: uppercase; }
+
+/* Texto mono con filete, no el boton de tinta de 54px: esa forma es la de
+   confirmar una compra, y cerrar sesion no confirma nada. */
+.order-signout { align-items: center; color: var(--text-muted); display: inline-flex; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; margin-top: clamp(26px, 3vw, 36px); text-transform: uppercase; transition: color var(--dur-fast) var(--ease); }
+.order-signout-rule { border-bottom: 1px solid var(--line-soft); display: inline-block; padding-bottom: 3px; transition: border-color var(--dur-fast) var(--ease); }
+.order-signout:hover { color: var(--accent-text); }
+.order-signout:hover .order-signout-rule { border-bottom-color: var(--accent-text); }
+.order-signout:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.order-note { color: var(--text-muted); font-size: 12.5px; line-height: 1.7; margin: clamp(22px, 2.4vw, 30px) 0 0; }
+.order-note a { border-bottom: 1px solid var(--line-soft); color: var(--ink); }
+.order-note a:hover { border-bottom-color: var(--accent-text); color: var(--accent-text); }
+
+/* El mensaje de la pared: sin pedidos todavia, o el libro ilegible. Usa la voz
+   de `.cart-note` pero dentro de la sala, porque el mostrador tiene que seguir
+   alcanzable: ahi viven la identidad y el cerrar sesion. */
+.order-message { padding: clamp(8px, 1vw, 14px) 0 0; }
+.order-message h2 { color: var(--paper); font-family: var(--font-heading); font-size: clamp(30px, 3.4vw, 44px); font-weight: 500; letter-spacing: -.03em; line-height: .96; margin: 0 0 18px; max-width: 14ch; }
+.order-message h2 i { color: var(--accent); }
+.order-message p { color: var(--cream-200); font-size: 15.5px; line-height: 1.75; margin: 0 0 30px; max-width: 46ch; }
+/* Los enlaces del mensaje necesitan el mismo traspaso a fondo oscuro que
+   `.cart-note`: `.text-link` no declara color —hereda `--ink`, o sea tinta
+   sobre tinta— y su hover base pinta `--accent-text`, que es la terracota de
+   fondo claro y sobre tinta mide 2,95:1. */
+.order-message .text-link { border-bottom-color: rgba(244,241,235,.34); color: var(--paper); margin-bottom: 0; }
+.order-message .text-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+.order-message p a { border-bottom: 1px solid var(--footer-line); color: var(--paper); }
+.order-message p a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* Fantasmas con el alto real de una fila, para que nada salte al navegar. */
+.order-line.is-ghost { align-items: center; }
+/* El relleno del esqueleto viene de shadcn: un gris frio que no sale de
+   ninguna paleta. Sobre cada material se tine con ese material. */
+.order-wall [data-slot="skeleton"] { background: rgba(244,241,235,.09); border-radius: 0; }
+.order-counter [data-slot="skeleton"] { background: var(--cream-200); border-radius: 0; }
+
+@media (max-width: 900px) {
+  .order-room { grid-template-columns: 100%; min-height: 0; }
+  .order-wall { padding: clamp(40px, 9vw, 56px) 5vw clamp(34px, 8vw, 46px); }
+  .order-counter { padding: clamp(32px, 7vw, 44px) 5vw clamp(48px, 10vw, 66px); }
+  /* Pegajoso con una sola columna dejaria el panel clavado sobre el libro. */
+  .order-counter-inner { position: static; }
+
+  /* Dos columnas: la obra y su informacion. El precio baja bajo la ficha. */
+  .order-line { gap: 0 clamp(16px, 4vw, 22px); grid-template-columns: clamp(84px, 22vw, 104px) minmax(0, 1fr); padding: clamp(20px, 5vw, 26px) 0; }
+  .order-line-money { grid-column: 2; margin-top: 12px; text-align: left; }
+
+  /* Area tocable, no dibujo mas grande. */
+  .order-signout { min-height: 44px; }
+}
+
+@media (max-width: 700px) {
+  .order-wall, .order-counter { padding-left: 7vw; padding-right: 7vw; }
+}
+
+/* --- Paginas de informacion -----------------------------------------------
+   Envios, devoluciones y preguntas frecuentes son la misma forma: un titulo, una
+   bajada y una pila de secciones separadas por filete. Un solo juego para las
+   tres, no tres maquetas parecidas: son el mismo tipo de lectura y cualquier
+   diferencia entre ellas seria ruido, no informacion.
+
+   Sala oscura, como el relato y el carrito. La medida de la prosa es la misma
+   que usa /about (50ch): es la que el sitio ya eligio para texto largo sobre
+   tinta. */
+.doc-page { background: var(--ink); color: var(--cream-200); min-height: calc(100svh - 88px); padding: clamp(56px, 6vw, 92px) 5vw clamp(70px, 8vw, 110px); }
+.doc-page h1 { color: var(--paper); font-size: clamp(46px, 6vw, 86px); margin-bottom: clamp(20px, 2.2vw, 30px); max-width: 14ch; }
+.doc-page h1 i { color: var(--accent); }
+.doc-lead { color: var(--cream-200); font-size: 16px; line-height: 1.8; margin: 0 0 clamp(38px, 4.6vw, 64px); max-width: 52ch; }
+
+/* Filete arriba de cada seccion y abajo de la ultima: la misma regla de libro
+   mayor que el carrito y los pedidos. Ninguna caja. */
+.doc-section { border-top: 1px solid var(--footer-line); padding: clamp(28px, 3.2vw, 42px) 0; }
+.doc-section:last-of-type { border-bottom: 1px solid var(--footer-line); }
+.doc-section h2 { color: var(--paper); font-size: clamp(20px, 1.9vw, 27px); letter-spacing: -.022em; line-height: 1.12; margin: 0 0 16px; max-width: 30ch; }
+.doc-section p { font-size: 16px; line-height: 1.82; margin: 0 0 18px; max-width: 50ch; }
+.doc-section p:last-child { margin-bottom: 0; }
+.doc-lead a, .doc-section a { border-bottom: 1px solid var(--footer-line); color: var(--paper); }
+.doc-lead a:hover, .doc-section a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* Las cifras que el checkout aplica de verdad, en filas de libro mayor: mono y
+   tabulares, porque son dinero y plazos y tienen que alinearse en columna. */
+.doc-rates { display: flex; flex-direction: column; margin: 0 0 20px; max-width: 52ch; }
+.doc-rates div { align-items: baseline; border-top: 1px solid var(--footer-line); display: flex; gap: 16px; justify-content: space-between; padding: 13px 0; }
+.doc-rates div:first-child { border-top: 0; padding-top: 0; }
+.doc-rates dt { color: var(--cream-200); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; }
+.doc-rates dd { color: var(--paper); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; margin: 0; text-align: right; white-space: nowrap; }
+.doc-rates dd span { color: var(--footer-muted); }
+.doc-rates .doc-unit { color: var(--footer-muted); text-transform: none; }
+
+/* Cierre: la salida de la pagina, con la voz del resto del sitio. */
+.doc-updated { color: var(--footer-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; margin: clamp(26px, 3vw, 36px) 0 0; text-transform: uppercase; }
+.doc-close { margin-top: clamp(34px, 4vw, 52px); }
+.doc-close .text-link { border-bottom-color: rgba(244,241,235,.34); color: var(--paper); margin-bottom: 0; }
+.doc-close .text-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 700px) {
+  .doc-page { padding-left: 7vw; padding-right: 7vw; }
+  /* La fila de tarifa se parte: el nombre del destino y su cifra dejan de caber
+     en una linea antes de que el tipo se achique. */
+  .doc-rates div { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .doc-rates dd { text-align: left; }
+}
+
 .admin-page { background: var(--cream-100); min-height: calc(100vh - 88px); padding: 90px 10vw 120px; }
 .admin-heading { align-items: end; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; margin-bottom: 45px; padding-bottom: 38px; }
 .admin-heading h1 { font-size: clamp(48px, 6vw, 82px); margin-bottom: 18px; }
@@ -1339,8 +1607,8 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .admin-customer-row-head { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 .admin-customer-email { color: var(--ink-soft); font-family: var(--font-mono); font-size: 12px; }
 .site-footer { align-items: start; background: var(--ink); color: var(--paper); display: grid; gap: 42px 5vw; grid-template-columns: 1.4fr 1fr 1.4fr 2fr; padding: 65px 5vw 38px; }
-.footer-brand em { color: var(--accent); }.footer-brand p, .copyright { color: var(--footer-muted); font-size: 11px; margin: 28px 0 0; }
-.footer-column, .footer-newsletter { display: flex; flex-direction: column; gap: 11px; }.footer-column a { color: var(--footer-link); font-size: 12px; }.footer-column a:hover, .footer-legal a:hover { color: var(--accent); }.footer-label { color: var(--accent); font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; margin: 0 0 8px; text-transform: uppercase; }.footer-newsletter > p:not(.footer-label) { color: var(--footer-muted); font-size: 12px; line-height: 1.6; max-width: 230px; }.footer-newsletter form { border-bottom: 1px solid var(--footer-line); display: flex; justify-content: space-between; max-width: 255px; margin-top: 8px; }.footer-newsletter input { background: transparent; border: 0; color: var(--paper); font: inherit; font-size: 12px; outline: none; padding: 9px 0; width: 220px; }.footer-newsletter input::placeholder { color: var(--footer-muted); }.footer-newsletter button { color: var(--accent); font-size: 18px; }.footer-bottom { align-items: end; border-top: 1px solid var(--ink-soft); display: flex; grid-column: 1 / -1; justify-content: space-between; padding-top: 22px; }.footer-bottom .copyright { margin: 0; }.footer-legal { display: flex; gap: 25px; }.footer-legal a { color: var(--footer-muted); font-size: 11px; }.sr-only { height: 1px; margin: -1px; overflow: hidden; position: absolute; width: 1px; clip: rect(0,0,0,0); }
+.footer-brand em { color: var(--accent); }.footer-social { display: flex; gap: 2px; list-style: none; margin: 18px 0 0 -11px; padding: 0; }.footer-social a { align-items: center; color: var(--footer-link); display: flex; height: 44px; justify-content: center; width: 44px; }.footer-social svg { height: 19px; width: 19px; }.footer-social a:hover, .footer-social a:focus-visible { color: var(--accent); }.footer-social a:focus-visible { outline: 2px solid var(--paper); outline-offset: -6px; }.footer-brand p, .copyright { color: var(--footer-muted); font-size: 11px; margin: 28px 0 0; }
+.footer-column, .footer-newsletter { display: flex; flex-direction: column; gap: 11px; }.footer-column a { color: var(--footer-link); font-size: 12px; }.footer-column a:hover, .footer-legal a:hover { color: var(--accent); }.footer-label { color: var(--accent); font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; margin: 0 0 8px; text-transform: uppercase; }.footer-newsletter > p:not(.footer-label) { color: var(--footer-muted); font-size: 12px; line-height: 1.6; max-width: 230px; }.footer-newsletter form { border-bottom: 1px solid var(--footer-line); display: flex; justify-content: space-between; max-width: 255px; margin-top: 8px; }.footer-newsletter input { background: transparent; border: 0; color: var(--paper); font: inherit; font-size: 12px; outline: none; padding: 9px 0; width: 220px; }.footer-newsletter input::placeholder { color: var(--footer-muted); }.footer-newsletter button { color: var(--accent); font-size: 18px; }.footer-newsletter button:disabled { cursor: progress; opacity: .55; }.footer-note { color: var(--cream-300); font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; margin: 8px 0 0; }.footer-note.is-error { color: var(--accent); }.footer-bottom { align-items: end; border-top: 1px solid var(--ink-soft); display: flex; grid-column: 1 / -1; justify-content: space-between; padding-top: 22px; }.footer-bottom .copyright { margin: 0; }.footer-legal { display: flex; gap: 25px; }.footer-legal a { color: var(--footer-muted); font-size: 11px; }.sr-only { height: 1px; margin: -1px; overflow: hidden; position: absolute; width: 1px; clip: rect(0,0,0,0); }
 @media (max-width: 700px) { .site-nav { height: 72px; padding: 0 6vw; }.nav-actions { gap: 14px; }.account-button span:last-child, .bag-button span:first-child { display: none; }.text-link { margin-bottom: 38px; }.contact-page { gap: 44px; grid-template-columns: 1fr; padding: 56px 7vw 80px; }.contact-intro h1 { font-size: clamp(38px, 11vw, 56px); }.contact-form-row { grid-template-columns: 1fr; }.admin-page { padding: 70px 7vw 90px; }.admin-heading { align-items: start; }.admin-heading > svg { height: 34px; width: 34px; }.admin-grid-two { grid-template-columns: 1fr; }.admin-section-heading { align-items: start; flex-direction: column; gap: 14px; }.site-footer { grid-template-columns: 1fr 1fr; }.footer-newsletter, .footer-bottom { grid-column: 1 / -1; }.footer-bottom { align-items: start; flex-direction: column; gap: 15px; }.copyright { margin: 0; } }
 
 /* --- Menu movil: drawer lateral -------------------------------------------
@@ -1555,6 +1823,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
     .work-note,
     .work-more,
     .cart-line,
+    .order-line,
     .site-footer > * {
       animation: reveal-in linear both;
       animation-timeline: view();

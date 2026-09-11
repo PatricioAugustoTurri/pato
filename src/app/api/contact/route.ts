@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   try {
     payload = (await request.json()) as ContactPayload;
   } catch {
-    return NextResponse.json({ error: "El cuerpo de la solicitud no es un JSON válido." }, { status: 400 });
+    return NextResponse.json({ error: "The request body is not valid JSON." }, { status: 400 });
   }
 
   const name = payload.name?.trim();
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const message = payload.message?.trim();
 
   if (!name || !email || !subject || !message) {
-    return NextResponse.json({ error: "Faltan campos obligatorios." }, { status: 400 });
+    return NextResponse.json({ error: "Some required fields are missing." }, { status: 400 });
   }
 
   const apiKey = process.env.RESEND_API_KEY;
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   if (!apiKey || !to) {
     return NextResponse.json(
-      { error: "El formulario de contacto no está configurado todavía." },
+      { error: "The contact form is not set up yet." },
       { status: 503 },
     );
   }
@@ -48,11 +48,11 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      return NextResponse.json({ error: "No se pudo enviar el mensaje." }, { status: 502 });
+      return NextResponse.json({ error: "We could not send the message." }, { status: 502 });
     }
 
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ error: "No se pudo enviar el mensaje." }, { status: 500 });
+    return NextResponse.json({ error: "We could not send the message." }, { status: 500 });
   }
 }

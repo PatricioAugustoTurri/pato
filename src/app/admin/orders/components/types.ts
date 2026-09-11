@@ -1,21 +1,12 @@
-export type AdminOrderItem = {
-  photoId: number;
-  size: string;
-  quantity: number;
-  unitAmountCents: number;
-  name?: string;
-};
+import type { OrderAddress, OrderItemSnapshot, OrderStatus } from "@/lib/orders";
 
-export type AdminOrderAddress = {
-  city?: string | null;
-  country?: string | null;
-  line1?: string | null;
-  line2?: string | null;
-  postal_code?: string | null;
-  state?: string | null;
-};
-
-export type OrderStatus = "paid" | "processing" | "shipped" | "delivered";
+/* La forma de un pedido vive en `src/lib/orders.ts`, que es de donde sale
+   también el libro del comprador. Acá quedan los alias históricos para no tocar
+   cada componente del panel, y el tipo de la fila que la API del admin
+   devuelve, que trae campos que el cliente no ve (teléfono, email, nombre). */
+export type { OrderStatus };
+export type AdminOrderItem = OrderItemSnapshot;
+export type AdminOrderAddress = OrderAddress;
 
 export type AdminOrder = {
   id: number;

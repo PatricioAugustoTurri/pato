@@ -45,8 +45,8 @@ export default function ContactForm() {
          a intentar no lo arregla, así que no se pide reintentar. */
       setSubmitError(
         status === 503
-          ? "El formulario todavía no está conectado."
-          : "No salió el mensaje.",
+          ? "The form is not connected yet."
+          : "The message did not go through.",
       );
       setShowFallback(true);
     }
@@ -60,12 +60,12 @@ export default function ContactForm() {
     <form className="contact-form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="contact-form-row">
         <div className="contact-field">
-          <label htmlFor="name">Nombre</label>
+          <label htmlFor="name">Name</label>
           <Input
             id="name"
-            placeholder="Cómo te llamás"
+            placeholder="What you go by"
             aria-invalid={Boolean(errors.name)}
-            {...register("name", { required: "Decime cómo te llamás" })}
+            {...register("name", { required: "Tell me what you go by" })}
           />
           {errors.name && <span className="field-error">{errors.name.message}</span>}
         </div>
@@ -77,32 +77,32 @@ export default function ContactForm() {
             placeholder="tu@email.com"
             aria-invalid={Boolean(errors.email)}
             {...register("email", {
-              required: "Necesito tu email para responderte",
-              pattern: { value: /^\S+@\S+\.\S+$/, message: "Revisá el formato del email" },
+              required: "I need your email to write back",
+              pattern: { value: /^\S+@\S+\.\S+$/, message: "Check the format of the email" },
             })}
           />
           {errors.email && <span className="field-error">{errors.email.message}</span>}
         </div>
       </div>
       <div className="contact-field">
-        <label htmlFor="subject">Asunto</label>
+        <label htmlFor="subject">Subject</label>
         <Input
           id="subject"
-          placeholder="¿De qué se trata?"
+          placeholder="What is it about?"
           aria-invalid={Boolean(errors.subject)}
-          {...register("subject", { required: "Poné un asunto" })}
+          {...register("subject", { required: "Add a subject" })}
         />
         {errors.subject && <span className="field-error">{errors.subject.message}</span>}
       </div>
       <div className="contact-field">
-        <label htmlFor="message">Mensaje</label>
+        <label htmlFor="message">Message</label>
         <Textarea
           id="message"
-          placeholder="Contame"
+          placeholder="Tell me"
           aria-invalid={Boolean(errors.message)}
           {...register("message", {
-            required: "Escribí un mensaje para poder leerte",
-            minLength: { value: 10, message: "Contame un poco más: al menos 10 caracteres" },
+            required: "Write a message so I can read you",
+            minLength: { value: 10, message: "Tell me a little more: at least 10 characters" },
           })}
         />
         {errors.message && <span className="field-error">{errors.message.message}</span>}
@@ -112,14 +112,14 @@ export default function ContactForm() {
           <strong>{submitError}</strong>
           {showFallback && (
             <span>
-              Escribime directo a{" "}
-              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> y te respondo por ahí.
+              Write to me directly at{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and I will answer there.
             </span>
           )}
         </p>
       )}
       <Button className="contact-submit" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Enviando…" : "Enviar mensaje"}
+        {isSubmitting ? "Sending…" : "Send message"}
         <ArrowUpRight aria-hidden="true" />
       </Button>
     </form>

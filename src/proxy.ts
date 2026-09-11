@@ -10,7 +10,7 @@ export default auth((req) => {
 
   if (pathname === "/api/checkout") {
     if (!req.auth) {
-      return NextResponse.json({ error: "Tenés que iniciar sesión para comprar." }, { status: 401 });
+      return NextResponse.json({ error: "You need to sign in to buy." }, { status: 401 });
     }
     return NextResponse.next();
   }

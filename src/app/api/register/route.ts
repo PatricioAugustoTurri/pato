@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   try {
     payload = (await request.json()) as RegisterPayload;
   } catch {
-    return NextResponse.json({ error: "El cuerpo de la solicitud no es un JSON válido." }, { status: 400 });
+    return NextResponse.json({ error: "The request body is not valid JSON." }, { status: 400 });
   }
 
   const name = payload.name?.trim();
@@ -21,11 +21,11 @@ export async function POST(request: Request) {
   const password = payload.password ?? "";
 
   if (!name || !email || !password) {
-    return NextResponse.json({ error: "Completá tu nombre, email y contraseña." }, { status: 400 });
+    return NextResponse.json({ error: "Fill in your name, email and password." }, { status: 400 });
   }
 
   if (password.length < 8) {
-    return NextResponse.json({ error: "La contraseña tiene que tener al menos 8 caracteres." }, { status: 400 });
+    return NextResponse.json({ error: "Your password needs at least 8 characters." }, { status: 400 });
   }
 
   try {
@@ -38,9 +38,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No se pudo crear la cuenta.";
+    const message = error instanceof Error ? error.message : "We couldn't create the account. Try again.";
     return NextResponse.json(
-      { error: message.includes("duplicate key") ? "Ya existe una cuenta con ese email." : "No se pudo crear la cuenta." },
+      { error: message.includes("duplicate key") ? "An account with that email already exists. Sign in instead." : "We couldn't create the account. Try again." },
       { status: message.includes("duplicate key") ? 409 : 500 },
     );
   }

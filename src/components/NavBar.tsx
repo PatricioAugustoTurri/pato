@@ -95,8 +95,8 @@ function NavBar() {
     }, [menuOpen]);
 
     return (
-        <nav className={`site-nav ${menuOpen ? "is-menu-open" : ""}`} aria-label="Navegacion principal">
-            <Link className="wordmark" href="/" aria-label="Volver al inicio">
+        <nav className={`site-nav ${menuOpen ? "is-menu-open" : ""}`} aria-label="Main navigation">
+            <Link className="wordmark" href="/" aria-label="Back to home">
                 <span>Pato</span>
                 <em>Turri</em>
             </Link>
@@ -152,12 +152,12 @@ function NavBar() {
                     className="account-button"
                     variant="ghost"
                     type="button"
-                    aria-label={session ? "Ver mi cuenta" : "Iniciar sesión"}
+                    aria-label={session ? "View your account" : "Sign in"}
                     onClick={() => router.push(session ? "/account" : "/login")}
                 >
                     <span className="account-icon" aria-hidden="true"><User /></span>
                     <span>
-                        {status === "loading" ? <Skeleton className="h-3 w-14" /> : session ? session.user?.name : "Ingresar"}
+                        {status === "loading" ? <Skeleton className="h-3 w-14" /> : session ? session.user?.name : "Sign in"}
                     </span>
                 </Button>
                 <Button className="bag-button" variant="ghost" type="button" aria-label={`Open cart (${itemCount} ${itemCount === 1 ? "print" : "prints"})`} onClick={() => router.push("/cart")}>

@@ -37,10 +37,17 @@ function CheckoutSuccessContent() {
             pedido quedo registrado — y se nombra el canal que de verdad
             funciona. */}
         <p>
-          The payment went through and the order is recorded. For anything about it,
-          write to <a href="mailto:hola@patoturri.com">hola@patoturri.com</a> — the same
-          person who took the photographs reads it.
+          The payment went through and the order is recorded — it is in your orders now.
+          For anything about it, write to{" "}
+          <a href="mailto:hola@patoturri.com">hola@patoturri.com</a> — the same person who
+          took the photographs reads it.
         </p>
+        {/* Decir "quedo registrado" sin dar donde verlo era abrir un circuito y
+            dejarlo abierto: el pedido existia y el comprador no tenia forma de
+            volver a el. Va primero porque es lo especifico de esta pantalla. */}
+        <Link href="/account" className="text-link">
+          See your order <span aria-hidden="true">↗</span>
+        </Link>
         <Link href="/shop" className="text-link">
           Keep looking <span aria-hidden="true">↗</span>
         </Link>

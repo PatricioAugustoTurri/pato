@@ -9,13 +9,13 @@ export default function ContactSuccess({ onReset }: ContactSuccessProps) {
   return (
     <div className="contact-success" role="status">
       <Check aria-hidden="true" />
-      <h2>Tu mensaje salió.</h2>
+      <h2>Your message is out.</h2>
       {/* El mecanismo, no una promesa: el route manda el mail con `replyTo` en
           la dirección de quien escribe, así que la respuesta llega ahí. Sin
           plazos: no hay nada que los garantice. */}
-      <p>Te respondo al mismo email desde el que escribiste.</p>
+      <p>I answer to the same email you wrote from.</p>
       <Button type="button" variant="outline" onClick={onReset}>
-        Escribir otro mensaje
+        Write another message
       </Button>
     </div>
   );

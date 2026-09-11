@@ -26,9 +26,6 @@ export default function CategoryLoading() {
               style={{ height: 34, marginTop: 10, width: "56%" }}
             />
           </div>
-          <aside className="room-editions">
-            <div className="shop-ghost animate-pulse" style={{ height: 13, width: 190 }} />
-          </aside>
         </div>
 
         <div className="room-hang">

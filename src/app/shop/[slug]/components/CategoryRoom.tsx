@@ -10,8 +10,6 @@ export type HungPhoto = PhotoDetailRow & {
   ratio: number;
 };
 
-export type Edition = { size: string; price: string };
-
 /* La descripcion de coleccion es texto de autor de unos 1.100 caracteres.
    Entera y de un tiron es un muro; su primera oracion es una entrada. Se corta
    por el primer punto seguido de espacio para no partir "ee.uu." ni un decimal. */
@@ -66,13 +64,11 @@ export default function CategoryRoom({
   categorySlug,
   description,
   photos,
-  editions,
 }: {
   categoryName: string;
   categorySlug: string;
   description: string;
   photos: HungPhoto[];
-  editions: Edition[];
 }) {
   const [lead, rest] = splitStatement(description);
   const walls = hang(photos);
@@ -80,29 +76,14 @@ export default function CategoryRoom({
 
   return (
     <section className="category-room is-dark-room">
-      {/* El cartel de sala: la voz del autor primero, la ficha de impresion al
-          costado. El precio es identico en las 41 obras del archivo, asi que se
-          declara una vez para la coleccion entera en vez de repetirse debajo de
-          cada fotografia, donde no distinguiria nada y competiria con la obra. */}
+      {/* El cartel de sala: solo la voz del autor. La ficha de medidas y precios
+          que vivia al costado se retiro por decision del autor; los tamanos se
+          eligen en la ficha de cada obra, que es donde se compra. */}
       <div className="room-entry">
         <div className="room-statement">
           <p className="room-statement-lead">{lead}</p>
           {rest && <p className="room-statement-rest">{rest}</p>}
         </div>
-
-        {editions.length > 0 && (
-          <aside className="room-editions">
-            <h2>Every work, three sizes</h2>
-            <dl>
-              {editions.map((edition) => (
-                <div key={edition.size}>
-                  <dt>{edition.size}</dt>
-                  <dd>{edition.price}</dd>
-                </div>
-              ))}
-            </dl>
-          </aside>
-        )}
       </div>
 
       {photos.length === 0 ? (

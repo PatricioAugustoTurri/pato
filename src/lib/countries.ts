@@ -7,16 +7,18 @@
  *
  * `intro` es el relato del viaje. Solo se escribe lo que el fotógrafo confirmó:
  * un país sin texto muestra sus obras sin relato, en vez de inventarle uno.
+ *
  */
 export const COUNTRIES: { name: string; intro: string | null }[] = [
   {
     name: "Vietnam",
     intro:
-      "Un mes recorriendo el norte del país en moto, entrando en lugares por los que casi nadie pasa. Estas fotografías son lo que encontramos ahí adentro.",
+      "A month riding through the north of the country on a motorbike, into places almost nobody passes through. These photographs are what we found in there.",
   },
   {
     name: "Tailandia",
-    intro: null,
+    intro:
+      "This country gave me far more than postcard landscapes: I carry the memory of its honest smiles, its golden temples at dusk, and that feeling of having found a small piece of peace on the other side of the world.",
   },
 ];
 
@@ -24,6 +26,43 @@ const ORDER = new Map(COUNTRIES.map(({ name }, index) => [name, index]));
 
 export function countryIntro(country: string): string | null {
   return COUNTRIES.find(({ name }) => name === country)?.intro ?? null;
+}
+
+/**
+ * El nombre de cada país en inglés, para mostrar.
+ *
+ * La columna `pais` de la base guarda el castellano y no se toca: esto es
+ * presentación, no dato. Cubre los doce países que hay hoy en el catálogo; de
+ * ellos, solo cuatro se escriben distinto —el resto entra igual para que la
+ * tabla se lea completa y no haya que adivinar cuáles faltan.
+ *
+ * Es deliberado NO derivarlo de `ENGLISH_NAMES` en `place.ts`: esa tabla
+ * existe para detectar si un título ya nombra el lugar, y sus valores son
+ * términos de búsqueda («thai», «mexican»), no nombres para mostrar.
+ */
+const NAMES_EN: Record<string, string> = {
+  argentina: "Argentina",
+  bolivia: "Bolivia",
+  brasil: "Brazil",
+  colombia: "Colombia",
+  "costa rica": "Costa Rica",
+  guatemala: "Guatemala",
+  malasia: "Malaysia",
+  marruecos: "Morocco",
+  méxico: "Mexico",
+  mexico: "Mexico",
+  paraguay: "Paraguay",
+  tailandia: "Thailand",
+  vietnam: "Vietnam",
+};
+
+/**
+ * El nombre del país para mostrar. Un país que no esté en la tabla se muestra
+ * tal cual viene de la base: aparece igual, como hace `countryRank` con el
+ * orden, en vez de desaparecer por no estar curado.
+ */
+export function countryLabel(country: string): string {
+  return NAMES_EN[country.trim().toLowerCase()] ?? country;
 }
 
 /**

@@ -1,19 +1,51 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
 import { getCountryChapters } from "@/lib/photos";
-import { countryIntro } from "@/lib/countries";
+import { countryIntro, countryLabel } from "@/lib/countries";
 
-export default async function DestinationsSection() {
-  const chapters = await getCountryChapters(4);
+/* La portada y /destinations son el mismo indice con distinto alcance: una
+   muestra los paises curados desde el panel y la otra todos los que tienen
+   obra. Se comparte el componente en vez de copiarlo para que las dos no puedan
+   contar cosas distintas ni separarse visualmente con el tiempo. */
+export default async function DestinationsSection({
+  heading = (
+    <>
+      My best <i>memories.</i>
+    </>
+  ),
+  /* En la portada este indice es una franja mas y los paises cuelgan de ella;
+     en /destinations es el asunto de la pagina. El nivel se pasa una sola vez y
+     el del pais baja solo, asi que el orden de encabezados no puede saltarse un
+     escalon en ninguna de las dos. */
+  headingLevel = 2,
+  curatedOnly = true,
+  empty = null,
+}: {
+  heading?: ReactNode;
+  headingLevel?: 1 | 2;
+  curatedOnly?: boolean;
+  empty?: ReactNode;
+} = {}) {
+  const chapters = await getCountryChapters(4, { curatedOnly });
+  const Heading = headingLevel === 1 ? "h1" : "h2";
+  const CountryHeading = headingLevel === 1 ? "h2" : "h3";
 
-  // Sin países curados no hay archivo que recorrer.
+  /* Sin capítulos no hay archivo que recorrer. En la portada eso es una franja
+     que no se dibuja; una ruta propia tiene que decir algo, y lo pasa ella. */
   if (chapters.length === 0) {
-    return null;
+    return empty;
   }
 
   return (
     <section className="home-section home-roll" id="destinos">
+      {/* Era la unica franja de la home sin titulo propio: los paises colgaban
+          directamente del h1. Con encabezado, cada pais pasa a ser un capitulo
+          de esta seccion y no un hermano del titulo de la pagina. */}
+      <div className="home-roll-head">
+        <Heading>{heading}</Heading>
+      </div>
+
       {chapters.map(({ country, photos, total }, index) => {
         const intro = countryIntro(country);
         // Los capítulos alternan de lado: el nombre pasa de un borde al otro y
@@ -25,10 +57,10 @@ export default async function DestinationsSection() {
           <article className="home-chapter" key={country} data-mirrored={mirrored || undefined}>
             <div className="home-chapter-head">
               <div className="home-chapter-mark">
-                <h2>{country}</h2>
+                <CountryHeading>{countryLabel(country)}</CountryHeading>
                 {/* Cifra contada contra la base, no una promesa de catálogo. */}
                 <p className="home-chapter-count">
-                  {total === 1 ? "1 obra en el archivo" : `${total} obras en el archivo`}
+                  {total === 1 ? "1 work in the archive" : `${total} works in the archive`}
                 </p>
               </div>
               {intro && <p className="home-chapter-note">{intro}</p>}

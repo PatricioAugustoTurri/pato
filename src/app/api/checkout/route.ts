@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const authSession = await auth();
 
   if (!authSession?.user?.id) {
-    return NextResponse.json({ error: "Tenés que iniciar sesión para comprar." }, { status: 401 });
+    return NextResponse.json({ error: "You need to sign in to buy." }, { status: 401 });
   }
 
   const userId = Number(authSession.user.id);
@@ -32,18 +32,18 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { items?: CheckoutRequestItem[] };
     items = Array.isArray(body.items) ? body.items : [];
   } catch {
-    return NextResponse.json({ error: "El cuerpo de la solicitud no es un JSON válido." }, { status: 400 });
+    return NextResponse.json({ error: "The request body is not valid JSON." }, { status: 400 });
   }
 
   if (items.length === 0) {
-    return NextResponse.json({ error: "El carrito está vacío." }, { status: 400 });
+    return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
   }
 
   let stripe;
   try {
     stripe = getStripe();
   } catch {
-    return NextResponse.json({ error: "El pago no está configurado todavía." }, { status: 503 });
+    return NextResponse.json({ error: "Payments are not set up yet." }, { status: 503 });
   }
 
   const client = await pool.connect();
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No se pudo iniciar el pago.";
+    const message = error instanceof Error ? error.message : "We could not start the payment.";
     return NextResponse.json({ error: message }, { status: 500 });
   } finally {
     client.release();

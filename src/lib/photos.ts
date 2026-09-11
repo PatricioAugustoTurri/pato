@@ -129,8 +129,16 @@ export type CountryChapter = CountryGroup & { total: number };
  * `total` es cuántas obras enlazables tiene ese país en el archivo, no cuántas
  * se muestran: es la cifra que va bajo el nombre del país, y sale de contar la
  * base, no de una promesa.
+ *
+ * `curatedOnly` es lo único que separa la portada de /destinations: la portada
+ * muestra los países que el panel curó, y el índice completo muestra todos los
+ * que tienen obra. La consulta y el armado son los mismos; cambiar solo el
+ * filtro evita que las dos páginas puedan contar cosas distintas.
  */
-export async function getCountryChapters(perCountry = 4): Promise<CountryChapter[]> {
+export async function getCountryChapters(
+  perCountry = 4,
+  { curatedOnly = true }: { curatedOnly?: boolean } = {},
+): Promise<CountryChapter[]> {
   try {
     const { rows } = await pool.query<PreferredPhoto & { preferida: boolean }>(
       `SELECT p.id, p.name, p.slug, p.images, p.pais, p.preferidos AS preferida,
@@ -155,7 +163,7 @@ export async function getCountryChapters(perCountry = 4): Promise<CountryChapter
     }
 
     return Array.from(byCountry, ([country, group]) => ({ country, ...group }))
-      .filter((chapter) => chapter.curated && chapter.photos.length > 0)
+      .filter((chapter) => (curatedOnly ? chapter.curated : true) && chapter.photos.length > 0)
       .sort(
         (a, b) =>
           countryRank(a.country) - countryRank(b.country) ||
