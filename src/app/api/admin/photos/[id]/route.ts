@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { catalogVariants, replaceVariants } from "@/lib/photo-variants";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 
 type PhotoPayload = {
   categoryId?: number | null;
@@ -64,6 +65,8 @@ export async function PUT(
     await replaceVariants(client, photoId, catalogVariants(stock));
     await client.query("COMMIT");
 
+    revalidateCatalog();
+
     return NextResponse.json({ id: result.rows[0].id });
   } catch (error) {
     if (client) {
@@ -97,6 +100,8 @@ export async function DELETE(
     if (result.rowCount === 0) {
       return NextResponse.json({ error: "Fotografía no encontrada." }, { status: 404 });
     }
+
+    revalidateCatalog();
 
     return NextResponse.json({ id: photoId });
   } catch {
