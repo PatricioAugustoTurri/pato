@@ -5,6 +5,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { CartItem } from "@/hooks/use-cart";
+import type { ShippingRegion } from "@/lib/shipping";
 
 /* El checkout se dispara desde dos lugares —el boton del mostrador y la barra
    del pulgar en el telefono— y los dos tienen que compartir el mismo estado: si
@@ -13,7 +14,7 @@ import type { CartItem } from "@/hooks/use-cart";
    a los dos. */
 export type Checkout = ReturnType<typeof useCheckout>;
 
-export function useCheckout(items: CartItem[]) {
+export function useCheckout(items: CartItem[], region: ShippingRegion) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status } = useSession();
@@ -36,6 +37,7 @@ export function useCheckout(items: CartItem[]) {
           size: item.size,
           quantity: item.quantity,
         })),
+        region,
       });
 
       if (data.url) {

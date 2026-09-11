@@ -2,18 +2,24 @@
 
 import type { RefObject } from "react";
 import { formatPrice } from "@/lib/money";
-import { SHIPPING_RATES } from "@/lib/shipping";
+import { SHIPPING_RATES, shippingRate, type ShippingRegion } from "@/lib/shipping";
 import type { Checkout } from "../use-checkout";
 
 export default function CartCounter({
   subtotal,
+  region,
+  onRegionChange,
   checkout,
   buttonRef,
 }: {
   subtotal: number;
+  region: ShippingRegion;
+  onRegionChange: (region: ShippingRegion) => void;
   checkout: Checkout;
   buttonRef: RefObject<HTMLButtonElement | null>;
 }) {
+  const shippingAmount = shippingRate(region).amount;
+
   return (
     <div className="cart-counter">
       <section className="cart-counter-inner" aria-labelledby="cart-counter-heading">
@@ -29,27 +35,45 @@ export default function CartCounter({
             en el arbol de accesibilidad lo pone un encabezado propio, invisible:
             "Shipping" nombraria de menos a lo que este panel es. */}
         <h2 className="sr-only" id="cart-counter-heading">Order summary</h2>
-        <p className="cart-counter-legend">Shipping</p>
 
-        {/* Antes el carrito mostraba un total sin envio y Stripe cobraba €5 o
-            €10 mas. Las tarifas salen de `SHIPPING_RATES`, que es de donde el
-            checkout arma sus `shipping_options`: la pagina no puede anunciar
-            una tarifa que Stripe no aplique. Cual de las dos corresponde
-            depende de la direccion, que todavia no se pregunto — por eso se
-            nombran las dos y se dice donde se decide, en vez de inventar un
-            total. */}
-        <dl className="cart-shipping">
-          {SHIPPING_RATES.map(({ region, label, amount, minDays, maxDays }) => (
-            <div key={region}>
-              <dt>{label}</dt>
-              <dd>
-                {formatPrice(amount / 100)}
-                <span> · {minDays}–{maxDays} working days</span>
-              </dd>
-            </div>
+        {/* Antes esto eran dos tarifas dibujadas una debajo de la otra y un
+            aviso de que el envio se sumaba despues. El problema no era la
+            copia: el checkout mandaba LAS DOS tarifas a Stripe, y su pagina
+            alojada no sabe filtrarlas por direccion —lo dice su documentacion—,
+            asi que las ofrecia como un selector y se podia elegir Italia a 5
+            EUR desde Finlandia.
+
+            Eligiendo la zona aca, la sesion se crea con una sola tarifa y solo
+            con los paises de esa zona: la combinacion equivocada deja de ser
+            posible. De paso el carrito puede decir el total de verdad, que con
+            dos tarifas en el aire no podia.
+
+            Se reusa el juego del selector de tamano de la ficha de obra: es la
+            misma decision —elegir una opcion en un mostrador— y el sitio ya
+            tiene una forma para eso. */}
+        <fieldset className="buy-sizes">
+          <legend>Ships to</legend>
+          {SHIPPING_RATES.map(({ region: value, label, amount, minDays, maxDays }) => (
+            <label className="buy-size" key={value} data-selected={region === value ? "" : undefined}>
+              <input
+                type="radio"
+                name="shipping-region"
+                value={value}
+                checked={region === value}
+                onChange={() => onRegionChange(value)}
+              />
+              <span className="buy-size-name">{label}</span>
+              <span className="buy-size-note">
+                {minDays}–{maxDays} working days
+              </span>
+              <span className="buy-size-price">{formatPrice(amount / 100)}</span>
+            </label>
           ))}
-        </dl>
-        <p className="cart-shipping-note">Shipping is added at checkout, from your address.</p>
+        </fieldset>
+
+        <p className="cart-shipping-note">
+          The address is asked for on the payment page, within the region you choose here.
+        </p>
 
         {checkout.error && (
           <p className="cart-error" role="alert">
@@ -67,7 +91,7 @@ export default function CartCounter({
           disabled={checkout.disabled}
         >
           <span>{checkout.isRedirecting ? "Redirecting…" : "Checkout"}</span>
-          <b>{formatPrice(subtotal)}</b>
+          <b>{formatPrice(subtotal + shippingAmount / 100)}</b>
         </button>
 
         {checkout.needsSignIn && <p className="cart-signin">You will sign in first.</p>}

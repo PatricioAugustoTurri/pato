@@ -79,7 +79,7 @@ html { accent-color: var(--accent-text); caret-color: var(--accent-text); scroll
 a:not([class]) { text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
 /* Precios y cantidades se alinean en columna: la tienda muestra cifras en
    grillas, carrito y pedidos, y las cifras proporcionales bailan. */
-.buy-size, .product-variant, .cart-line, .cart-shipping,
+.buy-size, .product-variant, .cart-line,
  .admin-order-card-items, .admin-order-card-totals {
   font-variant-numeric: tabular-nums;
 }
@@ -1130,12 +1130,6 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 /* Las dos tarifas, leidas de `SHIPPING_RATES`. Cual corresponde depende de la
    direccion, que Stripe todavia no pregunto: por eso se nombran las dos en vez
    de sumar una al total. */
-.cart-shipping { display: flex; flex-direction: column; margin: 0; }
-.cart-shipping div { border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 13px 0; }
-.cart-shipping div:last-child { border-bottom: 1px solid var(--line); }
-.cart-shipping dt { color: var(--text-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; }
-.cart-shipping dd { color: var(--ink); font-family: var(--font-mono); font-size: 10.5px; font-variant-numeric: tabular-nums; margin: 0; text-align: right; }
-.cart-shipping dd span { color: var(--text-muted); }
 .cart-shipping-note { color: var(--text-muted); font-size: 12px; line-height: 1.6; margin: 14px 0 0; }
 .cart-ghost-checkout { display: block; height: 54px; margin-top: clamp(22px, 2.4vw, 32px); width: 100%; }
 

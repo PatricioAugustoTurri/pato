@@ -3,18 +3,18 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { pool } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { stripeShippingOptions } from "@/lib/shipping";
+import {
+  SHIPPING_COUNTRIES,
+  isShippingRegion,
+  stripeShippingOptions,
+  type ShippingRegion,
+} from "@/lib/shipping";
 
 type CheckoutRequestItem = {
   photoId: number;
   size: string;
   quantity: number;
 };
-
-const EU_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] = [
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT",
-  "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
-];
 
 export async function POST(request: Request) {
   const authSession = await auth();
@@ -27,10 +27,19 @@ export async function POST(request: Request) {
   const userEmail = authSession.user.email ?? null;
 
   let items: CheckoutRequestItem[];
+  let region: ShippingRegion;
 
   try {
-    const body = (await request.json()) as { items?: CheckoutRequestItem[] };
+    const body = (await request.json()) as { items?: CheckoutRequestItem[]; region?: unknown };
     items = Array.isArray(body.items) ? body.items : [];
+
+    /* La zona se comprueba acá, como el precio: el navegador propone y el
+       servidor decide. Un valor inventado no cae a la tarifa más barata, se
+       rechaza. */
+    if (!isShippingRegion(body.region)) {
+      return NextResponse.json({ error: "Choose where the order ships to." }, { status: 400 });
+    }
+    region = body.region;
   } catch {
     return NextResponse.json({ error: "The request body is not valid JSON." }, { status: 400 });
   }
@@ -119,13 +128,17 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
+      /* Solo los países de la zona elegida. Stripe se encarga de que no entre
+         una dirección que no corresponda a la tarifa que se está cobrando. */
       shipping_address_collection: {
-        allowed_countries: EU_COUNTRIES,
+        allowed_countries: SHIPPING_COUNTRIES[
+          region
+        ] as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
       },
       phone_number_collection: {
         enabled: true,
       },
-      shipping_options: stripeShippingOptions(),
+      shipping_options: stripeShippingOptions(region),
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout/cancel`,
     });

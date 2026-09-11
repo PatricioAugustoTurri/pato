@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import useCart from "@/hooks/use-cart";
+import { shippingRate, type ShippingRegion } from "@/lib/shipping";
 import CartBar from "./components/CartBar";
 import CartCount from "./components/CartCount";
 import CartCounter from "./components/CartCounter";
@@ -18,7 +19,11 @@ export default function CartPage() {
 
   const hydrated = useHydrated();
   const checkoutRef = useRef<HTMLButtonElement>(null);
-  const checkout = useCheckout(items);
+  /* Italia por defecto porque es desde donde se despacha y de donde viene la
+     mayoria de los pedidos; la otra zona esta a un clic y ninguna de las dos
+     esta preseleccionada de forma invisible: la fila elegida se ve. */
+  const [region, setRegion] = useState<ShippingRegion>("it");
+  const checkout = useCheckout(items, region);
 
   const subtotal = items.reduce(
     (sum, item) => sum + Number(item.attributes?.price ?? item.price) * item.quantity,
@@ -67,9 +72,20 @@ export default function CartPage() {
         <CartList items={items} onRemove={removeItem} onQuantity={setQuantity} />
       </div>
 
-      <CartCounter subtotal={subtotal} checkout={checkout} buttonRef={checkoutRef} />
+      <CartCounter
+        subtotal={subtotal}
+        region={region}
+        onRegionChange={setRegion}
+        checkout={checkout}
+        buttonRef={checkoutRef}
+      />
 
-      <CartBar subtotal={subtotal} prints={prints} checkout={checkout} watch={checkoutRef} />
+      <CartBar
+        subtotal={subtotal + shippingRate(region).amount / 100}
+        prints={prints}
+        checkout={checkout}
+        watch={checkoutRef}
+      />
     </main>
   );
 }

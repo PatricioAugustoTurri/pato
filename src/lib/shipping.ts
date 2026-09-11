@@ -24,9 +24,48 @@ export const SHIPPING_RATES = [
 
 export type ShippingRegion = (typeof SHIPPING_RATES)[number]["region"];
 
-/** Las tarifas con la forma exacta que espera Stripe Checkout. */
-export function stripeShippingOptions() {
-  return SHIPPING_RATES.map(({ name, amount, minDays, maxDays }) => ({
+/**
+ * Los países de cada zona.
+ *
+ * Antes la lista de los 27 vivía dentro de la ruta de checkout y las dos
+ * tarifas se mandaban juntas a Stripe. La página alojada de Stripe NO sabe
+ * filtrar tarifas por dirección —lo dice su propia documentación—, así que las
+ * dibujaba como un selector y cualquiera podía elegir «Shipping in Italy» y
+ * pagar 5 EUR desde Finlandia.
+ *
+ * Con la zona elegida antes de crear la sesión, Stripe recibe UNA tarifa y solo
+ * los países que le corresponden: ya no es cuestión de confiar en que el
+ * comprador elija bien, es que la combinación equivocada no se puede escribir.
+ */
+const ITALY = ["IT"] as const;
+
+const REST_OF_EU = [
+  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE",
+  "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+] as const;
+
+export const SHIPPING_COUNTRIES: Record<ShippingRegion, readonly string[]> = {
+  it: ITALY,
+  eu: REST_OF_EU,
+};
+
+/** ¿Es `value` una de las dos zonas? El cliente propone, el servidor comprueba. */
+export function isShippingRegion(value: unknown): value is ShippingRegion {
+  return SHIPPING_RATES.some((rate) => rate.region === value);
+}
+
+/** La tarifa de una zona. */
+export function shippingRate(region: ShippingRegion) {
+  return SHIPPING_RATES.find((rate) => rate.region === region) ?? SHIPPING_RATES[0];
+}
+
+/**
+ * La tarifa de la zona elegida, con la forma exacta que espera Stripe Checkout.
+ *
+ * Devuelve una sola: mandar las dos era lo que dejaba elegir la equivocada.
+ */
+export function stripeShippingOptions(region: ShippingRegion) {
+  return [shippingRate(region)].map(({ name, amount, minDays, maxDays }) => ({
     shipping_rate_data: {
       type: "fixed_amount" as const,
       fixed_amount: { amount, currency: "eur" },

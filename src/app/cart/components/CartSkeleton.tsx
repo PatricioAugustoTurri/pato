@@ -26,9 +26,18 @@ export function CartCounterSkeleton() {
   return (
     <div className="cart-counter" aria-hidden="true">
       <div className="cart-counter-inner">
-        <p className="cart-counter-legend">Shipping</p>
-        <span className="cart-ghost-line skeleton-line" style={{ width: "100%" }} />
-        <span className="cart-ghost-line skeleton-line" style={{ width: "80%" }} />
+        {/* Las clases reales del selector de zona, no dos rayas con alturas a
+            ojo: asi el hueco mide exactamente lo que va a medir el mostrador y
+            nada salta cuando localStorage contesta. */}
+        <fieldset className="buy-sizes">
+          <legend>Ships to</legend>
+          <span className="buy-size">
+            <span className="cart-ghost-line skeleton-line" style={{ width: "60%" }} />
+          </span>
+          <span className="buy-size">
+            <span className="cart-ghost-line skeleton-line" style={{ width: "72%" }} />
+          </span>
+        </fieldset>
         <span className="cart-ghost-checkout skeleton-line" />
       </div>
     </div>
