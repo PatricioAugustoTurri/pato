@@ -1,26 +1,1683 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #25231f;
+  --ink-soft: #46423c;
+  --paper: #f4f1eb;
+  --cream-100: #eeebe4;
+  --cream-200: #e1d5c7;
+  --cream-300: #d8c8b5;
+  --cream-hover: #e9dfd3;
+  --line: #d9d3c9;
+  --line-soft: #c8b9a8;
+  --line-faint: #e6e0d7;
+  --text-muted: #6f675d;
+  --text-faint: #6b6156;
+  --footer-muted: #a09b90;
+  --footer-line: #6b665d;
+  --footer-link: #c9c3b8;
+  /* Terracota de marca. Mide 2.44:1 sobre el papel, así que vive en
+     superficies, bordes y sobre la tinta del footer (5.71:1) — nunca en texto
+     pequeño sobre fondo claro. Para eso está --accent-text (4.67:1). */
+  --accent: #d8895b;
+  --accent-text: #a85527;
+  --success: #46704d;
+  --error: #a34d35;
+
+  /* Una sola curva de marca y tres duraciones. Toda animación las usa. */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drift: cubic-bezier(0.32, 0.08, 0.24, 1);
+  --dur-fast: 180ms;
+  --dur-base: 320ms;
+  --dur-slow: 720ms;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--cream-100);
+  --secondary-foreground: var(--ink);
+  --muted: var(--cream-100);
+  --muted-foreground: var(--text-muted);
+  --accent-foreground: var(--paper);
+  --destructive: var(--error);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--accent-text);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0rem;
+  --sidebar: var(--paper);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: var(--cream-100);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--accent);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: inherit; text-decoration: none; }
+
+/* --- Superficies del navegador -------------------------------------------
+   Las partes que no dibujamos también son la marca: selección, cursor, anillo
+   de foco, scrollbar y cifras venían con los valores por defecto del navegador,
+   que no pertenecen a ningún sistema de diseño. */
+::selection { background: var(--cream-200); color: var(--ink); }
+html { accent-color: var(--accent-text); caret-color: var(--accent-text); scrollbar-color: var(--line-soft) var(--cream-100); }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
+a:not([class]) { text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+/* Precios y cantidades se alinean en columna: la tienda muestra cifras en
+   grillas, carrito y pedidos, y las cifras proporcionales bailan. */
+.buy-size, .product-variant, .cart-line, .cart-shipping,
+ .admin-order-card-items, .admin-order-card-totals {
+  font-variant-numeric: tabular-nums;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* --- Movimiento -----------------------------------------------------------
+   Todo lo que se mueve vive detrás de esta consulta. El scroll suave incluido:
+   es movimiento que el usuario no pidió y antes no estaba protegido. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}
+/* El único momento autoral del sitio: al abrir una obra, su miniatura crece
+   hasta el lugar que ocupa en la ficha. Se le da la curva de marca y tiempo
+   suficiente para leerse como un solo objeto que se mueve. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*) {
+    animation-duration: var(--dur-slow);
+    animation-timing-function: var(--ease);
+  }
+}
+.site-nav { align-items: center; background: var(--paper); display: flex; height: 88px; justify-content: space-between; padding: 0 5vw; position: relative; z-index: 2; }
+.wordmark, .footer-brand { display: flex; flex-direction: column; font-size: 22px; font-weight: 600; letter-spacing: -1px; line-height: .76; }
+.wordmark em { color: var(--accent-text); font-family: var(--font-wordmark); font-size: 17px; font-weight: 500; letter-spacing: 0; margin-left: 21px; }
+.footer-brand em { color: var(--accent); font-family: var(--font-wordmark); font-size: 17px; font-weight: 500; letter-spacing: 0; margin-left: 21px; }
+.nav-links { display: flex; gap: 34px; margin-left: 9%; }
+.nav-links a, .bag-button, .account-button { color: var(--text-muted); font-size: 12px; letter-spacing: .02em; }
+.nav-links a:hover, .text-link:hover { color: var(--accent-text); }
+.nav-actions { align-items: center; display: flex; gap: 20px; }
+button { background: none; border: 0; color: inherit; cursor: pointer; font: inherit; }
+.account-button { align-items: center; display: flex; gap: 8px; }
+.account-icon { align-items: center; border: 1px solid currentColor; border-radius: 50%; display: inline-flex; font-size: 8px; height: 17px; justify-content: center; width: 17px; }
+.account-button:hover, .bag-button:hover { color: var(--accent-text); }
+.bag-button { align-items: center; display: flex; gap: 8px; }
+.bag-button b { align-items: center; background: var(--ink); border-radius: 50%; color: var(--paper); display: flex; font-size: 10px; font-weight: 400; height: 19px; justify-content: center; width: 19px; }
+.menu-button { display: none; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { font-family: var(--font-heading); font-size: clamp(58px, 8.2vw, 125px); font-weight: 500; letter-spacing: -.032em; line-height: .9; margin-bottom: 32px; }
+h1 i, h2 i { color: var(--accent-text); font-weight: 500; }
+.eyebrow { color: var(--accent-text); font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; margin: 0 0 24px; text-transform: uppercase; }
+.primary-button { align-items: center; background: var(--ink); color: var(--paper); display: inline-flex; font-size: 12px; gap: 34px; margin-top: 21px; padding: 16px 18px 16px 20px; transition: background var(--dur-base) var(--ease); }
+.primary-button:hover { background: var(--accent); }
+
+/* --- Hero -----------------------------------------------------------------
+   Una sola fotografía del archivo a sangre completa. La obra ocupa la pantalla
+   y la interfaz se apoya encima; nada compite con ella. */
+.hero-section { background: var(--ink); color: var(--paper); display: flex; min-height: 100svh; overflow: hidden; position: relative; }
+.hero-media { inset: 0; position: absolute; }
+
+/* 42%, no el centro: la tapa es vertical (2:3) y en un hero apaisado solo entra
+   una franja. A 28% la montana sale entera pero la figura queda en un puno
+   asomando por abajo; a 62% la figura manda pero la montana desaparece. A 42%
+   la montana sostiene el titular y la cara y el brazo se leen, mientras el
+   cuerpo baja hacia el velo, que es donde viven las tarjetas. */
+.hero-media img { object-fit: cover; object-position: center 42%; }
+/* Dos velos, no uno: arriba para que la navegación se lea, abajo para el texto.
+   Separados, así el centro de la fotografía queda limpio. */
+.hero-section:before, .hero-section:after { content: ''; left: 0; position: absolute; right: 0; z-index: 1; }
+/* El velo cubre arriba Y a la izquierda: el título vive en esa esquina y cada
+   fotografía tiene un cielo distinto. Con un solo degradado superior, un
+   cielo claro dejaba el título blanco casi ilegible. */
+.hero-section:before { background: linear-gradient(rgba(18,15,12,.66), rgba(18,15,12,.12) 30%, transparent 46%),
+                                   linear-gradient(96deg, rgba(18,15,12,.68), rgba(18,15,12,.22) 38%, transparent 62%);
+  bottom: 0; height: auto; top: 0; }
+.hero-section:after { background: linear-gradient(transparent, rgba(18,15,12,.82)); bottom: 0; height: 68%; }
+
+/* --- El hero de la tienda -------------------------------------------------
+   Tres ajustes que son de ESTA fotografia, no del sistema. Van sobre
+   `.hero-section.shop-hero` para ganar por especificidad sin tocar la portada,
+   el about ni las colecciones, que siguen con los velos de arriba.
+
+   EL RECORTE. La tapa de la tienda es apaisada (3:2), no vertical como la de
+   la portada, de modo que el 42% del sistema la sube de mas. A 50% el puesto
+   queda centrado: la cortina de tela sostiene el titular arriba, la mujer cae
+   en el tercio limpio del medio y el mostrador —lo mas claro y mas cargado
+   del cuadro— baja hasta el velo. */
+.shop-hero .hero-media img { object-position: 52% 50%; }
+/* EL VELO DE ESQUINA, encima de los dos del sistema. Los trazos
+   blancos de la cortina caen justo detras del titular: medido, "Shop" quedaba
+   en 3,04:1 contra el mas claro de ellos, o sea raspando el piso de 3:1 de
+   texto grande y sin margen para otro recorte. El lavado es radial y no lineal
+   a proposito —cae por distancia a la esquina, no por columna—, asi se apaga
+   antes de llegar a la mujer, que es el sujeto y no se toca: sobre su cara
+   suma cuatro centesimas de alfa. */
+.hero-section.shop-hero:before { background:
+  radial-gradient(120% 90% at 0% 0%, rgba(18,15,12,.62), rgba(18,15,12,.22) 42%, transparent 68%),
+  linear-gradient(rgba(18,15,12,.66), rgba(18,15,12,.12) 30%, transparent 46%),
+  linear-gradient(96deg, rgba(18,15,12,.68), rgba(18,15,12,.22) 38%, transparent 62%); }
+/* EL VELO DE ABAJO resuelve en `--ink` exacto, no en un negro traslucido. El
+   resto del sitio corta el hero contra papel, y ahi el filo es un cambio de
+   material. Aca abajo hay tinta, la misma del muro y la del footer: el borde
+   inferior de esta foto es un mostrador amarillo a plena luz, y cortado en seco
+   dejaba una franja encendida entre dos campos oscuros. Disuelto, la sala
+   empieza donde la fotografia se apaga, y el filete de `.shop-room` es lo unico
+   que marca el encuentro. */
+.hero-section.shop-hero:after,
+.category-page .hero-section:after { background: linear-gradient(transparent, rgba(37,35,31,.74) 58%, var(--ink) 94%); }
+.hero-inner { display: flex; flex-direction: column; justify-content: flex-end; gap: clamp(30px, 4vw, 52px); padding: 128px 5vw 34px; position: relative; width: 100%; z-index: 2; }
+.hero-title { color: var(--paper); font-size: clamp(56px, 10.5vw, 172px); letter-spacing: -.045em; line-height: .86; margin: 0 0 auto; max-width: 15ch; text-wrap: balance; }
+.hero-title i { color: var(--cream-300); }
+
+.hero-foot { align-items: end; display: flex; gap: clamp(24px, 5vw, 80px); justify-content: flex-end; }
+/* Las dos marcas, contra el borde derecho y justo encima del filete del indice.
+   Sin caja ni cristal: el velo del hero ya da el contraste, y una pastilla para
+   dos iconos se leeria como el resto de unas tarjetas que ya no estan. */
+.hero-social { display: flex; gap: 2px; list-style: none; margin: 0; padding: 0; }
+/* 44px de area de toque alrededor de un dibujo de 21: el area crece hacia
+   adentro del hueco que dejaron las tarjetas, no empuja nada. */
+.hero-social a { align-items: center; color: var(--cream-300); display: flex; height: 44px; justify-content: center; width: 44px; }
+.hero-social svg { height: 21px; width: 21px; }
+.hero-social a:hover, .hero-social a:focus-visible { color: var(--paper); }
+.hero-social a:focus-visible { outline: 2px solid var(--paper); outline-offset: -6px; }
+
+
+/* Ficha técnica: el registro preciso que pide la referencia, con datos reales. */
+.hero-index { border-top: 1px solid rgba(244,241,235,.22); display: flex; flex-wrap: wrap; gap: 10px 44px; margin: 0; max-width: 100%; min-width: 0; padding-top: 18px; }
+.hero-index div { align-items: baseline; display: flex; gap: 9px; min-width: 0; }
+.hero-index dt { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.hero-index dd { font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; margin: 0; }
+.hero-index-now { flex: 1; justify-content: flex-end; }
+.hero-index-now dd { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* La navegación se apoya sobre la fotografía en vez de empujarla hacia abajo. */
+body:has(.hero-section) .site-nav { background: transparent; color: var(--paper); left: 0; position: absolute; right: 0; top: 0; z-index: 6; }
+body:has(.hero-section) .site-nav .account-button,
+body:has(.hero-section) .site-nav .bag-button { color: var(--cream-200); }
+body:has(.hero-section) .site-nav .account-button:hover,
+body:has(.hero-section) .site-nav .bag-button:hover { color: var(--paper); }
+body:has(.hero-section) .site-nav .bag-button b { background: var(--paper); color: var(--ink); }
+body:has(.hero-section) .site-nav .menu-button span { background: var(--paper); }
+body:has(.hero-section) .site-nav .wordmark { color: var(--paper); }
+body:has(.hero-section) .site-nav .wordmark em { color: var(--cream-300); }
+
+/* La tienda es fondo tinta, asi que la barra baja con ella; el footer ya es
+   tinta, de modo que la pagina entra y sale sin costura visible. */
+/* Va en `html`, no en `body`: el elemento raiz ya declara scrollbar-color mas
+   arriba, y cuando lo hace, el valor de body no propaga al viewport. */
+html:has(.is-dark-room), html:has(.home), html:has(.story-page), html:has(.contact-page) { scrollbar-color: var(--footer-line) var(--ink); }
+body:has(.contact-page) .site-nav { background: var(--ink); color: var(--paper); }
+/* La tienda es sala oscura Y abre con hero, asi que las dos familias de reglas
+   la alcanzan. Todos los valores coinciden menos el fondo: sin esta guarda, la
+   barra tinta se dibujaria opaca sobre la tapa en vez de apoyarse en ella. */
+body:has(.is-dark-room):not(:has(.hero-section)) .site-nav { background: var(--ink); color: var(--paper); }
+body:has(.contact-page) .site-nav .account-button,
+body:has(.contact-page) .site-nav .bag-button { color: var(--cream-200); }
+body:has(.is-dark-room) .site-nav .account-button,
+body:has(.is-dark-room) .site-nav .bag-button { color: var(--cream-200); }
+body:has(.contact-page) .site-nav .account-button:hover,
+body:has(.contact-page) .site-nav .bag-button:hover { color: var(--paper); }
+body:has(.is-dark-room) .site-nav .account-button:hover,
+body:has(.is-dark-room) .site-nav .bag-button:hover { color: var(--paper); }
+body:has(.contact-page) .site-nav .bag-button b { background: var(--paper); color: var(--ink); }
+body:has(.is-dark-room) .site-nav .bag-button b { background: var(--paper); color: var(--ink); }
+body:has(.contact-page) .site-nav .menu-button span { background: var(--paper); }
+body:has(.is-dark-room) .site-nav .menu-button span { background: var(--paper); }
+body:has(.contact-page) .site-nav .wordmark { color: var(--paper); }
+body:has(.is-dark-room) .site-nav .wordmark { color: var(--paper); }
+body:has(.contact-page) .site-nav .wordmark em { color: var(--cream-300); }
+body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
+
+/* Los enlaces de navegacion cambian de superficie segun el ancho: arriba de
+   700px viven en la barra —que en estas paginas es tinta, asi que van en crema—
+   y abajo viven dentro del drawer, que es un panel de PAPEL en todas las
+   paginas por igual. Por eso el color de barra oscura se declara solo para
+   pantalla ancha, en vez de declararse siempre y despues taparse pagina por
+   pagina en el drawer.
+
+   Ese "pagina por pagina" era el bug: el drawer enumeraba `hero-section` y
+   `is-dark-room` pero nadie se acordo de `contact-page`, asi que en /contact los
+   enlaces se dibujaban en crema sobre papel y quedaban ilegibles. Con el corte
+   por ancho no hay lista que mantener: cualquier pagina oscura que se agregue
+   manana hereda el drawer correcto sin tocar nada. */
+@media (min-width: 701px) {
+  body:has(.hero-section) .site-nav .nav-links a,
+  body:has(.contact-page) .site-nav .nav-links a,
+  body:has(.is-dark-room) .site-nav .nav-links a { color: var(--cream-200); }
+  body:has(.hero-section) .site-nav .nav-links a:hover,
+  body:has(.contact-page) .site-nav .nav-links a:hover,
+  body:has(.is-dark-room) .site-nav .nav-links a:hover { color: var(--paper); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-reduced-motion: no-preference) {
+  /* Entrada del hero: la fotografía se asienta y el título sube por líneas.
+     Todo parte de un estado visible, así que si algo falla no queda vacío. */
+  .hero-media { animation: hero-settle 2600ms var(--ease-drift) both; }
+  .hero-title { animation: hero-rise 1100ms 80ms var(--ease-drift) both; }
+  .hero-foot { animation: hero-rise 1100ms 260ms var(--ease-drift) both; }
+  .hero-index { animation: hero-rise 1100ms 400ms var(--ease-drift) both; }
+  .hero-social a { transition: color var(--dur-base) var(--ease); }
+}
+@keyframes hero-settle { from { transform: scale(1.11); } to { transform: none; } }
+@keyframes hero-rise { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+/* --- Portada: la sala oscura no se corta en el hero ------------------------
+   El hero abre sobre tinta, con la fotografia a sangre bajo un velo y el tipo
+   en papel. Debajo, la portada se volvia un folleto crema de tarjetas iguales
+   —justo el arreglo que el usuario ya habia rechazado en la tienda— mientras
+   /shop y /about ya viven sobre tinta. Asi que la sala oscura sigue hasta el
+   footer, que tambien es tinta: una sola superficie de arriba a abajo.
+
+   Cada franja usa un dispositivo distinto para no repetir el hero tres veces:
+   el archivo por pais va a sangre con el rotulo SOBRE la obra, la seleccion va
+   contenida con el rotulo DEBAJO, y el cierre es solo tipografia. */
+.home { background: var(--ink); color: var(--cream-200); }
+.home-section { padding: clamp(78px, 9vw, 132px) 5vw; }
+/* Filete solo ENTRE franjas: el hero entrega su propio borde de sombra. */
+.home-section + .home-section { border-top: 1px solid rgba(244,241,235,.16); }
+.home h2 { color: var(--paper); margin-bottom: 0; }
+/* Sobre tinta el acento terracota se apaga (--accent-text mide 1.9:1 contra
+   --ink). La italica de la portada toma el mismo crema que la del hero. */
+.home h2 i { color: var(--cream-300); }
+.home .text-link { border-bottom-color: rgba(244,241,235,.34); color: var(--paper); margin-bottom: 0; }
+.home .text-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* --- Portada · el archivo por pais ---------------------------------------- */
+/* La franja de obra sangra de borde a borde, asi que el padding lateral de la
+   seccion se anula aca y lo recupera cada encabezado. */
+.home-roll { padding-left: 0; padding-right: 0; }
+.home-chapter { position: relative; --mast: clamp(64px, 10.6vw, 152px); }
+.home-chapter + .home-chapter { margin-top: clamp(72px, 9vw, 132px); }
+/* Alineado por arriba, no por la base: el relato tiene que quedar por encima
+   de la zona donde el nombre del pais se monta sobre la obra. */
+.home-chapter-head { align-items: start; display: flex; gap: 20px clamp(32px, 5vw, 90px); justify-content: space-between; padding: 0 5vw; position: relative; z-index: 2; }
+.home-chapter-mark { min-width: 0; }
+/* El nombre del pais es un mastil de revista: entra a escala de titular y
+   cruza el borde superior de su propia franja, mitad sobre tinta y mitad
+   sobre la fotografia. Se queda por debajo del hero a proposito —172px alli,
+   152px aca— para que la portada siga teniendo una sola voz principal. */
+.home-chapter-mark h2 { font-size: var(--mast); letter-spacing: -.045em; line-height: .82; }
+/* Cifra del archivo, no rotulo decorativo: va DEBAJO del nombre del pais. */
+.home-chapter-count { color: var(--cream-200); font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin: 18px 0 0; text-transform: uppercase; }
+.home-chapter-note { color: var(--cream-200); font-size: 15.5px; line-height: 1.78; margin: 0; max-width: 46ch; }
+/* Capitulo espejado: el nombre pasa al otro borde y la obra que pesa lo sigue.
+   `row-reverse` invierte lo visual sin tocar el orden del DOM, asi que un
+   lector de pantalla sigue oyendo primero el pais y despues sus obras. */
+.home-chapter[data-mirrored] .home-chapter-head { flex-direction: row-reverse; }
+.home-chapter[data-mirrored] .home-chapter-mark { text-align: right; }
+.home-chapter[data-mirrored] .home-wall { flex-direction: row-reverse; }
+/* Costuras de 2px, como el muro de la tienda: las obras se tocan, no flotan.
+   El margen negativo lo mide el propio mastil, asi que el cruce es la misma
+   fraccion de letra en un movil que en un monitor. */
+/* `z-index: 0` no es decorativo: abre un contexto de apilado propio y encierra
+   el velo dentro del muro. Sin el, el velo (z-index 4) competia con la cabecera
+   (z-index 2) en el mismo contexto y apagaba el nombre del pais justo en la
+   mitad que se monta sobre la obra. */
+.home-wall { display: flex; gap: 2px; margin-top: calc(var(--mast) * -.52); position: relative; z-index: 0; }
+/* Velo alto: sostiene el nombre del pais y su cifra sobre la fotografia. Es
+   absoluto, asi que no entra como item del flex. */
+.home-wall:before { background: linear-gradient(rgba(18,15,12,.74), rgba(18,15,12,.34) 46%, transparent); content: ''; height: calc(var(--mast) * .92); left: 0; pointer-events: none; position: absolute; right: 0; top: 0; z-index: 4; }
+.home-plate { flex: var(--weight, 1) 1 0; height: clamp(340px, 42vw, 660px); min-width: 0; overflow: hidden; position: relative; }
+.home-wall[data-count="1"] .home-plate { height: clamp(360px, 48vw, 720px); }
+/* Sobresale 14px del recorte: sin ese margen, el desenfoque del revelado
+   chupa pixeles transparentes del borde y deja un halo oscuro alrededor. */
+.home-plate-image { background-position: center; background-size: cover; inset: -14px; position: absolute; }
+/* Telon de tinta: es lo que levanta el revelado al hacer scroll. En reposo es
+   invisible, asi que donde no hay soporte la obra se ve normal. */
+.home-plate:before { background: var(--ink); content: ''; inset: 0; opacity: 0; position: absolute; z-index: 1; }
+/* Velo con direccion: sube desde abajo, donde va el rotulo. */
+.home-plate:after { background: linear-gradient(to top, rgba(20,17,12,.88) 0%, rgba(20,17,12,.30) 46%, transparent 76%); content: ''; inset: 0; position: absolute; z-index: 2; }
+.home-plate-body { bottom: 0; display: flex; flex-direction: column; gap: 9px; left: 0; padding: 22px clamp(18px, 1.6vw, 26px); position: absolute; right: clamp(38px, 3.4vw, 52px); z-index: 3; }
+.home-plate-body small { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+/* Los titulos del archivo son largos de verdad ("A Walk Along Red Walls: A
+   Quiet Moment in Hanoi"): tres lineas y corta, como la tarjeta del hero. */
+.home-plate-name { color: var(--paper); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-family: var(--font-heading); font-size: clamp(17px, 1.35vw, 23px); letter-spacing: -.018em; line-height: 1.22; overflow: hidden; text-wrap: balance; }
+.home-plate-go { bottom: 24px; color: var(--cream-300); font-size: 15px; position: absolute; right: clamp(18px, 1.6vw, 26px); z-index: 3; }
+.home-plate:hover .home-plate-go, .home-plate:focus-visible .home-plate-go { color: var(--paper); }
+/* Anillo hacia adentro: las obras tocan el borde de la pantalla. */
+.home-plate:focus-visible { outline: 2px solid var(--paper); outline-offset: -3px; }
+
+/* --- Portada · la seleccion del mes ---------------------------------------- */
+/* Sin nada al lado del titular, el reparto en fila ya no reparte nada: queda
+   el filete, que es lo que separa el encabezado de las obras. */
+.home-pick-head { border-bottom: 1px solid rgba(244,241,235,.22); padding-bottom: 20px; }
+.home-pick-head h2 { font-size: clamp(36px, 5vw, 84px); letter-spacing: -.036em; line-height: .9; max-width: 17ch; text-wrap: balance; }
+/* Contenida, y con un primer nombre: la obra que abre ocupa su propia columna
+   a la altura de las otras dos juntas. La segunda columna se estira sola hasta
+   igualar a la primera, asi que la fila cierra pareja sin medidas a mano. */
+.home-picks { display: grid; gap: clamp(18px, 2.4vw, 36px); grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr); margin-top: clamp(36px, 4.4vw, 64px); }
+.home-picks[data-count="1"] { grid-template-columns: minmax(0, 620px); }
+.home-pick-rest { display: grid; gap: clamp(18px, 2.4vw, 36px); grid-template-rows: 1fr 1fr; min-height: 0; }
+.home-pick-link { display: block; min-width: 0; }
+.home-pick-frame { display: block; overflow: hidden; }
+.home-pick-image { background-position: center; background-repeat: no-repeat; background-size: cover; display: block; filter: brightness(.94); width: 100%; }
+.home-pick-lead .home-pick-image { aspect-ratio: 4 / 4.5; }
+/* En la columna de al lado la obra no lleva proporcion propia: toma la altura
+   que le sobra a la fila, que es lo que la empareja con la obra que abre. */
+.home-pick-rest .home-pick-link { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; }
+.home-pick-rest .home-pick-frame { min-height: 0; }
+.home-pick-rest .home-pick-image { height: 100%; min-height: 150px; }
+.home-pick-link:hover .home-pick-image, .home-pick-link:focus-visible .home-pick-image { filter: brightness(1); }
+/* Rotulo DEBAJO de la obra y sobre un filete: lo contrario del archivo por
+   pais, donde el rotulo se apoya encima. */
+.home-pick-caption { border-top: 1px solid rgba(244,241,235,.18); display: grid; gap: 7px; margin-top: 15px; padding-top: 13px; }
+.home-pick-caption small { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.home-pick-name { color: var(--paper); font-family: var(--font-heading); font-size: clamp(16px, 1.3vw, 21px); letter-spacing: -.015em; line-height: 1.25; text-wrap: balance; }
+.home-pick-link:hover .home-pick-caption, .home-pick-link:focus-visible .home-pick-caption { border-top-color: var(--accent); }
+.home-pick-link:focus-visible { outline: 2px solid var(--paper); outline-offset: 5px; }
+
+/* --- Portada · el cierre --------------------------------------------------- */
+/* Sin fotografia: la unica franja de la portada que es solo voz. La imagen que
+   habia aca era stock de Unsplash, y el sitio solo muestra obra propia. */
+.home-colophon { align-items: start; padding-bottom: clamp(54px, 6vw, 88px); display: grid; gap: clamp(28px, 4vw, 72px); grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); }
+.home-colophon h2 { font-size: clamp(46px, 8.4vw, 126px); letter-spacing: -.044em; line-height: .86; max-width: 11ch; }
+/* La segunda linea entra sangrada: la frase se lee en dos tiempos, que es como
+   esta escrita ("Viajar lento." / "Mirar mejor."). */
+.home-colophon h2 i { display: inline-block; margin-left: .14em; }
+.home-colophon p { color: var(--cream-200); font-size: 16px; line-height: 1.8; margin: 0 0 30px; max-width: 46ch; }
+.home-colophon-copy { padding-top: clamp(6px, 1vw, 14px); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Se mueve la fotografia dentro de su marco; el marco no se mueve. */
+  .home-plate-image, .home-pick-image { transition: filter var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease); }
+  .home-plate:hover .home-plate-image, .home-plate:focus-visible .home-plate-image { transform: scale(1.05); }
+  .home-pick-link:hover .home-pick-image, .home-pick-link:focus-visible .home-pick-image { transform: scale(1.03); }
+  .home-plate-go { transition: color var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
+  .home-plate:hover .home-plate-go, .home-plate:focus-visible .home-plate-go { transform: translate(3px, -3px); }
+  .home-pick-caption { transition: border-color var(--dur-base) var(--ease); }
+  .home .text-link { transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+}
+
+/* El momento de la portada, y el unico: bajar por la pagina es abrir la sala.
+   Cada obra entra todavia tapada por un telon de tinta que se levanta con el
+   scroll —timeline nativa, sin JavaScript ni observadores— asi que la portada
+   se revela igual que se revela una copia. El reposo es la obra VISIBLE: donde
+   `view()` no existe, o con movimiento reducido, no pasa nada y se ve todo. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* La linea de tiempo se nombra en la obra y se consume desde su telon.
+       `view()` a secas no sirve aca: el `overflow: hidden` que recorta el zoom
+       convierte a la propia obra en contenedor de scroll, asi que un hijo suyo
+       mide contra un contenedor que no se mueve y la animacion nace terminada.
+       Nombrada en `.home-plate`, mide contra la pagina, que es lo que scrollea. */
+    .home-plate { view-timeline-name: --plate; }
+    .home-plate:before,
+    .home-plate-image {
+      animation: plate-unveil linear both;
+      animation-timeline: --plate;
+      animation-range: entry 4% entry 88%;
+    }
+    /* La obra no aparece: se revela. Sale de foco y sin luz, y termina de
+       fijarse justo cuando entra entera en pantalla. El desenfoque va en
+       `filter` y el hover en `transform`, en propiedades distintas, porque una
+       animacion de scroll con relleno le gana a cualquier transicion. */
+    .home-plate-image { animation-name: plate-develop; }
+  }
+}
+@keyframes plate-unveil { from { opacity: .94; } to { opacity: 0; } }
+@keyframes plate-develop {
+  from { filter: blur(9px) brightness(.45) contrast(1.14); }
+  to { filter: none; }
+}
+
+@media (max-width: 1100px) {
+  /* A este ancho la columna de al lado quedaba en tiras: la obra que abre pasa
+     a ocupar el ancho entero y las otras dos se reparten la fila de abajo. */
+  .home-picks, .home-picks[data-count="1"] { grid-template-columns: 1fr; }
+  .home-pick-lead .home-pick-image { aspect-ratio: 16 / 10; }
+  .home-pick-rest { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+  .home-pick-rest .home-pick-image { aspect-ratio: 4 / 5; height: auto; }
+}
+
+@media (max-width: 900px) {
+  /* --- La escala chica no es la grande achicada ----------------------------
+     En pantalla ancha el titular del hero mide 172px y el nombre del pais 152:
+     el hero manda y el capitulo lo sigue. Al bajar, el titular del hero se topa
+     con su propio limite (51px en un movil de 390) mientras el mastil se
+     quedaba en su piso de 64, asi que el capitulo terminaba gritando mas fuerte
+     que la portada. Aca abajo la escalera se vuelve a armar entera y sale de un
+     ancho de pantalla, no de un piso fijo, para que ninguna medida se despegue
+     del titular que tiene al lado. */
+  .home-chapter { --mast: clamp(36px, 8vw, 70px); }
+  .home-colophon h2 { font-size: clamp(33px, 7.4vw, 62px); letter-spacing: -.032em; }
+  .home-pick-head h2 { font-size: clamp(27px, 5.6vw, 46px); }
+  /* Apilado, espejar pondria el relato encima de su propio pais. */
+  .home-chapter-head, .home-chapter[data-mirrored] .home-chapter-head { align-items: stretch; flex-direction: column; gap: 14px; }
+  .home-chapter[data-mirrored] .home-chapter-mark { text-align: left; }
+  .home-chapter-count { margin-top: 12px; }
+  /* El velo alto solo existia para sostener el mastil sobre la obra. Sin cruce
+     no sostiene nada: seria una sombra sin causa en el borde de la fotografia. */
+  .home-wall:before { display: none; }
+  /* Apilada la cabecera, el mastil queda lejos del borde de la obra: cruzarlo
+     ya no recortaria el nombre del pais sino el relato, que es lo unico que no
+     puede permitirse quedar a medias sobre una fotografia. */
+  .home-wall { margin-top: clamp(18px, 3.4vw, 28px); }
+  /* La franja deja de ser una fila con pesos y pasa a ser grilla: a este ancho
+     cuatro columnas dejaban tiras de 90px. */
+  .home-wall, .home-chapter[data-mirrored] .home-wall { display: grid; grid-template-columns: 1fr 1fr; }
+  .home-wall[data-count="3"] > :first-child { grid-column: 1 / -1; }
+  .home-plate, .home-wall[data-count="1"] .home-plate { height: clamp(250px, 36vw, 360px); }
+  .home-wall[data-count="3"] > :first-child, .home-wall[data-count="1"] .home-plate { height: clamp(280px, 44vw, 420px); }
+  .home-colophon { grid-template-columns: 1fr; padding-bottom: clamp(38px, 5vw, 62px); }
+  .home-colophon h2 { max-width: 16ch; }
+  .home-colophon p { margin-bottom: 24px; }
+  /* Sin puntero no hay hover que descubra un enlace: el area de toque sube a
+     44px hacia ARRIBA, que es espacio vacio, para no despegar el subrayado de
+     su propia palabra ni mover nada de sitio. */
+  .home .text-link { align-items: flex-end; min-height: 44px; }
+}
+
+@media (max-width: 700px) {
+  /* En una mano la portada se lee de corrido; no se recorre de pie frente a una
+     pared. El aire entre franjas baja de 66 a ~50px: el capitulo respira sin
+     pedir dos pulgares de scroll para cruzar un hueco vacio. */
+  .home-section { padding: clamp(48px, 11vw, 64px) 7vw; }
+  .home-plate-body { gap: 7px; padding-bottom: 18px; padding-left: 7vw; padding-top: 18px; right: calc(7vw + 34px); }
+  /* Baja el cuerpo, no el numero de lineas: a 15,5px los titulos largos del
+     archivo entran enteros en tres, y cortar el nombre de una obra con puntos
+     suspensivos seria perder justamente lo que el rotulo esta ahi para decir. */
+  .home-plate-name { font-size: 15.5px; }
+  .home-plate-go { bottom: 19px; right: 7vw; }
+  .home-roll { padding-left: 0; padding-right: 0; }
+  .home-chapter + .home-chapter { margin-top: clamp(52px, 11vw, 76px); }
+  .home-chapter-head { padding: 0 7vw; }
+  .home-chapter-note { font-size: 15px; line-height: 1.72; }
+  .home-wall, .home-chapter[data-mirrored] .home-wall { grid-template-columns: 1fr; }
+  .home-wall[data-count="3"] > :first-child { grid-column: auto; }
+  /* Una obra por fila a ancho completo: la altura sale del ancho de la pantalla
+     y no de un piso fijo, asi que el recorte es el mismo en un 390 y en un 430. */
+  .home-plate, .home-wall[data-count="1"] .home-plate, .home-wall[data-count="3"] > :first-child { height: clamp(230px, 66vw, 310px); }
+  .home-pick-head { padding-bottom: 16px; }
+  .home-picks { margin-top: clamp(24px, 6vw, 34px); }
+  .home-pick-rest { grid-template-columns: 1fr; }
+  /* Apiladas las tres en una columna, la jerarquia de la seleccion solo puede
+     vivir en el tamano: la que abre queda vertical y las otras dos cuadradas. */
+  .home-pick-lead .home-pick-image { aspect-ratio: 4 / 5; }
+  .home-pick-rest .home-pick-image { aspect-ratio: 1 / 1; }
+  .home-pick-caption { margin-top: 12px; padding-top: 11px; }
+  .home-pick-name { font-size: 15px; }
+}
+
+h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-weight: 500; letter-spacing: -.028em; line-height: .96; margin-bottom: 55px; }
+.text-link { border-bottom: 1px solid var(--ink); display: inline-flex; font-size: 12px; gap: 25px; margin-bottom: 57px; padding-bottom: 7px; }
+/* --- Tienda: la sala oscura -----------------------------------------------
+   La unica pagina del sitio sobre fondo tinta. Cuatro paneles fotograficos a
+   sangre cuyo ANCHO es la cantidad de obras de cada coleccion (5 · 7 · 8 · 21):
+   cuatro tarjetas iguales dirian que pesan lo mismo, y no. Al recorrer un
+   panel, este se expande para dar lugar a la prosa de autor. */
+/* La sala arranca donde termina el hero, asi que ya no lleva cabecera propia:
+   el nombre y las cifras viven sobre la tapa, como en el resto del sitio. Un
+   filete arriba y otro abajo la cierran contra el hero y contra el footer, que
+   son las dos superficies tinta con las que se encuentra. 88svh, no 100: el
+   muro se detiene antes del borde para que asome el filo del footer y la sala
+   tenga fondo visible en vez de parecer otra pantalla completa. */
+.shop-room { background: var(--ink); border-bottom: 1px solid var(--footer-line); border-top: 1px solid var(--footer-line); color: var(--paper); display: flex; flex-direction: column; min-height: 88svh; }
+.shop-room-empty { color: var(--footer-link); font-size: 15px; padding: 62px 5vw 90px; }
+/* El esqueleto vive en la sala oscura: un blanco casi puro seria un fogonazo,
+   y tinta sobre tinta no se ve. Un lavado del propio filete del footer. */
+.shop-ghost { background: rgba(244, 241, 235, .07); }
+.shop-plate.shop-ghost { background: rgba(244, 241, 235, .09); }
+
+/* A sangre a proposito: el tipo entra 5vw, la fotografia toca el borde. */
+.shop-room-wall { display: flex; flex: 1; gap: 2px; min-height: 0; }
+
+.shop-plate { display: flex; flex: var(--weight, 1) 1 0; min-height: 430px; min-width: 82px; overflow: hidden; position: relative; }
+/* El padding vive acá adentro, no en el flex item: sobre el item se repartia
+   antes que los pesos y aplastaba la proporcion real del catalogo. */
+.shop-plate-body { align-items: flex-end; display: flex; gap: 20px; inset: 0; padding: 26px 22px; position: absolute; z-index: 2; }
+/* Anillo hacia adentro: los paneles tocan el borde de la pantalla, y uno hacia
+   afuera se dibujaria fuera del area pintable. */
+.shop-plate:focus-visible { outline: 2px solid var(--paper); outline-offset: -3px; }
+.shop-plate-image { object-fit: cover; }
+/* Velo con direccion: la tinta sube desde abajo, donde va el texto. */
+.shop-plate:before { background: linear-gradient(to top, rgba(37,35,31,.88) 0%, rgba(37,35,31,.34) 46%, rgba(37,35,31,.12) 100%); content: ''; inset: 0; position: absolute; z-index: 1; }
+
+
+/* En vertical-rl el eje inline es el vertical: un flex `row` apilaria el
+   nombre y la cifra uno debajo del otro y el lomo creceria hasta desbordar el
+   panel. `column` los pone como dos columnas paralelas, y entonces el alto del
+   lomo es el del texto mas largo, no la suma. */
+.shop-plate-spine { align-items: flex-start; display: flex; flex: none; flex-direction: column; gap: 12px; min-height: 0; transform: rotate(180deg); writing-mode: vertical-rl; }
+.shop-plate-name { color: var(--paper); font-family: var(--font-heading); font-size: clamp(24px, 2.8vw, 44px); letter-spacing: -.02em; line-height: 1; }
+.shop-plate-count { color: var(--cream-300); font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; font-variant-numeric: tabular-nums; text-transform: uppercase; }
+/* En reposo el texto es invisible pero sigue ocupando lugar: en el panel mas
+   angosto la prosa se envolvia en una columna altisima, estiraba la linea flex
+   y empujaba el lomo fuera del panel. Acotarlo al alto del panel lo evita. */
+.shop-plate-line { color: var(--cream-200); flex: 1 1 0; font-size: 13.5px; line-height: 1.62; max-height: 100%; max-width: 42ch; min-height: 0; min-width: 0; overflow: hidden; padding-bottom: 4px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .shop-plate { transition: flex-grow var(--dur-base) var(--ease); }
+  .shop-plate-image { transition: filter var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease); }
+  .shop-plate-line { transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
+}
+
+/* El momento autoral de la pagina: el muro redistribuye. El panel que mirás
+   se abre para que quepa su texto y los otros ceden ancho, sin dejar de
+   mostrar su proporcion real. Solo donde hay hover de verdad. */
+@media (hover: hover) and (min-width: 901px) {
+  .shop-plate-image { filter: brightness(.58) saturate(.86); }
+  .shop-plate-line { opacity: 0; transform: translateY(10px); }
+  .shop-plate:hover, .shop-plate:focus-visible { flex-grow: calc(var(--weight, 1) + 20); }
+  .shop-plate:hover .shop-plate-image,
+  .shop-plate:focus-visible .shop-plate-image { filter: brightness(.92) saturate(1); transform: scale(1.03); }
+  .shop-plate:hover .shop-plate-line,
+  .shop-plate:focus-visible .shop-plate-line { opacity: 1; transform: none; }
+}
+/* Sin hover el texto no se esconde nunca: en tactil no habria forma de leerlo. */
+@media not all and (hover: hover) {
+  .shop-plate-image { filter: brightness(.5) saturate(.9); }
+}
+@media (hover: none) and (min-width: 901px) {
+  .shop-plate-line { display: none; }
+}
+
+/* Apilada, la proporcion pasa del ancho al alto: la misma cifra, otro eje.
+   La altura sale de la misma cifra que el ancho en desktop, de modo que 5·7·8·21
+   sigue leyendose apilado. El lomo vuelve a la horizontal porque en una franja
+   baja el texto vertical no entra. */
+@media (max-width: 900px) {
+  .shop-room-wall { flex-direction: column; gap: 2px; min-height: 0; }
+  /* En columna el lomo y la prosa se apilan: sin hover, el texto de autor no
+     puede depender de un gesto que en tactil no existe, asi que se lee siempre. */
+  /* La altura es del panel: es la que lleva la proporcion del catalogo.
+     El envoltorio solo apila el lomo sobre la prosa. */
+  .shop-plate {
+    align-items: flex-end;
+    flex: none;
+    /* Proporcion pura: 40px por obra da 200 · 280 · 320 · 840, o sea
+       1 : 1,4 : 1,6 : 4,2. Es `min-height`, no `height`, para que un nombre
+       largo o un cuerpo de texto mas grande empujen la banda en vez de que
+       se corten en silencio. */
+    min-height: calc(var(--weight, 1) * 40px);
+    min-width: 0;
+    /* La imagen es `fill`, o sea que ya esta acotada al panel: recortar no
+       hace falta, y `hidden` convertiria el panel en contenedor de scroll,
+       que es justo lo que dejaria muerto al `sticky` de abajo. */
+    overflow: visible;
+  }
+  /* En el flujo, no absoluto: asi el texto puede crecer y la banda lo sigue. */
+  .shop-plate-body {
+    align-items: stretch;
+    bottom: 0;
+    flex-direction: column;
+    gap: 10px;
+    inset: auto;
+    justify-content: flex-end;
+    /* Portrait ocupa casi una pantalla entera. Sin esto, su nombre aparece
+       recien al final del panel y la mayor parte del recorrido es fotografia
+       sin identificar. Viaja con el scroll; la proporcion no se toca. */
+    position: sticky;
+    width: 100%;
+  }
+  /* La franja es baja: el texto cae sobre la zona clara de la foto, donde el
+     velo del panel ancho ya no alcanza. Sube densidad y llega mas arriba. */
+  .shop-plate:before { background: linear-gradient(to top, rgba(37,35,31,.93) 0%, rgba(37,35,31,.66) 58%, rgba(37,35,31,.26) 100%); }
+  /* El velo va sobre el bloque de texto mismo, que mide lo que mide su
+     contenido. Con altura fija en px terminaba siendo mas alto que la banda
+     mas angosta y se comia la fotografia entera. */
+  .shop-plate-body { background: linear-gradient(to top, rgba(37,35,31,.95) 0%, rgba(37,35,31,.9) 64%, rgba(37,35,31,0) 100%); }
+  .shop-plate-count { color: var(--cream-200); }
+  .shop-plate-body { padding: 20px 6vw 22px; }
+  .shop-plate-spine { align-items: flex-start; flex-direction: column; gap: 5px; max-height: none; overflow: visible; transform: none; writing-mode: horizontal-tb; }
+  .shop-plate-name { font-size: 30px; }
+  .shop-plate-line {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    flex: none;
+    font-size: 13px;
+    max-width: 46ch;
+    overflow: hidden;
+    padding-bottom: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Entre 901 y 1100 los cuatro paneles conviven pero el mas angosto no aguanta
+   el lomo vertical completo, asi que la cifra se retira y queda el nombre. */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .shop-plate-count { display: none; }
+}
+/* --- Coleccion: la sala continua -------------------------------------------
+   La pagina de categoria NO vuelve al papel. Sigue en tinta, la misma de /shop
+   y la del footer, asi que home → tienda → coleccion se recorre como un solo
+   espacio en vez de tres materiales distintos. El hero es la puerta; esto es la
+   sala. La barra ya baja a tinta sola por `.is-dark-room`. */
+.category-page { background: var(--ink); }
+.category-room { background: var(--ink); color: var(--paper); padding: 0 0 clamp(96px, 11vw, 190px); }
+
+/* El cartel de sala. La voz del autor primero y grande; la ficha de impresion
+   al costado, en mono, del tamano de una etiqueta. */
+.room-entry { display: grid; gap: clamp(38px, 5vw, 88px); grid-template-columns: minmax(0, 1fr) auto; margin: 0 auto; max-width: 1280px; padding: clamp(70px, 8vw, 128px) 5vw clamp(64px, 7vw, 112px); }
+.room-statement { max-width: 64ch; min-width: 0; }
+.room-statement-lead { color: var(--paper); font-family: var(--font-heading); font-size: clamp(25px, 3vw, 42px); font-weight: 500; letter-spacing: -.025em; line-height: 1.14; margin: 0; text-wrap: pretty; }
+.room-statement-rest { color: var(--cream-200); font-size: 15.5px; line-height: 1.82; margin: clamp(22px, 2.6vw, 34px) 0 0; }
+
+/* El precio es identico en las 41 obras del archivo, asi que no es un dato de
+   la obra: es una condicion de la sala. Va una vez, en la pared, no repetido
+   veintiuna veces debajo de cada fotografia. */
+.room-editions { border-top: 1px solid var(--footer-line); min-width: 210px; padding-top: 15px; }
+.room-editions h2 { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; font-weight: 400; letter-spacing: .12em; line-height: 1.4; margin: 0 0 15px; text-transform: uppercase; }
+.room-editions dl { display: flex; flex-direction: column; gap: 9px; margin: 0; }
+.room-editions div { display: flex; gap: 20px; justify-content: space-between; }
+.room-editions dt { color: var(--footer-link); font-family: var(--font-mono); font-size: 11px; }
+.room-editions dd { color: var(--paper); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; margin: 0; }
+
+/* El colgado. Cada pared es un par de obras cuyo ancho es su propia proporcion:
+   por eso las dos miden lo mismo de alto y ninguna se recorta. Las paredes
+   entran alternadamente por un lado y por el otro, y cada tercera obra cuelga
+   sola. Nada de esto es decoracion: el ritmo sale de la forma real del cuadro,
+   igual que el ancho de los paneles de /shop sale de la cantidad de obras. */
+.room-hang { display: flex; flex-direction: column; gap: clamp(74px, 9vw, 158px); margin: 0 auto; max-width: 1280px; padding: 0 5vw; }
+.hang-wall { display: flex; gap: clamp(26px, 3.4vw, 62px); }
+.hang-wall[data-lean="left"] { padding-right: clamp(0px, 9vw, 128px); }
+.hang-wall[data-lean="right"] { padding-left: clamp(0px, 9vw, 128px); }
+/* El ancho de una obra sola sale de su proporcion: a un ancho fijo, una
+   vertical 2:3 medira pantalla y media de alto y una 16:9 se quedara chica. */
+.hang-wall[data-solo] { justify-content: center; padding: 0; }
+.hang-wall[data-solo] .hang-plate { flex: none; width: var(--span, 62%); }
+
+/* `flex: var(--ratio) 1 0` reparte el ancho en proporcion a la forma de cada
+   obra, de modo que ancho/proporcion —o sea el alto— da igual para las dos.
+   Es la unica manera de alinear un 3:2 con un 2:3 sin recortar ninguno. */
+.hang-plate { display: block; flex: var(--ratio, 1) 1 0; min-width: 0; }
+/* Y la segunda del par baja: es un colgado, no una fila de planilla. */
+.hang-plate { margin-top: calc(var(--drop, 0) * clamp(26px, 4vw, 74px)); }
+.hang-frame { background: rgba(244, 241, 235, .05); display: block; overflow: hidden; position: relative; width: 100%; aspect-ratio: var(--ratio, 1.5); }
+.hang-image { object-fit: cover; }
+.hang-plate:focus-visible { outline: none; }
+.hang-plate:focus-visible .hang-frame { outline: 2px solid var(--paper); outline-offset: 4px; }
+
+/* La cartela va debajo del cuadro, nunca encima. Una sala no imprime el titulo
+   sobre la obra, y el principio del sitio es que nada compita con la imagen. */
+.hang-label { display: grid; gap: 3px 14px; grid-template-columns: auto minmax(0, 1fr); padding-top: 15px; }
+.hang-index { color: var(--footer-muted); font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; grid-row: span 2; line-height: 1.5; }
+.hang-name { color: var(--paper); font-family: var(--font-heading); font-size: clamp(15px, 1.3vw, 18px); font-weight: 500; letter-spacing: -.012em; line-height: 1.28; text-wrap: pretty; }
+.hang-place { color: var(--cream-300); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hang-image { transition: transform var(--dur-slow) var(--ease), filter var(--dur-slow) var(--ease); }
+  .hang-name { transition: color var(--dur-base) var(--ease); }
+}
+/* En reposo la obra esta un punto por debajo de su luz plena; al acercarse,
+   sube. Es la sala encendiendose sobre el cuadro que estas mirando, el mismo
+   gesto que el muro de /shop, no un zoom de tarjeta. */
+@media (hover: hover) {
+  .hang-image { filter: brightness(.88); }
+  .hang-plate:hover .hang-image,
+  .hang-plate:focus-visible .hang-image { filter: brightness(1.04); transform: scale(1.025); }
+  .hang-plate:hover .hang-name { color: var(--cream-300); }
+}
+
+/* La sala vacia: mismo material, sin fotografia que colgar. */
+.room-empty { border-top: 1px solid var(--footer-line); margin: 0 auto; max-width: 1280px; padding: clamp(44px, 6vw, 76px) 5vw clamp(30px, 4vw, 48px); }
+.room-empty-title { color: var(--paper); font-family: var(--font-heading); font-size: clamp(25px, 3vw, 40px); font-weight: 500; letter-spacing: -.025em; line-height: 1.12; margin: 0 0 16px; max-width: 20ch; }
+.room-empty-body { color: var(--cream-200); font-size: 15px; line-height: 1.75; margin: 0 0 30px; max-width: 52ch; }
+.room-empty-link { border-bottom: 1px solid var(--footer-line); color: var(--paper); display: inline-flex; font-size: 12px; gap: 25px; padding-bottom: 7px; }
+.room-empty-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 900px) {
+  .room-entry { grid-template-columns: minmax(0, 1fr); }
+  .room-editions { max-width: 340px; }
+}
+/* Angosto, una obra por pared: dos verticales en 390px darian 170px de ancho y
+   la cartela no entraria. El escalonado tambien se apaga, porque en una sola
+   columna no escalona nada, solo abre un hueco. */
+@media (max-width: 700px) {
+  .hang-wall, .hang-wall[data-lean="left"], .hang-wall[data-lean="right"] { flex-direction: column; gap: clamp(52px, 11vw, 76px); padding: 0; }
+  .hang-plate, .hang-wall[data-solo] .hang-plate { margin-top: 0; width: 100%; }
+}
+/* --- La obra: mirar y comprar en la misma pantalla -------------------------
+   Dos materiales, dos trabajos. La obra cuelga en el mismo campo de tinta del
+   que venis —/shop y la coleccion—, entera y lo mas grande que entre. Al lado,
+   sobre papel, el mostrador: elegir tamano y comprar. El papel no es un capricho
+   de contraste, es literalmente lo que estas comprando.
+
+   Antes esta pagina era crema, la obra medía 360 x 540 px dentro de una caja
+   fija con paspartu —mas chica que su propio titulo— y el selector de tamano
+   vivia debajo de 1.400 caracteres de descripcion, fuera del primer viewport.
+   En la unica pagina cuyo trabajo es vender una copia, comprar no se veia. */
+.work-page { background: var(--paper); }
+.work-view { align-items: stretch; background: var(--ink); display: grid; grid-template-columns: minmax(0, 1fr) clamp(340px, 30vw, 452px); }
+
+/* El campo. El alto lo pone la pantalla; el ancho de la obra sale de su
+   proporcion real, asi que una 3:2 y una 2:3 llenan el mismo hueco sin que a
+   ninguna haya que recortarla. */
+/* El campo toma lo que queda de pantalla debajo de la barra, y el margen es el
+   justo: la tinta alrededor ya es el paspartu, no hace falta sumarle relleno.
+   Abajo lleva mas aire porque ahi vive la lupa. */
+.plate-field { align-items: center; background: var(--ink); display: flex; justify-content: center; min-height: calc(100svh - 88px); padding: clamp(24px, 3vw, 46px) clamp(24px, 3vw, 58px) clamp(56px, 5vw, 78px); position: relative; }
+/* El marco toma el campo entero y el encuadre lo hace `object-fit: contain`.
+   Un marco con `aspect-ratio` y `max-height` colapsaba a cero: como item flex
+   sin contenido en flujo —la <Image fill> es absoluta— no tenia de donde sacar
+   su tamano base. Con el campo completo la obra se contiene sola, entera y
+   centrada, y sobre tinta el sobrante ni se ve. */
+.plate-frame { background: none; height: 100%; margin: 0; position: relative; width: 100%; }
+/* `contain`, no `cover`: aca no se recorta nunca. Es la pantalla donde alguien
+   decide comprar una copia; ver media obra no es una opcion. */
+.plate-frame img { object-fit: contain; }
+.plate-missing { color: var(--footer-link); font-size: 14px; margin: 0; }
+
+.plate-expand { align-items: center; background: transparent; bottom: clamp(16px, 2vw, 30px); color: var(--cream-300); display: flex; font-family: var(--font-mono); font-size: 9px; gap: 9px; left: clamp(16px, 2vw, 30px); letter-spacing: .12em; padding: 9px 12px 9px 0; position: absolute; text-transform: uppercase; }
+.plate-expand svg { height: 14px; width: 14px; }
+.plate-expand:hover { color: var(--paper); }
+.plate-expand:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+
+/* El mostrador. Papel contra la tinta, pegado arriba: el precio y el boton no
+   se van de la pantalla mientras mirás la obra. */
+/* La columna de papel corre toda la altura del campo. Antes flotaba como un
+   rectangulo crema con tinta debajo, que leia como una tarjeta y no como un
+   mostrador. Sin `sticky`: el campo mide exactamente un viewport, asi que no
+   hay nada por lo que el panel pueda quedarse quieto mientras pasa. */
+.work-counter { align-self: stretch; background: var(--cream-100); display: flex; flex-direction: column; padding: clamp(34px, 3.4vw, 58px) clamp(28px, 2.8vw, 46px) clamp(40px, 4vw, 62px); }
+.work-trail { align-items: center; color: var(--text-muted); display: flex; flex-wrap: wrap; font-family: var(--font-mono); font-size: 9.5px; gap: 8px; letter-spacing: .12em; margin-bottom: clamp(20px, 2.4vw, 34px); text-transform: uppercase; }
+.work-trail a:hover { color: var(--accent-text); }
+.work-trail span { color: var(--line-soft); }
+.work-title { color: var(--ink); font-family: var(--font-heading); font-size: clamp(27px, 2.5vw, 38px); font-weight: 500; letter-spacing: -.028em; line-height: 1.08; margin: 0; text-wrap: balance; }
+.work-place { color: var(--text-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .12em; margin: 13px 0 0; text-transform: uppercase; }
+
+.buy { display: flex; flex-direction: column; margin-top: clamp(26px, 3vw, 40px); }
+.buy-sizes { border: 0; display: flex; flex-direction: column; margin: 0; padding: 0; }
+.buy-sizes legend { color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; margin-bottom: 12px; padding: 0; text-transform: uppercase; }
+
+/* Tres filas separadas por un filete, no tres tarjetas: la eleccion es una
+   lista de ediciones, y una caja alrededor de cada una seria el mismo marco
+   que le sacamos a las fotografias. La seleccionada se rellena de tinta —el
+   estado se lee de reojo, sin buscar el punto del radio. */
+.buy-size { align-items: baseline; border-top: 1px solid var(--line); cursor: pointer; display: grid; gap: 0 14px; grid-template-columns: auto minmax(0, 1fr) auto; padding: 15px 14px; transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+.buy-size:last-of-type { border-bottom: 1px solid var(--line); }
+.buy-size input { height: 1px; margin: 0; opacity: 0; pointer-events: none; position: absolute; width: 1px; }
+.buy-size-name { color: var(--ink); font-family: var(--font-mono); font-size: 13px; }
+.buy-size-note { color: var(--text-muted); font-family: var(--font-mono); font-size: 10.5px; }
+.buy-size-price { color: var(--ink); font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.buy-size:hover { background: var(--cream-hover); }
+.buy-size[data-selected] { background: var(--ink); }
+.buy-size[data-selected] .buy-size-name,
+.buy-size[data-selected] .buy-size-price { color: var(--paper); }
+.buy-size[data-selected] .buy-size-note { color: var(--cream-300); }
+/* El anillo va en la fila y no en el input, que es de 1px y esta oculto. */
+.buy-size:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: -2px; }
+.buy-size[data-unavailable] { cursor: not-allowed; }
+.buy-size[data-unavailable] .buy-size-name,
+.buy-size[data-unavailable] .buy-size-price { color: var(--text-faint); text-decoration: line-through; }
+.buy-size[data-unavailable]:hover { background: transparent; }
+
+/* El precio viaja dentro del boton: la decision y su costo en un mismo golpe
+   de vista, en vez de una cifra suelta repitiendo lo que la fila ya dice. */
+.buy-add { align-items: center; background: var(--ink); color: var(--paper); display: flex; font-size: 12.5px; justify-content: space-between; margin-top: clamp(20px, 2.2vw, 30px); min-height: 54px; padding: 0 20px; transition: background var(--dur-fast) var(--ease); width: 100%; }
+.buy-add b { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 400; }
+.buy-add:hover:not(:disabled) { background: var(--accent-text); }
+.buy-add:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.buy-add:disabled { background: var(--line-soft); color: var(--paper); cursor: not-allowed; }
+
+.buy-incart { color: var(--text-muted); font-size: 12px; line-height: 1.6; margin: 14px 0 0; }
+.buy-incart a { border-bottom: 1px solid var(--line-soft); color: var(--ink); padding-bottom: 1px; }
+.buy-incart a:hover { border-bottom-color: var(--accent-text); color: var(--accent-text); }
+
+/* Los unicos hechos de envio confirmados. Nada de papeles ni de plazos de
+   impresion mientras no exista el mecanismo detras. */
+.buy-terms { border-top: 1px solid var(--line-faint); display: flex; flex-direction: column; gap: 8px; margin: clamp(24px, 2.6vw, 34px) 0 0; padding-top: 16px; }
+.buy-terms div { display: flex; gap: 16px; justify-content: space-between; }
+.buy-terms dt { color: var(--text-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; }
+.buy-terms dd { color: var(--ink); font-family: var(--font-mono); font-size: 10.5px; margin: 0; text-align: right; }
+.buy-unavailable { color: var(--text-muted); font-size: 13.5px; line-height: 1.7; margin: clamp(26px, 3vw, 40px) 0 0; }
+/* Un lavado del propio filete del mostrador: sobre crema, el gris del sistema
+   seria un parche de otro sitio. */
+.skeleton-line { background: var(--line-faint); }
+
+/* --- Piezas que solo viven en el telefono ---------------------------------
+   Las dos estan apagadas por encima de 900px: la pagina de escritorio, que ya
+   esta aprobada, no cambia ni un pixel. */
+.buy-bar { display: none; }
+.work-note-more { display: none; }
+
+
+/* La lupa: la obra a tamano real sobre el velo. */
+.plate-lightbox { align-items: center; background: rgba(23, 18, 14, .93); display: flex; inset: 0; justify-content: center; padding: 4vh 4vw; position: fixed; z-index: 30; }
+.plate-lightbox-image { height: 92vh; position: relative; width: 92vw; }
+.plate-lightbox-image img { object-fit: contain; }
+.plate-lightbox-close { align-items: center; color: var(--cream-300); display: flex; height: 44px; justify-content: center; position: absolute; right: clamp(12px, 2vw, 28px); top: clamp(12px, 2vw, 28px); width: 44px; }
+.plate-lightbox-close svg { height: 20px; width: 20px; }
+.plate-lightbox-close:hover { color: var(--paper); }
+.plate-lightbox-close:focus-visible { outline: 2px solid var(--paper); outline-offset: -6px; }
+@media (prefers-reduced-motion: no-preference) {
+  .plate-lightbox { animation: lightbox-veil var(--dur-base) var(--ease) both; }
+  .plate-lightbox-image { animation: lightbox-image var(--dur-slow) var(--ease) both; }
+}
+@keyframes lightbox-veil {
+  from { backdrop-filter: blur(0); opacity: 0; }
+  to { backdrop-filter: blur(3px); opacity: 1; }
+}
+@keyframes lightbox-image {
+  from { transform: scale(.94); }
+  to { transform: none; }
+}
+
+/* El texto de autor, en papel y a medida de lectura. Son entre 500 y 1.450
+   caracteres por obra: apretados en una columna de 44ch al costado del precio
+   eran un muro, y encima empujaban la compra fuera de la pantalla. */
+.work-note { margin: 0 auto; max-width: 1280px; padding: clamp(64px, 7vw, 116px) 5vw clamp(20px, 3vw, 40px); }
+.work-note h2 { color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; font-weight: 400; letter-spacing: .12em; margin: 0 0 clamp(20px, 2.4vw, 32px); text-transform: uppercase; }
+.work-note p { color: var(--ink); font-size: clamp(16px, 1.35vw, 18.5px); line-height: 1.78; margin: 0; max-width: 68ch; }
+
+/* Y una salida. La obra era un callejon: se miraba, se agregaba al carrito y
+   la unica manera de seguir era el boton de atras del navegador. */
+.work-more { margin: 0 auto; max-width: 1280px; padding: clamp(56px, 6vw, 96px) 5vw clamp(80px, 9vw, 140px); }
+.work-more h2 { align-items: baseline; border-top: 1px solid var(--line); color: var(--text-muted); display: flex; flex-wrap: wrap; font-family: var(--font-mono); font-size: 9px; font-weight: 400; gap: 12px 24px; justify-content: space-between; letter-spacing: .12em; margin: 0 0 clamp(24px, 3vw, 38px); padding-top: 15px; text-transform: uppercase; }
+.work-more h2 a { color: var(--ink); }
+.work-more h2 a:hover { color: var(--accent-text); }
+.work-more ul { display: grid; gap: clamp(18px, 2.4vw, 34px); grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+.work-more-frame { aspect-ratio: 1; background: var(--cream-100); display: block; overflow: hidden; position: relative; }
+.work-more-frame img { object-fit: cover; }
+.work-more-name { color: var(--ink); display: block; font-family: var(--font-heading); font-size: 14px; font-weight: 500; line-height: 1.3; margin-top: 12px; }
+.work-more a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+  .work-more-frame img { transition: transform var(--dur-slow) var(--ease); }
+  .work-more a:hover .work-more-frame img { transform: scale(1.045); }
+  .work-more-name { transition: color var(--dur-base) var(--ease); }
+  .work-more a:hover .work-more-name { color: var(--accent-text); }
+}
+
+/* Angosto: la obra arriba, el mostrador debajo. El mostrador deja de ser
+   sticky porque en una columna se comeria media pantalla. */
+/* --- El telefono ----------------------------------------------------------
+   Apilar la pantalla de escritorio no alcanzaba. En una columna, la obra caia a
+   274 x 411 px sobre 844 —menos de media pantalla, en la pagina que vende esa
+   copia—, comprar desaparecia apenas bajabas a leer, y la nota de autor se
+   volvia una columna de novecientos pixeles.
+
+   Aca la obra abre la pantalla, la compra se queda al alcance del pulgar en una
+   barra fija, y la nota se recorta hasta que la pidas. */
+@media (max-width: 900px) {
+  /* La descripcion va ARRIBA de los tamanos, por pedido del usuario. Ese
+     reordenamiento cruza dos contenedores —la nota vive fuera de `.work-view`,
+     los tamanos viven dentro del mostrador—, asi que no alcanza con `order`.
+     `display: contents` disuelve las dos cajas intermedias y promueve a todos
+     sus hijos a una sola grilla en `.work-page`; recien ahi son hermanos y se
+     pueden ordenar. En escritorio nada de esto existe: las cajas siguen enteras
+     y la nota sigue siendo una franja de papel debajo del campo. */
+  .work-page { display: grid; grid-template-columns: 100%; }
+  .work-view, .work-counter { display: contents; }
+
+  .plate-field { order: 1; }
+  .work-trail  { order: 2; }
+  .work-title  { order: 3; }
+  .work-place  { order: 4; }
+  .work-note   { order: 5; }
+  .buy         { order: 6; }
+  .work-more   { order: 7; }
+
+  /* Al disolverse el mostrador se fue tambien su fondo y su relleno, asi que
+     los cinco bloques que ahora corren sueltos vuelven a leerse como un solo
+     panel: mismo crema, mismo margen lateral, y el relleno vertical repartido
+     entre el primero y el ultimo. */
+  .work-trail, .work-title, .work-place, .work-note, .buy {
+    background: var(--cream-100);
+    padding-inline: 5vw;
+  }
+  /* Todo el espaciado va en relleno, no en margen: como items de grilla los
+     margenes no se colapsan y quedaban FUERA del fondo, abriendo franjas de
+     papel que cortaban el panel en pedazos. */
+  .work-trail { margin: 0; padding-top: clamp(30px, 7vw, 40px); }
+  .work-title { margin: 0; padding-block: 14px 0; }
+  .work-place { margin: 0; padding-block: 13px clamp(22px, 5vw, 30px); }
+  .buy { margin: 0; padding-bottom: clamp(34px, 8vw, 46px); padding-top: clamp(24px, 6vw, 32px); }
+
+  /* La obra manda: casi toda la pantalla menos la barra. El sobrante de abajo
+     es lo justo para que se vea que la pagina sigue. */
+  .plate-field { min-height: calc(100svh - 72px - 84px); padding: clamp(18px, 4vw, 30px) clamp(16px, 4vw, 28px) clamp(50px, 10vw, 62px); }
+
+  /* La lupa se ve igual que en escritorio: misma etiqueta de 9px en mono,
+     mismo icono, misma esquina. Lo unico que cambia es el area tocable, que
+     sube a 44px de alto y se ensancha a la derecha — y como el fondo es
+     transparente, ese area no se ve: el control parece del mismo tamano que en
+     escritorio y se toca como uno de telefono. */
+  .plate-expand { min-height: 44px; padding-right: 20px; }
+
+  .work-counter { padding: clamp(30px, 7vw, 40px) 5vw clamp(34px, 8vw, 46px); }
+
+  /* Objetivos tactiles: la fila pasa de 51 a 62px de alto y se separa de la de
+     al lado. En tactil no hay puntero fino que apunte a una franja delgada. */
+  .buy-size { padding: 20px 14px; }
+  .buy-add { min-height: 58px; }
+
+  /* La barra del pulgar. Aparece cuando el boton real sale de vista. */
+  .buy-bar {
+    align-items: center;
+    background: var(--ink);
+    border-top: 1px solid var(--footer-line);
+    bottom: 0;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    left: 0;
+    opacity: 0;
+    padding: 10px 5vw max(10px, env(safe-area-inset-bottom));
+    pointer-events: none;
+    position: fixed;
+    right: 0;
+    transform: translateY(100%);
+    z-index: 25;
+  }
+  .buy-bar[data-visible] { opacity: 1; pointer-events: auto; transform: none; }
+  .buy-bar-what { align-items: baseline; display: flex; gap: 10px; min-width: 0; }
+  .buy-bar-what b { color: var(--paper); font-family: var(--font-mono); font-size: 13px; font-weight: 400; }
+  .buy-bar-what span { color: var(--cream-300); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .buy-bar button { background: var(--paper); color: var(--ink); font-size: 12.5px; min-height: 46px; padding: 0 22px; }
+  .buy-bar button:disabled { background: var(--footer-line); color: var(--paper); }
+  .buy-bar button:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .buy-bar { transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
+  }
+
+  /* La nota, recortada hasta que la pidas. Ahora vive dentro de la corrida
+     crema, entre el titulo y los tamanos: se lee de que es la obra antes de
+     elegir en que tamano se compra. El filete de arriba la separa del titulo
+     sin abrir otro bloque. */
+  .work-note { border-top: 1px solid var(--line-faint); margin: 0; max-width: none; padding-block: clamp(20px, 5vw, 26px) 0; }
+  .work-note h2 { margin-bottom: 14px; }
+  .work-note p { font-size: 15.5px; line-height: 1.72; max-width: none; }
+  .work-note-body { -webkit-box-orient: vertical; -webkit-line-clamp: 7; display: -webkit-box; overflow: hidden; }
+  .work-note-body[data-expanded] { -webkit-line-clamp: unset; display: block; overflow: visible; }
+  /* El subrayado va en el texto, no en el borde de la caja: con `min-height`
+     de 44px el `border-bottom` caia al fondo del area tocable y quedaba un
+     filete suelto, mas ancho que la palabra y a treinta pixeles de ella. El
+     area tocable la sigue dando la altura; la linea la da el texto. */
+  .work-note-more { align-items: center; background: none; color: var(--ink); display: inline-flex; font-size: 12.5px; margin-top: 6px; min-height: 44px; padding: 0; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+  .work-note-more:hover { color: var(--accent-text); }
+  .work-note-more:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+  /* Las tres vecinas en un carril que se desliza, en vez de esconder una.
+     Ocultar la tercera era arbitrario y ademas la seguia descargando. */
+  .work-more { margin: 0; max-width: none; padding: clamp(44px, 10vw, 62px) 0 clamp(64px, 14vw, 96px); }
+  .work-more h2 { margin-inline: 5vw; }
+  .work-more ul {
+    display: grid;
+    gap: 14px;
+    grid-auto-columns: 62vw;
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    overflow-x: auto;
+    padding-inline: 5vw;
+    scroll-padding-inline: 5vw;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .work-more ul::-webkit-scrollbar { display: none; }
+  .work-more li { scroll-snap-align: start; }
+}
+/* --- El carrito ------------------------------------------------------------
+   Los dos materiales de la pagina de la obra, una escala mas arriba: las copias
+   elegidas cuelgan sobre tinta y la cuenta va sobre papel al costado. Antes esto
+   era crema plano con cajitas de papel flotando —la grilla de tarjetas que el
+   resto del sitio ya habia abandonado— y el salto desde la obra se sentia como
+   cambiar de sitio.
+
+   `.is-dark-room` en el markup es lo que baja la barra a tinta; no hay ninguna
+   regla de nav aca. */
+.cart-room { align-items: stretch; background: var(--ink); display: grid; grid-template-columns: minmax(0, 1fr) clamp(340px, 30vw, 452px); min-height: calc(100svh - 88px); }
+.cart-wall { min-width: 0; padding: clamp(56px, 6vw, 92px) clamp(32px, 4vw, 64px) clamp(70px, 8vw, 110px); }
+
+/* La ranura mono lleva dato, no etiqueta: cuantas copias y de cuantas obras. */
+/* `min-height` para que la ranura reserve su alto sin depender del contenido:
+   vacia o llena, el titulo y la lista arrancan en el mismo pixel, asi que nada
+   salta cuando localStorage contesta. */
+.cart-count { color: var(--accent); font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin: 0 0 20px; min-height: 1lh; text-transform: uppercase; }
+.cart-room h1 { color: var(--paper); font-size: clamp(46px, 6vw, 86px); margin-bottom: clamp(34px, 4vw, 52px); }
+.cart-room h1 i { color: var(--accent); }
+
+.cart-lines { display: flex; flex-direction: column; }
+
+/* Filas con filete, no tarjetas: una caja alrededor de cada copia seria el
+   mismo marco que el sitio le saca a las fotografias. */
+.cart-line { align-items: start; border-top: 1px solid var(--footer-line); display: grid; gap: 0 clamp(20px, 2.4vw, 32px); grid-template-columns: clamp(96px, 11vw, 132px) minmax(0, 1fr) auto; padding: clamp(22px, 2.4vw, 30px) 0; }
+.cart-line:last-of-type { border-bottom: 1px solid var(--footer-line); }
+
+/* `contain` dentro de una caja de alto fijo: la proporcion es parte de lo que se
+   esta comprando. Cover recortaria una vertical a la mitad. */
+.cart-line-plate { aspect-ratio: 1; position: relative; width: 100%; }
+
+.cart-line-what { min-width: 0; }
+.cart-line-what h2 { color: var(--paper); font-family: var(--font-heading); font-size: clamp(20px, 1.9vw, 27px); font-weight: 500; letter-spacing: -.022em; line-height: 1.08; margin: 0 0 9px; }
+/* Subrayado en reposo, no solo en hover: en tactil no hay hover, y sin el, el
+   enlace de vuelta a la obra es invisible.
+
+   `text-decoration` y no `border-bottom`: el borde se dibuja UNA VEZ POR LINEA
+   DE CAJA, asi que un titulo que envuelve —y en el telefono envuelven casi
+   todos— quedaba con dos filetes apilados adentro, en una pagina donde un
+   filete significa "esto separa dos cosas". El subrayado corre con el texto y
+   se lee como texto de enlace. */
+.cart-line-what h2 a { color: inherit; text-decoration: underline; text-decoration-color: var(--footer-line); text-decoration-thickness: 1px; text-underline-offset: 5px; transition: color var(--dur-fast) var(--ease), text-decoration-color var(--dur-fast) var(--ease); }
+.cart-line-what h2 a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.cart-line-what h2 a:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+.cart-line-spec { color: var(--cream-300); font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; margin: 0 0 16px; }
+
+/* El stepper. Area tocable amplia, dibujo chico: la misma regla que fijo la
+   lupa de la pagina de la obra. */
+.cart-qty { align-items: center; display: inline-flex; }
+.cart-qty button { align-items: center; border: 1px solid var(--footer-line); color: var(--cream-200); display: inline-flex; height: 30px; justify-content: center; transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); width: 32px; }
+.cart-qty button:hover:not(:disabled) { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.cart-qty button:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+.cart-qty button:disabled { color: var(--footer-line); cursor: not-allowed; }
+.cart-qty-value { color: var(--paper); font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 38px; text-align: center; }
+
+/* `stretch` contra el `align-items: start` de la fila: sin esto la columna mide
+   lo que mide su contenido y `Remove` queda colgando debajo del precio, mas
+   arriba en las lineas de una sola copia que en las que muestran el unitario.
+   Estirada, el precio se ancla arriba y `Remove` abajo en TODAS las lineas. */
+.cart-line-money { align-items: flex-end; align-self: stretch; display: flex; flex-direction: column; gap: 5px; text-align: right; }
+.cart-line-money strong { color: var(--paper); font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; font-weight: 400; }
+.cart-line-money > span { color: var(--cream-300); font-family: var(--font-mono); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+
+/* Lejos del `+`, del otro lado de la linea. */
+.cart-remove { color: var(--footer-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; margin-top: auto; text-transform: uppercase; transition: color var(--dur-fast) var(--ease); }
+.cart-remove-rule { border-bottom: 1px solid var(--footer-line); display: inline-block; padding-bottom: 3px; transition: border-color var(--dur-fast) var(--ease); }
+.cart-remove:hover { color: var(--accent); }
+.cart-remove:hover .cart-remove-rule { border-bottom-color: var(--accent); }
+.cart-remove:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+
+/* El mostrador. A diferencia del de la obra, este es pegajoso: alla el campo
+   mide exactamente un viewport y no hay por que quedarse quieto, aca la lista
+   puede ser larga y la cuenta no puede irse de la pantalla. */
+.cart-counter { background: var(--cream-100); padding: clamp(56px, 6vw, 92px) clamp(28px, 2.8vw, 46px) clamp(40px, 4vw, 62px); }
+.cart-counter-inner { display: flex; flex-direction: column; position: sticky; top: clamp(24px, 3vw, 40px); }
+.cart-counter-legend { color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; margin: 0 0 18px; text-transform: uppercase; }
+
+/* Las dos tarifas, leidas de `SHIPPING_RATES`. Cual corresponde depende de la
+   direccion, que Stripe todavia no pregunto: por eso se nombran las dos en vez
+   de sumar una al total. */
+.cart-shipping { display: flex; flex-direction: column; margin: 0; }
+.cart-shipping div { border-top: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 13px 0; }
+.cart-shipping div:last-child { border-bottom: 1px solid var(--line); }
+.cart-shipping dt { color: var(--text-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; }
+.cart-shipping dd { color: var(--ink); font-family: var(--font-mono); font-size: 10.5px; font-variant-numeric: tabular-nums; margin: 0; text-align: right; }
+.cart-shipping dd span { color: var(--text-muted); }
+.cart-shipping-note { color: var(--text-muted); font-size: 12px; line-height: 1.6; margin: 14px 0 0; }
+.cart-ghost-checkout { display: block; height: 54px; margin-top: clamp(22px, 2.4vw, 32px); width: 100%; }
+
+/* El precio viaja DENTRO del boton, como en la pagina de la obra. */
+.cart-checkout { align-items: center; background: var(--ink); color: var(--paper); display: flex; font-size: 12.5px; justify-content: space-between; margin-top: clamp(22px, 2.4vw, 32px); min-height: 54px; padding: 0 20px; transition: background var(--dur-fast) var(--ease); width: 100%; }
+.cart-checkout b { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 400; }
+.cart-checkout:hover:not(:disabled) { background: var(--accent-text); }
+.cart-checkout:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.cart-checkout:disabled { background: var(--text-muted); cursor: progress; }
+
+/* `--error` sobre crema, no `--accent`: el rojo de marca mide 2,44:1 aca. */
+.cart-error { color: var(--error); font-size: 12.5px; line-height: 1.6; margin: clamp(20px, 2.2vw, 28px) 0 0; }
+.cart-signin { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; margin: 12px 0 0; }
+
+/* Carrito vacio y las dos vueltas de Stripe: una sola columna de tinta. */
+.cart-room.is-empty { display: flex; }
+.cart-note { align-self: center; padding: clamp(56px, 7vw, 100px) clamp(32px, 5vw, 80px); }
+.cart-note h1 { margin-bottom: 22px; max-width: 14ch; }
+.cart-note p { color: var(--cream-200); font-size: 15.5px; line-height: 1.75; margin: 0 0 34px; max-width: 46ch; }
+.cart-note p a { border-bottom: 1px solid var(--footer-line); color: var(--paper); }
+.cart-note p a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+.cart-note .text-link { border-bottom-color: rgba(244,241,235,.34); color: var(--paper); margin-bottom: 0; }
+.cart-note .text-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* Fantasmas con la altura real de una linea, para que nada salte cuando
+   localStorage contesta. */
+.cart-line.is-ghost { align-items: center; }
+.cart-ghost-line { display: block; height: 13px; margin-bottom: 12px; }
+
+.cart-bar { display: none; }
+/* 4:5 en vez de cuadrado: acomoda verticales sin recortarlas a la mitad y deja
+   la grilla pareja, que es lo que una grilla necesita. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Se mueve la fotografía dentro de su marco; el marco no se mueve. */
+}
+.product-variants { border: 0; margin: 18px 0 0; padding: 0; }
+.product-variants legend { color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; margin-bottom: 9px; text-transform: uppercase; }
+.product-variant-options { display: flex; gap: 7px; }
+.product-variant { align-items: center; border: 1px solid var(--line); cursor: pointer; display: flex; flex: 1; justify-content: space-between; min-width: 0; padding: 9px 10px; transition: border-color .2s, background .2s; }
+.product-variant:hover, .product-variant.is-selected { background: var(--cream-hover); border-color: var(--accent); }
+.product-variant input { accent-color: var(--accent); margin: 0 5px 0 0; }
+.product-variant span, .product-variant strong { font-size: 10px; }
+.product-variant strong { color: var(--ink); font-weight: 500; white-space: nowrap; }
+/* --- Contacto: la sala oscura, en modo tarea -------------------------------
+   Home, Shop y About viven sobre tinta; Contacto era la ultima pagina crema de
+   las cuatro que estan en la barra, con el formulario dentro de una tarjeta
+   blanca flotando en el medio. Baja a la sala oscura con el resto de la casa,
+   y el formulario deja de ser una caja: campos con filete, apoyados sobre la
+   tinta, que es la gramatica que ya usa el sitio.
+
+   El modo aca no es lucirse sino resolver: el visitante llego con una pregunta.
+   Por eso no hay fotografia, la escala de tipo es corta y las dos columnas
+   caben en una pantalla sin scroll. */
+.contact-page { background: var(--ink); color: var(--cream-200); display: grid; gap: clamp(40px, 7vw, 110px); grid-template-columns: minmax(0, .92fr) minmax(0, 1fr); padding: clamp(64px, 8vw, 108px) 5vw clamp(72px, 9vw, 120px); }
+.contact-intro h1 { color: var(--paper); font-size: clamp(44px, 5.6vw, 84px); letter-spacing: -.038em; line-height: .9; margin-bottom: 26px; max-width: 12ch; }
+.contact-intro h1 i { color: var(--cream-300); }
+.contact-description { color: var(--cream-200); font-size: 15.5px; line-height: 1.78; margin-bottom: 38px; max-width: 42ch; }
+
+/* El canal que siempre funciona, tratado como tal: es un enlace de verdad, no
+   un dato suelto en una lista. */
+.contact-email { align-items: baseline; border-top: 1px solid rgba(244,241,235,.22); display: flex; flex-wrap: wrap; gap: 6px 18px; padding-top: 16px; }
+.contact-email span { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.contact-email strong { color: var(--paper); font-family: var(--font-mono); font-size: 15px; font-weight: 400; }
+.contact-email:hover strong { color: var(--accent); }
+.contact-email:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px; }
+
+/* Las dos preguntas que mas se escriben, respondidas antes de escribir. */
+.contact-facts { border-top: 1px solid rgba(244,241,235,.16); display: grid; gap: 14px; margin: 34px 0 0; padding-top: 18px; }
+.contact-facts div { display: grid; gap: 4px; }
+.contact-facts dt { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.contact-facts dd { color: var(--paper); font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; margin: 0; }
+.contact-facts dd span { color: var(--cream-300); }
+
+/* Sin tarjeta: el formulario se apoya en la tinta como todo lo demas. */
+.contact-form-wrap { align-self: start; }
+.contact-form { display: flex; flex-direction: column; gap: 22px; }
+.contact-form-row { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+.contact-field { display: flex; flex-direction: column; gap: 8px; }
+.contact-field label { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+/* Un filete abajo y nada mas: la caja completa alrededor de cada campo sumaba
+   cuatro rectangulos que competian con la fotografia del resto del sitio. */
+.contact-field input, .contact-field textarea { background: transparent; border: 0; border-bottom: 1px solid rgba(244,241,235,.28); border-radius: 0; color: var(--paper); font-family: var(--font-sans); font-size: 15px; padding: 0 0 11px; }
+.contact-field input { height: auto; }
+.contact-field textarea { min-height: 132px; resize: vertical; }
+.contact-field input::placeholder, .contact-field textarea::placeholder { color: rgba(225,213,199,.42); }
+.contact-field input:hover, .contact-field textarea:hover { border-bottom-color: rgba(244,241,235,.5); }
+/* El foco engorda el filete en vez de pintarlo: sobre tinta, un color solo se
+   pierde, y el grosor se ve incluso sin distinguir bien el tono. */
+.contact-field input:focus-visible, .contact-field textarea:focus-visible { border-bottom-color: var(--paper); border-bottom-width: 2px; box-shadow: none; outline: none; padding-bottom: 10px; }
+/* El componente base marca lo invalido con `border-destructive` MAS un anillo
+   de 3px. Sobre campos que aca son solo un filete, eso dibujaba una caja entera
+   en terracota alrededor de cada error: cuatro rectangulos donde el resto de la
+   pagina no tiene ninguno. El error se dice donde vive el campo —en su filete—
+   y el texto debajo lo explica. */
+.contact-field input[aria-invalid="true"],
+.contact-field textarea[aria-invalid="true"] { border: 0; border-bottom: 2px solid var(--accent); box-shadow: none; padding-bottom: 10px; }
+.field-error { color: var(--accent); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
+
+/* El error de envio no es un campo mas: nombra el problema y da la salida. */
+.contact-form-error { border-left: 1px solid var(--accent); display: grid; gap: 6px; margin: 0; padding-left: 14px; }
+.contact-form-error strong { color: var(--paper); font-size: 14px; font-weight: 500; }
+.contact-form-error span { color: var(--cream-200); font-size: 13.5px; line-height: 1.6; }
+.contact-form-error a { border-bottom: 1px solid rgba(244,241,235,.4); color: var(--paper); }
+.contact-form-error a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+.contact-submit { align-self: start; background: var(--paper); border: 0; border-radius: 0; color: var(--ink); gap: 28px; height: 48px; margin-top: 6px; padding: 0 18px 0 22px; }
+.contact-submit:hover:not(:disabled) { background: var(--accent); color: var(--paper); }
+.contact-submit:disabled { cursor: progress; opacity: .5; }
+.contact-submit:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+.contact-submit svg { height: 16px; width: 16px; }
+
+.contact-success { align-items: flex-start; display: flex; flex-direction: column; }
+.contact-success > svg { color: var(--accent); height: 26px; margin-bottom: 28px; width: 26px; }
+.contact-success h2 { color: var(--paper); font-size: clamp(30px, 3.4vw, 48px); margin-bottom: 16px; }
+.contact-success > p { color: var(--cream-200); font-size: 15px; line-height: 1.7; margin-bottom: 30px; max-width: 38ch; }
+.contact-success button { background: transparent; border: 1px solid rgba(244,241,235,.32); border-radius: 0; color: var(--paper); height: 44px; }
+.contact-success button:hover { border-color: var(--paper); }
+.auth-page { align-items: center; background: var(--cream-200); display: flex; justify-content: center; min-height: calc(100vh - 88px); padding: 90px 7vw; }
+.auth-form-wrap { background: var(--paper); max-width: 420px; padding: clamp(28px, 5vw, 50px); width: 100%; }
+.auth-form-wrap h1 { font-size: clamp(32px, 5vw, 44px); margin-bottom: 28px; }
+.auth-detail { color: var(--text-muted); font-size: 14px; margin: -14px 0 28px; }
+.auth-switch { color: var(--text-muted); font-size: 13px; margin-top: 22px; }
+.auth-switch a { border-bottom: 1px solid var(--accent); color: var(--ink); }
+
+/* --- Formularios de cuenta -------------------------------------------------
+   Login, registro y cuenta tomaban prestadas las clases del formulario de
+   contacto. Cuando contacto bajo a la sala oscura, se llevo con el sus campos:
+   texto y filetes en color papel sobre una tarjeta de papel, o sea un
+   formulario invisible. Estas paginas viven en el mundo claro —son parte del
+   camino de compra, como el carrito— asi que tienen su propio juego. */
+.auth-form { display: flex; flex-direction: column; gap: 20px; }
+.auth-field { display: flex; flex-direction: column; gap: 8px; }
+.auth-field label { color: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.auth-field input { background: var(--paper); border: 1px solid var(--line); border-radius: 0; color: var(--ink); font-family: var(--font-sans); font-size: 15px; height: 46px; padding: 0 13px; }
+.auth-field input::placeholder { color: var(--text-faint); }
+.auth-field input:hover { border-color: var(--line-soft); }
+.auth-field input:focus-visible { border-color: var(--accent-text); box-shadow: none; outline: none; }
+.auth-field input[aria-invalid="true"] { border-color: var(--error); box-shadow: none; }
+.auth-error { color: var(--error); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
+.auth-submit { background: var(--ink); border: 0; border-radius: 0; color: var(--paper); font-size: 13px; height: 46px; justify-content: center; margin-top: 4px; width: 100%; }
+.auth-submit:hover:not(:disabled) { background: var(--accent-text); }
+.auth-submit:disabled { cursor: progress; opacity: .55; }
+.auth-submit:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* Entrar con Google. Misma altura y mismo canto que el boton principal —el
+   camino es otro, la forma no— pero con contorno en vez de relleno: el sitio
+   tiene su propio sistema de cuentas y el email sigue siendo la puerta de casa.
+   La G va a sus cuatro colores: es marca de un tercero y se reproduce como es. */
+.google-button { align-items: center; background: var(--paper); border: 1px solid var(--line-soft); color: var(--ink); cursor: pointer; display: flex; font-family: inherit; font-size: 13px; gap: 11px; height: 46px; justify-content: center; margin-bottom: 22px; width: 100%; }
+.google-button svg { height: 18px; width: 18px; }
+.google-button:hover:not(:disabled) { background: var(--cream-hover); border-color: var(--ink); }
+.google-button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.google-button:disabled { cursor: progress; opacity: .6; }
+
+/* Separador con la palabra adentro: dice que son dos caminos a la misma cuenta,
+   no dos formularios distintos. El filete se dibuja a los lados del texto. */
+.auth-or { align-items: center; color: var(--text-faint); display: flex; font-family: var(--font-mono); font-size: 9px; gap: 14px; letter-spacing: .12em; margin-bottom: 22px; text-transform: uppercase; }
+.auth-or:before, .auth-or:after { background: var(--line); content: ''; flex: 1; height: 1px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .google-button, .auth-field input, .auth-submit { transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+}
+.admin-page { background: var(--cream-100); min-height: calc(100vh - 88px); padding: 90px 10vw 120px; }
+.admin-heading { align-items: end; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; margin-bottom: 45px; padding-bottom: 38px; }
+.admin-heading h1 { font-size: clamp(48px, 6vw, 82px); margin-bottom: 18px; }
+.admin-heading p:not(.eyebrow) { color: var(--text-muted); font-size: 14px; margin: 0; }
+.admin-heading > svg { color: var(--accent-text); height: 52px; margin-bottom: 8px; width: 52px; }
+.admin-form { background: var(--paper); max-width: 980px; padding: clamp(25px, 5vw, 60px); }
+.admin-form-section { border-bottom: 1px solid var(--line); padding-bottom: 38px; margin-bottom: 38px; }
+.admin-form-section:last-of-type { margin-bottom: 28px; }
+.admin-grid { display: grid; gap: 20px; }
+.admin-grid-two { grid-template-columns: 1fr 1fr; margin-bottom: 22px; }
+.admin-field { display: flex; flex-direction: column; gap: 8px; }
+.admin-field label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.admin-field input, .admin-field textarea { border-color: var(--line); border-radius: 0; }
+.admin-field input { height: 44px; }
+.admin-field textarea { min-height: 125px; }
+.admin-field .admin-json { font-family: var(--font-mono); font-size: 11px; min-height: 105px; }
+.admin-field small, .admin-section-heading > span { color: var(--text-faint); font-family: var(--font-mono); font-size: 9px; }
+.admin-checkbox { align-items: center; display: inline-flex; font-size: 13px; gap: 10px; margin-top: 5px; }
+.admin-checkbox-row { display: flex; flex-wrap: wrap; gap: 12px 32px; }
+.admin-checkbox input { accent-color: var(--accent); height: 16px; width: 16px; }
+.admin-section-heading { align-items: center; display: flex; justify-content: space-between; margin-bottom: 22px; }
+.admin-section-heading .footer-label { margin: 0; }
+.admin-section-heading button { border-color: var(--line); border-radius: 0; height: 36px; }
+.admin-section-heading button svg { height: 14px; width: 14px; }
+.admin-select { border-color: var(--line); border-radius: 0; height: 44px; width: 100%; }
+.admin-feedback { font-size: 13px; margin: 0 0 20px; }
+.admin-feedback.success { color: var(--success); }
+.admin-feedback.error { color: var(--error); }
+.admin-submit { background: var(--ink); border: 0; border-radius: 0; color: var(--paper); height: 48px; padding: 0 22px; }
+.admin-submit:hover { background: var(--accent); }
+.admin-library { max-width: 1180px; }
+.admin-library-heading { align-items: end; display: flex; justify-content: space-between; margin-bottom: 32px; }
+.admin-library-heading h2 { font-size: clamp(38px, 5vw, 62px); margin: 0; }
+.admin-new-photo { background: var(--ink); border-radius: 0; color: var(--paper); gap: 9px; min-height: 44px; }
+.admin-new-photo:hover { background: var(--accent); }
+.admin-new-photo svg { height: 16px; width: 16px; }
+.admin-photo-grid { display: grid; gap: 22px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.admin-photo-card { background: var(--paper); border: 1px solid var(--line); display: block; padding: 0; position: relative; text-align: left; transition: border-color .2s, transform .2s; width: 100%; }
+.admin-photo-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.admin-photo-card-delete { bottom: 15px; position: absolute; right: 16px; }
+.admin-photo-card-image { aspect-ratio: 1.25; background: var(--line) center/cover no-repeat; }
+.admin-photo-card-content { display: grid; gap: 5px; padding: 15px 16px 18px; position: relative; }
+.admin-photo-card-content strong { font-family: var(--font-heading); font-size: 18px; font-weight: 500; padding-right: 25px; }
+.admin-photo-card-content small { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.admin-photo-card-content svg { color: var(--accent-text); height: 16px; position: absolute; right: 16px; top: 17px; width: 16px; }
+.admin-empty { color: var(--text-muted); }
+.admin-close-form { gap: 8px; margin-bottom: 18px; padding-left: 0; }
+.admin-close-form svg { height: 16px; width: 16px; }
+.admin-order-grid { display: grid; gap: 22px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.admin-order-card { background: var(--paper); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 18px; padding: 22px 24px; }
+.admin-order-card-header { align-items: flex-start; display: flex; justify-content: space-between; }
+.admin-order-card-header strong { display: block; font-family: var(--font-heading); font-size: 20px; }
+.admin-order-card-header small { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.admin-order-status-select { min-width: 150px; }
+.admin-order-card-buyer p { color: var(--ink-soft); font-size: 13px; margin: 0; }
+.admin-order-card-items ul { display: flex; flex-direction: column; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.admin-order-card-items li { display: flex; font-size: 13px; justify-content: space-between; }
+.admin-order-card-totals { border-top: 1px solid var(--line-faint); display: flex; flex-direction: column; gap: 6px; padding-top: 14px; }
+.admin-nav { display: flex; gap: 22px; margin-bottom: 20px; }
+.admin-nav-link { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; padding-bottom: 6px; text-transform: uppercase; }
+.admin-nav-link.is-active { border-bottom: 2px solid var(--accent); color: var(--ink); }
+.admin-customer-table { display: flex; flex-direction: column; }
+.admin-customer-row { align-items: center; border-bottom: 1px solid var(--line-faint); display: grid; gap: 16px; grid-template-columns: 1.2fr 1.6fr 1fr 1fr; padding: 16px 0; }
+.admin-customer-row-head { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.admin-customer-email { color: var(--ink-soft); font-family: var(--font-mono); font-size: 12px; }
+.site-footer { align-items: start; background: var(--ink); color: var(--paper); display: grid; gap: 42px 5vw; grid-template-columns: 1.4fr 1fr 1.4fr 2fr; padding: 65px 5vw 38px; }
+.footer-brand em { color: var(--accent); }.footer-brand p, .copyright { color: var(--footer-muted); font-size: 11px; margin: 28px 0 0; }
+.footer-column, .footer-newsletter { display: flex; flex-direction: column; gap: 11px; }.footer-column a { color: var(--footer-link); font-size: 12px; }.footer-column a:hover, .footer-legal a:hover { color: var(--accent); }.footer-label { color: var(--accent); font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; margin: 0 0 8px; text-transform: uppercase; }.footer-newsletter > p:not(.footer-label) { color: var(--footer-muted); font-size: 12px; line-height: 1.6; max-width: 230px; }.footer-newsletter form { border-bottom: 1px solid var(--footer-line); display: flex; justify-content: space-between; max-width: 255px; margin-top: 8px; }.footer-newsletter input { background: transparent; border: 0; color: var(--paper); font: inherit; font-size: 12px; outline: none; padding: 9px 0; width: 220px; }.footer-newsletter input::placeholder { color: var(--footer-muted); }.footer-newsletter button { color: var(--accent); font-size: 18px; }.footer-bottom { align-items: end; border-top: 1px solid var(--ink-soft); display: flex; grid-column: 1 / -1; justify-content: space-between; padding-top: 22px; }.footer-bottom .copyright { margin: 0; }.footer-legal { display: flex; gap: 25px; }.footer-legal a { color: var(--footer-muted); font-size: 11px; }.sr-only { height: 1px; margin: -1px; overflow: hidden; position: absolute; width: 1px; clip: rect(0,0,0,0); }
+@media (max-width: 700px) { .site-nav { height: 72px; padding: 0 6vw; }.nav-actions { gap: 14px; }.account-button span:last-child, .bag-button span:first-child { display: none; }.text-link { margin-bottom: 38px; }.contact-page { gap: 44px; grid-template-columns: 1fr; padding: 56px 7vw 80px; }.contact-intro h1 { font-size: clamp(38px, 11vw, 56px); }.contact-form-row { grid-template-columns: 1fr; }.admin-page { padding: 70px 7vw 90px; }.admin-heading { align-items: start; }.admin-heading > svg { height: 34px; width: 34px; }.admin-grid-two { grid-template-columns: 1fr; }.admin-section-heading { align-items: start; flex-direction: column; gap: 14px; }.site-footer { grid-template-columns: 1fr 1fr; }.footer-newsletter, .footer-bottom { grid-column: 1 / -1; }.footer-bottom { align-items: start; flex-direction: column; gap: 15px; }.copyright { margin: 0; } }
+
+/* --- Menu movil: drawer lateral -------------------------------------------
+   Debajo de 700px los mismos enlaces dejan de ser una fila y pasan a ser un
+   panel que entra desde la derecha sobre un velo tocable.
+
+   El panel es de papel en TODAS las paginas, asi que sus colores no dependen de
+   en cual estas: las reglas de barra oscura se declaran solo arriba de 700px
+   (ver el bloque `@media (min-width: 701px)` de la barra), y aca abajo no hay
+   nada que tapar. Antes cada regla de este bloque tenia que enumerar las
+   paginas oscuras una por una, y la que faltaba —/contact— se veia en crema
+   sobre papel. */
+.nav-scrim, .nav-drawer-head, .nav-drawer-actions { display: none; }
+
+@media (max-width: 700px) {
+  /* La barra crea contexto de apilado, asi que el drawer solo puede taparlo
+     todo si sube ella. Baja recien cuando el panel termino de salir. */
+  .site-nav { transition: z-index 0s linear var(--dur-base); }
+  body:has(.hero-section) .site-nav.is-menu-open,
+  .site-nav.is-menu-open { transition: z-index 0s; z-index: 40; }
+  body.has-nav-open { overflow: hidden; }
+
+  .nav-scrim {
+    background: rgba(23, 18, 14, .46);
+    display: block;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    transition: opacity var(--dur-base) var(--ease);
+  }
+  .nav-scrim.is-open { opacity: 1; pointer-events: auto; }
+
+  .site-nav .nav-links {
+    background: var(--paper);
+    border-left: 1px solid var(--line);
+    bottom: 0;
+    box-shadow: -26px 0 64px -32px rgba(37, 35, 31, .5);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    left: auto;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 clamp(24px, 7vw, 34px) 34px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    transform: translateX(100%);
+    transition: transform var(--dur-base) var(--ease), visibility 0s linear var(--dur-base);
+    visibility: hidden;
+    width: min(84%, 340px);
+  }
+  .site-nav .nav-links.is-open {
+    transform: none;
+    transition: transform var(--dur-base) var(--ease), visibility 0s;
+    visibility: visible;
+  }
+
+  .nav-drawer-head { align-items: center; display: flex; justify-content: flex-end; min-height: 72px; }
+  /* 44px de area tactil; el margen negativo devuelve el icono a la linea
+     optica del padding, que el area extra habia corrido hacia adentro. */
+  .nav-drawer-close { color: var(--text-muted); height: 44px; margin-right: -10px; width: 44px; }
+  .nav-drawer-close:hover { color: var(--ink); }
+
+  /* Dentro del panel los enlaces son el contenido, no una fila de etiquetas:
+     toman la voz editorial del sitio y un area de toque real. */
+  .site-nav .nav-links > a {
+    border-top: 1px solid var(--line-faint);
+    color: var(--ink);
+    font-family: var(--font-heading);
+    font-size: 21px;
+    letter-spacing: -.008em;
+    line-height: 1.15;
+    padding: 15px 0;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .site-nav .nav-links > a:hover { color: var(--accent-text); }
+
+  .nav-drawer-actions {
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+    padding-top: 22px;
+  }
+  .nav-drawer-action {
+    align-items: center;
+    color: var(--ink-soft);
+    display: flex;
+    font-size: 13px;
+    gap: 11px;
+    padding: 11px 0;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .nav-drawer-action:hover { color: var(--accent-text); }
+  .nav-drawer-action svg { height: 15px; width: 15px; }
+  .nav-drawer-action b {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    margin-left: auto;
+  }
+
+  .menu-button { align-items: center; display: flex; flex-direction: column; gap: 5px; height: 44px; justify-content: center; margin-right: -11px; padding: 0; width: 44px; }
+  .menu-button span { background: var(--ink); display: block; height: 1px; width: 22px; }
+}
+
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --font-wordmark: var(--font-wordmark);
+  --font-mono: var(--font-mono);
+  --color-sidebar-ring: var(--sidebar-ring); --color-sidebar-border: var(--sidebar-border); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar: var(--sidebar); --color-chart-5: var(--chart-5); --color-chart-4: var(--chart-4); --color-chart-3: var(--chart-3); --color-chart-2: var(--chart-2); --color-chart-1: var(--chart-1); --color-ring: var(--ring); --color-input: var(--input); --color-border: var(--border); --color-destructive: var(--destructive); --color-accent-foreground: var(--accent-foreground); --color-accent: var(--accent); --color-muted-foreground: var(--muted-foreground); --color-muted: var(--muted); --color-secondary-foreground: var(--secondary-foreground); --color-secondary: var(--secondary); --color-primary-foreground: var(--primary-foreground); --color-primary: var(--primary); --color-popover-foreground: var(--popover-foreground); --color-popover: var(--popover); --color-card-foreground: var(--card-foreground); --color-card: var(--card); --color-foreground: var(--foreground); --color-background: var(--background); --radius-sm: calc(var(--radius) * 0.6); --radius-md: calc(var(--radius) * 0.8); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50; }
+  body {
+    @apply bg-background text-foreground; }
+  html {
+    @apply font-sans; } }
+
+@media (max-width: 700px) {
+  .admin-library-heading { align-items: start; flex-direction: column; gap: 20px; }
+  .admin-photo-grid { grid-template-columns: 1fr; }
+  .admin-order-grid { grid-template-columns: 1fr; }
+  .admin-new-photo { width: 100%; }
+  .admin-customer-row { grid-template-columns: 1fr; gap: 6px; }
+  .admin-customer-row-head { display: none; }
+}
+
+/* --- El carrito en angosto -------------------------------------------------
+   Una columna: la lista primero, el mostrador como franja de papel al pie. Y
+   como con tres copias pagar se va de la pantalla y no vuelve hasta el final
+   del scroll, aparece la barra del pulgar — el mismo patron que la pagina de la
+   obra usa para su boton de agregar. */
+@media (max-width: 900px) {
+  .cart-room { grid-template-columns: 100%; min-height: 0; }
+  .cart-wall { padding: clamp(40px, 9vw, 56px) 5vw clamp(34px, 8vw, 46px); }
+  .cart-counter { padding: clamp(32px, 7vw, 44px) 5vw clamp(90px, 18vw, 110px); }
+  /* Sin sticky: en una columna el mostrador se comeria media pantalla, y la
+     barra del pulgar ya cubre el trabajo que hacia. */
+  .cart-counter-inner { position: static; }
+
+  /* Dos columnas: la obra y su informacion. El precio baja a la fila del
+     stepper, que es donde se lo busca cuando se cambia la cantidad. */
+  .cart-line { grid-template-columns: clamp(84px, 22vw, 104px) minmax(0, 1fr); gap: 0 clamp(16px, 4vw, 22px); padding: clamp(20px, 5vw, 26px) 0; }
+  .cart-line-what { display: flex; flex-direction: column; }
+  .cart-line-money { align-items: center; display: grid; gap: 0 14px; grid-column: 2; grid-template-columns: auto minmax(0, 1fr) auto; margin-top: 14px; text-align: left; }
+  .cart-line-money strong { grid-column: 1; }
+  .cart-line-money > span { grid-column: 2; }
+  .cart-remove { grid-column: 3; justify-self: end; margin-top: 0; }
+
+  /* Area tocable, no dibujo mas grande. */
+  .cart-qty button { height: 44px; width: 44px; }
+  .cart-remove { align-items: center; display: inline-flex; min-height: 44px; }
+  .cart-checkout { min-height: 58px; }
+
+  .cart-bar {
+    align-items: center;
+    background: var(--ink);
+    border-top: 1px solid var(--footer-line);
+    bottom: 0;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    left: 0;
+    opacity: 0;
+    padding: 10px 5vw max(10px, env(safe-area-inset-bottom));
+    pointer-events: none;
+    position: fixed;
+    right: 0;
+    transform: translateY(100%);
+    z-index: 25;
+  }
+  .cart-bar[data-visible] { opacity: 1; pointer-events: auto; transform: none; }
+  .cart-bar-what { align-items: baseline; display: flex; gap: 10px; min-width: 0; }
+  .cart-bar-what b { color: var(--paper); font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 400; }
+  .cart-bar-what span { color: var(--cream-300); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .cart-bar button { background: var(--paper); color: var(--ink); font-size: 12.5px; min-height: 46px; padding: 0 22px; }
+  .cart-bar button:disabled { background: var(--footer-line); color: var(--paper); }
+  .cart-bar button:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .cart-bar { transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
+  }
+
+  .cart-note { padding: clamp(46px, 11vw, 70px) 5vw clamp(56px, 12vw, 80px); }
+}
+
+@media (max-width: 700px) {
+  .hero-inner { gap: 26px; padding: 104px 7vw 26px; }
+  .hero-title { font-size: clamp(46px, 13vw, 68px); letter-spacing: -.03em; }
+  .hero-index { gap: 8px 26px; }
+}
+
+/* --- Revelado al hacer scroll ----------------------------------------------
+   Animaciones de scroll nativas (`animation-timeline: view()`): sin JavaScript,
+   sin coste de hidratación y sin observadores. El estado en reposo es VISIBLE,
+   así que donde el navegador no las soporta el contenido aparece normal en vez
+   de quedarse invisible para siempre. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .room-entry,
+    .room-empty,
+    .hang-plate,
+    .shop-plate,
+    .work-note,
+    .work-more,
+    .cart-line,
+    .site-footer > * {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 20%;
+    }
+  }
+}
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --- About ----------------------------------------------------------------
+   Esta página nunca tuvo reglas propias: su marcado existía desde el inicio
+   pero sin una sola clase definida, así que caía al flujo por defecto, pegada
+   al borde izquierdo. */
+/* --- Mi Historia: la sala oscura, en modo lectura -------------------------
+   Hereda la gramatica de la tienda —fondo tinta, obra a sangre, costuras de
+   2px, rotulos en mono— pero el que manda aca es el texto: 1.600 palabras de
+   autor. De ahi las dos diferencias deliberadas: el cuerpo es --cream-200 y
+   no --paper, porque el blanco puro sobre tinta vibra en un parrafo largo; y
+   la interlinea es 1.8, no 1.72, porque leer sobre oscuro pide mas aire. */
+.story-page { background: var(--ink); color: var(--cream-200); padding-bottom: clamp(80px, 10vw, 132px); }
+
+/* Mismo ritmo que la cabecera de la tienda: titulo a la izquierda, dato al
+   costado bajo un filete, y el tipo entrando 5vw mientras la obra va a sangre. */
+
+/* El texto entra 5vw; solo la fotografia toca el borde. */
+.story-chapter h2,
+.story-body > p,
+.story-chapter > p { margin-left: 5vw; margin-right: 5vw; }
+
+/* Detras de una fotografia de pantalla entera, 40px de aire no alcanzan para
+   pasar de mirar a leer. */
+.story-body > .story-chapter:first-child { padding-top: clamp(56px, 7vw, 104px); }
+.story-chapter + .story-chapter { margin-top: clamp(62px, 8vw, 104px); }
+/* Mas aire arriba que abajo: el titulo pertenece a lo que sigue. */
+.story-chapter h2 { color: var(--paper); font-size: clamp(29px, 3.4vw, 47px); letter-spacing: -.02em; margin-bottom: 30px; margin-top: 0; max-width: 24ch; }
+/* 50ch, no 66: la unidad `ch` mide el avance del "0", mas ancho que la letra
+   media de una prosa en espanol. A 66ch entraban 94 caracteres reales; a 50ch
+   entran unos 71, dentro del rango de lectura comoda. */
+.story-body p { font-size: 16px; line-height: 1.82; margin-bottom: 24px; max-width: 50ch; }
+.story-body p:last-of-type { margin-bottom: 0; }
+
+/* La obra a sangre, con las costuras de 2px de la tienda. Interrumpe la
+   columna a proposito: es la otra voz de la pagina. */
+/* Fila justificada por formato. El ancho de cada obra es proporcional a su
+   propia relacion ancho/alto, y su caja usa esa misma relacion: entonces
+   todas comparten altura y NINGUNA se recorta. Es el mecanismo del muro de la
+   tienda —anchos desiguales a igual altura— pero aca el dato que reparte el
+   ancho es el formato de la fotografia y no la cantidad de obras.
+
+   Importa porque el archivo mezcla 3:2 horizontal con 2:3 vertical: con una
+   caja fija, una vertical perdia dos tercios de la imagen. Una vertical
+   ocupa ahora el 44% del ancho de una horizontal, y se ve entera. */
+.story-plates { align-items: start; display: flex; gap: clamp(12px, 1.6vw, 26px); margin: clamp(48px, 6vw, 84px) 0; }
+.story-plate { aspect-ratio: var(--ratio, 1.5); container-type: inline-size; flex: var(--ratio, 1.5) 1 0; min-width: 0; overflow: hidden; position: relative; }
+
+/* La obra mas ancha se sale por el borde de la pagina y el bloque deja gutter
+   del otro lado; el lado se alterna bloque a bloque. */
+.story-plates[data-side="left"] { padding-right: 5vw; }
+.story-plates[data-side="right"] { padding-left: 5vw; }
+
+/* El desfase en altura es lo que mantiene la asimetria ahora que el ancho lo
+   decide el formato: una obra apoya en la linea de arriba y la vecina baja. */
+.story-plates[data-side="left"] .story-plate:nth-child(even),
+.story-plates[data-side="right"] .story-plate:nth-child(odd) { margin-top: clamp(26px, 4vw, 72px); }
+.story-plate-image { object-fit: cover; }
+.story-plate:before { background: linear-gradient(to top, rgba(37,35,31,.9) 0%, rgba(37,35,31,.38) 44%, rgba(37,35,31,.06) 100%); content: ''; inset: 0; position: absolute; z-index: 1; }
+.story-plate-meta { bottom: 0; display: flex; flex-direction: column; gap: 7px; left: 0; padding: 20px 22px; position: absolute; right: 0; z-index: 2; }
+.story-plate-meta small { color: var(--cream-300); font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.story-plate-meta b { color: var(--paper); font-family: var(--font-heading); font-size: 15px; font-weight: 500; letter-spacing: -.01em; line-height: 1.25; }
+.story-plate:focus-visible { outline: 2px solid var(--paper); outline-offset: -3px; }
+
+/* Consulta de contenedor: la que manda es la obra, no la ventana. Una
+   vertical dentro de una fila de tres mide 238px y ahi el pie necesita
+   achicarse aunque la pantalla sea de 1440. */
+@container (max-width: 300px) {
+  .story-plate-meta { gap: 5px; padding: 14px 15px; }
+  .story-plate-meta b { font-size: 13px; }
+  .story-plate-meta small { font-size: 8px; letter-spacing: .1em; }
+}
+
+.story-close { border-top: 1px solid var(--footer-line); margin: clamp(62px, 8vw, 104px) 5vw 0; padding-top: 30px; }
+.story-close .text-link { color: var(--cream-200); }
+.story-close .text-link:hover { color: var(--paper); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .story-close .text-link { transition: color var(--dur-fast) var(--ease); }
+  .story-plate-image { transition: filter var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease); }
+}
+@media (hover: hover) {
+  .story-plate-image { filter: brightness(.82); }
+  .story-plate:hover .story-plate-image,
+  .story-plate:focus-visible .story-plate-image { filter: brightness(1); transform: scale(1.03); }
+}
+
+@media (max-width: 900px) {
+  .story-chapter h2,
+  .story-body > p,
+  .story-chapter > p { margin-left: 7vw; margin-right: 7vw; }
+  .story-close { margin-left: 7vw; margin-right: 7vw; }
+  .story-body p { font-size: 15.5px; }
+  /* Tres obras en 390px serian estampillas: se apilan y cada una queda a
+     sangre, que es como la tienda resuelve el mismo problema. */
+  /* El desfase no cabe en 390px: las obras se apilan a sangre, cada una con
+     su propio formato. Una vertical queda alta y entera, que es como debe
+     verse una copia vertical. */
+  .story-plates,
+  .story-plates[data-side="left"],
+  .story-plates[data-side="right"] { flex-direction: column; padding-left: 0; padding-right: 0; }
+  /* Una vertical a sangre sobre 860px medira 1289px de alto: mas que la
+     ventana. El tope de alto se expresa como tope de ancho a traves de su
+     propia proporcion, de modo que se achica entera y sigue sin recorte.
+     En telefono el tope no llega a morder: 390px ya esta por debajo. */
+  .story-plates[data-side="left"] .story-plate,
+  .story-plates[data-side="right"] .story-plate {
+    flex: none;
+    margin-top: 0;
+    max-width: calc(76svh * var(--ratio, 1.5));
+    width: 100%;
+  }
+}
+@media (max-width: 900px) {
+
 }

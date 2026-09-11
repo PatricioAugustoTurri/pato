@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-11T00:00:00Z",
+  "title": "Design System: Pato Turri",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "neutral", "displayName": "Gallery Ink", "canonical": "#25231f", "tonalRamp": ["#15140f", "#25231f", "#3a362f", "#514c42", "#6b665d", "#8d887e", "#b3aea3", "#e6e0d7"] },
+      "ink-soft": { "role": "neutral", "displayName": "Soft Ink", "canonical": "#46423c", "tonalRamp": ["#1b1916", "#2b2825", "#46423c", "#5d584f", "#7a746a", "#9e9789", "#c4bdb0", "#eae5dc"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#f4f1eb", "tonalRamp": ["#2a2721", "#4a463e", "#6c675d", "#8f8a7e", "#b3ada0", "#d3cec3", "#e8e4db", "#f4f1eb"] },
+      "cream-100": { "role": "neutral", "displayName": "Counter Cream", "canonical": "#eeebe4", "tonalRamp": ["#28251f", "#46423a", "#666055", "#888172", "#aaa393", "#ccc5b6", "#e0dcd2", "#eeebe4"] },
+      "cream-200": { "role": "neutral", "displayName": "Warm Cream", "canonical": "#e1d5c7", "tonalRamp": ["#2b231a", "#483c2e", "#675746", "#88755f", "#a9947c", "#c7b59c", "#e1d5c7", "#f2ebe2"] },
+      "cream-300": { "role": "neutral", "displayName": "Dusted Cream", "canonical": "#d8c8b5", "tonalRamp": ["#2a2217", "#46392a", "#64533e", "#847055", "#a48f70", "#c1ad91", "#d8c8b5", "#eee4d7"] },
+      "cream-hover": { "role": "neutral", "displayName": "Cream Wash", "canonical": "#e9dfd3", "tonalRamp": ["#2a2419", "#463d2d", "#655843", "#85765b", "#a59676", "#c5b89a", "#e9dfd3", "#f5efe6"] },
+      "line": { "role": "neutral", "displayName": "Paper Rule", "canonical": "#d9d3c9", "tonalRamp": ["#26241e", "#413e35", "#5e5a4e", "#7d7869", "#9d9787", "#bdb7a8", "#d9d3c9", "#efece5"] },
+      "line-soft": { "role": "neutral", "displayName": "Soft Rule", "canonical": "#c8b9a8", "tonalRamp": ["#272016", "#423826", "#5f5238", "#7e6e4c", "#9d8c65", "#b7a686", "#c8b9a8", "#e6dccf"] },
+      "line-faint": { "role": "neutral", "displayName": "Faint Rule", "canonical": "#e6e0d7", "tonalRamp": ["#27251f", "#423f36", "#5f5b4f", "#7e7a6a", "#9e9887", "#c0baa9", "#e6e0d7", "#f5f2ec"] },
+      "text-muted": { "role": "neutral", "displayName": "Muted Text", "canonical": "#6f675d", "tonalRamp": ["#1c1a16", "#2f2c26", "#453f38", "#5a534a", "#6f675d", "#8f877b", "#b2aa9e", "#dcd6cc"] },
+      "text-faint": { "role": "neutral", "displayName": "Faint Text", "canonical": "#6b6156", "tonalRamp": ["#1a1712", "#2d2821", "#423a31", "#564c41", "#6b6156", "#8d8172", "#b0a496", "#dbd3c8"] },
+      "footer-muted": { "role": "neutral", "displayName": "Ink-Ground Muted", "canonical": "#a09b90", "tonalRamp": ["#211f1b", "#39362f", "#514d44", "#6b665c", "#868076", "#a09b90", "#c1bcb2", "#e3e0d9"] },
+      "footer-line": { "role": "neutral", "displayName": "Ink Rule", "canonical": "#6b665d", "tonalRamp": ["#1b1a16", "#2d2b26", "#413f37", "#565349", "#6b665d", "#8b877c", "#afaa9f", "#dbd8d0"] },
+      "footer-link": { "role": "neutral", "displayName": "Ink-Ground Link", "canonical": "#c9c3b8", "tonalRamp": ["#25231e", "#3e3b33", "#585449", "#736e61", "#8f897b", "#aca698", "#c9c3b8", "#e9e5dd"] },
+      "accent": { "role": "primary", "displayName": "Brand Terracotta", "canonical": "#d8895b", "tonalRamp": ["#361a0a", "#562c13", "#77411e", "#98572b", "#b96f3c", "#d8895b", "#e8aa87", "#f6d5c0"] },
+      "accent-text": { "role": "primary", "displayName": "Terracotta Ink", "canonical": "#a85527", "tonalRamp": ["#2d1206", "#4a210c", "#683313", "#86451c", "#a85527", "#c8743f", "#e29c71", "#f4cfb4"] },
+      "success": { "role": "tertiary", "displayName": "Field Green", "canonical": "#46704d", "tonalRamp": ["#0f1d12", "#1c3320", "#2a4a2f", "#385b3d", "#46704d", "#659a6d", "#8fbf96", "#c6e2ca"] },
+      "error": { "role": "tertiary", "displayName": "Burnt Red", "canonical": "#a34d35", "tonalRamp": ["#2c1009", "#481d11", "#652c1b", "#833d26", "#a34d35", "#c26e56", "#dc9b87", "#f1cec2"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero titles set over full-bleed photography. Max 15ch, balanced wrap." },
+      "headline": { "displayName": "Headline", "purpose": "The h1 of an interior page. The cart steps it down because a list is the subject." },
+      "title": { "displayName": "Title", "purpose": "Work titles inside a counter or a ledger row." },
+      "body": { "displayName": "Body", "purpose": "Prose. Measure capped by context: 46ch on ink, 50ch for author prose, 68ch on paper." },
+      "label": { "displayName": "Label", "purpose": "Uppercase mono rubrics: trail, legend, spec, tariff, remove." },
+      "figure": { "displayName": "Figure", "purpose": "Prices, quantities, ISO dimensions and counts. Always tabular." },
+      "wordmark": { "displayName": "Wordmark", "purpose": "The word 'Turri' only. Playfair Display italic, unchanged by any title-face change." }
+    },
+    "shadows": [
+      { "name": "drawer-edge", "value": "-26px 0 64px -32px rgba(37, 35, 31, .5)", "purpose": "The only shadow in the system: the leading edge of the off-canvas nav drawer. Nothing resting in the page is ever raised." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The brand curve. Every transition and the view transition group use it." },
+      { "name": "ease-drift", "value": "cubic-bezier(0.32, 0.08, 0.24, 1)", "purpose": "Slow positional drift on imagery." },
+      { "name": "dur-fast", "value": "180ms", "purpose": "Color, border and background state changes on controls." },
+      { "name": "dur-base", "value": "320ms", "purpose": "Panels, thumb bars and drawers entering or leaving." },
+      { "name": "dur-slow", "value": "720ms", "purpose": "Image reveals and the work view transition." }
+    ],
+    "breakpoints": [
+      { "name": "wall", "value": "1100px" },
+      { "name": "split", "value": "900px" },
+      { "name": "drawer", "value": "700px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Counter Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The commit button in a cream counter. The subtotal rides inside it, set in mono at the right edge.",
+      "html": "<button class=\"ds-btn-counter\">Checkout <b>€205.00</b></button>",
+      "css": ".ds-btn-counter { align-items: center; background: var(--ink, #25231f); border: 0; color: var(--paper, #f4f1eb); cursor: pointer; display: flex; font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 12.5px; justify-content: space-between; min-height: 54px; padding: 0 20px; border-radius: 0; transition: background 180ms cubic-bezier(0.16,1,0.3,1); width: 100%; } .ds-btn-counter b { font-family: var(--font-mono, 'DM Mono', monospace); font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 400; } .ds-btn-counter:hover:not(:disabled) { background: var(--accent-text, #a85527); } .ds-btn-counter:focus-visible { outline: 2px solid var(--ink, #25231f); outline-offset: 3px; } .ds-btn-counter:disabled { background: var(--text-muted, #6f675d); cursor: progress; }"
+    },
+    {
+      "name": "Inline Button",
+      "kind": "button",
+      "refersTo": "button-inline",
+      "description": "The editorial call to action on paper: ink block, wide gap, terracotta on hover.",
+      "html": "<a class=\"ds-btn-inline\" href=\"#\">Browse the shop <span>→</span></a>",
+      "css": ".ds-btn-inline { align-items: center; background: var(--ink, #25231f); color: var(--paper, #f4f1eb); display: inline-flex; font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 12px; gap: 34px; padding: 16px 18px 16px 20px; border-radius: 0; text-decoration: none; transition: background 320ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-inline:hover { background: var(--accent, #d8895b); } .ds-btn-inline:focus-visible { outline: 2px solid var(--accent-text, #a85527); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ruled Selection Row",
+      "kind": "custom",
+      "refersTo": "size-row",
+      "description": "The counter's size picker: hairline-ruled rows instead of chips or cards. Selected inverts the whole row to ink.",
+      "html": "<div class=\"ds-sizes\"><label class=\"ds-size\"><input type=\"radio\" name=\"ds-size\" checked><span class=\"ds-size-name\">A3</span><span class=\"ds-size-note\">297 × 420 mm</span><span class=\"ds-size-price\">€55.00</span></label><label class=\"ds-size\"><input type=\"radio\" name=\"ds-size\"><span class=\"ds-size-name\">A2</span><span class=\"ds-size-note\">420 × 594 mm</span><span class=\"ds-size-price\">€70.00</span></label></div>",
+      "css": ".ds-sizes { background: var(--cream-100, #eeebe4); padding: 20px; } .ds-size { align-items: baseline; border-top: 1px solid var(--line, #d9d3c9); cursor: pointer; display: grid; gap: 0 14px; grid-template-columns: auto minmax(0, 1fr) auto; padding: 15px 14px; position: relative; transition: background 180ms cubic-bezier(0.16,1,0.3,1), color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-size:last-of-type { border-bottom: 1px solid var(--line, #d9d3c9); } .ds-size input { height: 1px; margin: 0; opacity: 0; pointer-events: none; position: absolute; width: 1px; } .ds-size-name { color: var(--ink, #25231f); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 13px; } .ds-size-note { color: var(--text-muted, #6f675d); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 10.5px; } .ds-size-price { color: var(--ink, #25231f); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 13px; font-variant-numeric: tabular-nums; } .ds-size:hover { background: var(--cream-hover, #e9dfd3); } .ds-size:has(input:checked) { background: var(--ink, #25231f); } .ds-size:has(input:checked) .ds-size-name, .ds-size:has(input:checked) .ds-size-price { color: var(--paper, #f4f1eb); } .ds-size:has(input:checked) .ds-size-note { color: var(--cream-300, #d8c8b5); } .ds-size:has(input:focus-visible) { outline: 2px solid var(--ink, #25231f); outline-offset: -2px; }"
+    },
+    {
+      "name": "Ledger Row",
+      "kind": "custom",
+      "refersTo": "ledger-row",
+      "description": "The cart's list-scale row on the ink wall: contain-fitted plate, linked title, mono spec, stepper, right-aligned money.",
+      "html": "<div class=\"ds-ledger\"><div class=\"ds-ledger-row\"><div class=\"ds-ledger-plate\"></div><div class=\"ds-ledger-what\"><h2><a href=\"#\">Popocatépetl at first light</a></h2><p class=\"ds-ledger-spec\">A3 · 297 × 420 MM</p></div><div class=\"ds-ledger-money\"><strong>€110.00</strong><span>€55.00 each</span></div></div></div>",
+      "css": ".ds-ledger { background: var(--ink, #25231f); padding: 32px; } .ds-ledger-row { align-items: start; border-top: 1px solid var(--footer-line, #6b665d); border-bottom: 1px solid var(--footer-line, #6b665d); display: grid; gap: 0 24px; grid-template-columns: 110px minmax(0, 1fr) auto; padding: 26px 0; } .ds-ledger-plate { aspect-ratio: 1; background: linear-gradient(135deg, #4a463e, #6b665d); width: 100%; } .ds-ledger-what { min-width: 0; } .ds-ledger-what h2 { color: var(--paper, #f4f1eb); font-family: var(--font-heading, 'Familjen Grotesk', sans-serif); font-size: 24px; font-weight: 500; letter-spacing: -.022em; line-height: 1.08; margin: 0 0 9px; } .ds-ledger-what h2 a { color: inherit; text-decoration: underline; text-decoration-color: var(--footer-line, #6b665d); text-decoration-thickness: 1px; text-underline-offset: 5px; transition: color 180ms cubic-bezier(0.16,1,0.3,1), text-decoration-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-ledger-what h2 a:hover { color: var(--accent, #d8895b); text-decoration-color: var(--accent, #d8895b); } .ds-ledger-what h2 a:focus-visible { outline: 2px solid var(--paper, #f4f1eb); outline-offset: 3px; } .ds-ledger-spec { color: var(--cream-300, #d8c8b5); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 11px; letter-spacing: .04em; margin: 0; } .ds-ledger-money { align-items: flex-end; display: flex; flex-direction: column; gap: 5px; text-align: right; } .ds-ledger-money strong { color: var(--paper, #f4f1eb); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 14px; font-variant-numeric: tabular-nums; font-weight: 400; } .ds-ledger-money span { color: var(--cream-300, #d8c8b5); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 10.5px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Quantity Stepper",
+      "kind": "custom",
+      "refersTo": "stepper-button",
+      "description": "The system's first stepper, introduced by the cart. Minus disables at 1; the destructive Remove lives in the opposite column.",
+      "html": "<div class=\"ds-qty\"><button type=\"button\" disabled aria-label=\"Decrease\"><svg width=\"11\" height=\"11\" viewBox=\"0 0 11 11\" aria-hidden=\"true\"><path d=\"M1 5.5h9\" stroke=\"currentColor\" stroke-width=\"1\"/></svg></button><span class=\"ds-qty-value\">1</span><button type=\"button\" aria-label=\"Increase\"><svg width=\"11\" height=\"11\" viewBox=\"0 0 11 11\" aria-hidden=\"true\"><path d=\"M1 5.5h9M5.5 1v9\" stroke=\"currentColor\" stroke-width=\"1\"/></svg></button></div>",
+      "css": ".ds-qty { align-items: center; background: var(--ink, #25231f); display: inline-flex; padding: 12px; } .ds-qty button { align-items: center; background: none; border: 1px solid var(--footer-line, #6b665d); color: var(--cream-200, #e1d5c7); cursor: pointer; display: inline-flex; height: 30px; justify-content: center; border-radius: 0; transition: background 180ms cubic-bezier(0.16,1,0.3,1), border-color 180ms cubic-bezier(0.16,1,0.3,1), color 180ms cubic-bezier(0.16,1,0.3,1); width: 32px; } .ds-qty button:hover:not(:disabled) { background: var(--paper, #f4f1eb); border-color: var(--paper, #f4f1eb); color: var(--ink, #25231f); } .ds-qty button:focus-visible { outline: 2px solid var(--paper, #f4f1eb); outline-offset: 2px; } .ds-qty button:disabled { color: var(--footer-line, #6b665d); cursor: not-allowed; } .ds-qty-value { color: var(--paper, #f4f1eb); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 13px; font-variant-numeric: tabular-nums; min-width: 38px; text-align: center; } @media (max-width: 900px) { .ds-qty button { height: 44px; width: 44px; } }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "The paper-ground field: mono uppercase label, 1px rule box, zero radius, border recolor on focus with no glow.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-email\">Email</label><input id=\"ds-email\" type=\"email\" placeholder=\"you@example.com\"></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; background: var(--paper, #f4f1eb); padding: 16px; } .ds-field label { color: var(--text-muted, #6f675d); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; } .ds-field input { background: var(--paper, #f4f1eb); border: 1px solid var(--line, #d9d3c9); border-radius: 0; color: var(--ink, #25231f); font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 15px; height: 46px; padding: 0 13px; transition: border-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-field input::placeholder { color: var(--text-faint, #6b6156); } .ds-field input:hover { border-color: var(--line-soft, #c8b9a8); } .ds-field input:focus-visible { border-color: var(--accent-text, #a85527); box-shadow: none; outline: none; } .ds-field input[aria-invalid=\"true\"] { border-color: var(--error, #a34d35); }"
+    },
+    {
+      "name": "Masthead",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "The 88px band: two-line wordmark with Playfair italic 'Turri', mono-scaled links, bag badge as a filled circle mark.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-wordmark\" href=\"#\">Pato<em>Turri</em></a><div class=\"ds-nav-links\"><a href=\"#\">Shop</a><a href=\"#\">About</a><a href=\"#\">Contact</a></div><button class=\"ds-bag\">Bag <b>2</b></button></nav>",
+      "css": ".ds-nav { align-items: center; background: var(--paper, #f4f1eb); display: flex; height: 88px; justify-content: space-between; padding: 0 5vw; } .ds-wordmark { color: var(--ink, #25231f); display: flex; flex-direction: column; font-family: var(--font-heading, 'Familjen Grotesk', sans-serif); font-size: 22px; font-weight: 600; letter-spacing: -1px; line-height: .76; text-decoration: none; } .ds-wordmark em { color: var(--accent-text, #a85527); font-family: var(--font-wordmark, 'Playfair Display', serif); font-size: 17px; font-style: italic; font-weight: 500; letter-spacing: 0; margin-left: 21px; } .ds-nav-links { display: flex; gap: 34px; } .ds-nav-links a { color: var(--text-muted, #6f675d); font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 12px; letter-spacing: .02em; text-decoration: none; transition: color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-nav-links a:hover { color: var(--accent-text, #a85527); } .ds-bag { align-items: center; background: none; border: 0; color: var(--text-muted, #6f675d); cursor: pointer; display: flex; font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 12px; gap: 8px; } .ds-bag:hover { color: var(--accent-text, #a85527); } .ds-bag b { align-items: center; background: var(--ink, #25231f); border-radius: 50%; color: var(--paper, #f4f1eb); display: flex; font-size: 10px; font-weight: 400; height: 19px; justify-content: center; width: 19px; }"
+    },
+    {
+      "name": "Thumb Bar",
+      "kind": "custom",
+      "refersTo": "thumb-bar",
+      "description": "The fixed ink strip below 900px, revealed by observing the real in-page button so it never duplicates a visible control.",
+      "html": "<div class=\"ds-thumbbar\"><div class=\"ds-thumbbar-what\"><b>4 prints</b><span>€205.00</span></div><button type=\"button\">Checkout</button></div>",
+      "css": ".ds-thumbbar { align-items: center; background: var(--ink, #25231f); border-top: 1px solid var(--footer-line, #6b665d); display: flex; gap: 16px; justify-content: space-between; padding: 10px 24px; } .ds-thumbbar-what { align-items: baseline; display: flex; gap: 10px; min-width: 0; } .ds-thumbbar-what b { color: var(--paper, #f4f1eb); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 400; } .ds-thumbbar-what span { color: var(--cream-300, #d8c8b5); font-family: var(--font-mono, 'DM Mono', monospace); font-size: 12px; font-variant-numeric: tabular-nums; } .ds-thumbbar button { background: var(--paper, #f4f1eb); border: 0; border-radius: 0; color: var(--ink, #25231f); cursor: pointer; font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 12.5px; min-height: 46px; padding: 0 22px; } .ds-thumbbar button:focus-visible { outline: 2px solid var(--paper, #f4f1eb); outline-offset: 3px; } .ds-thumbbar button:disabled { background: var(--footer-line, #6b665d); color: var(--paper, #f4f1eb); }"
+    },
+    {
+      "name": "Message Shell",
+      "kind": "card",
+      "refersTo": "counter-panel",
+      "description": "One ink shell for four states: empty cart, checkout success, checkout cancel, error boundary. No illustration.",
+      "html": "<div class=\"ds-note\"><h1>Your cart is <i>empty</i>.</h1><p>Nothing chosen yet. The archive is twenty-one photographs deep.</p><a class=\"ds-note-link\" href=\"#\">Browse the shop</a></div>",
+      "css": ".ds-note { background: var(--ink, #25231f); padding: 64px 48px; } .ds-note h1 { color: var(--paper, #f4f1eb); font-family: var(--font-heading, 'Familjen Grotesk', sans-serif); font-size: clamp(46px, 6vw, 86px); font-weight: 500; letter-spacing: -.032em; line-height: .9; margin: 0 0 22px; max-width: 14ch; } .ds-note h1 i { color: var(--accent, #d8895b); font-weight: 500; } .ds-note p { color: var(--cream-200, #e1d5c7); font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 15.5px; line-height: 1.75; margin: 0 0 34px; max-width: 46ch; } .ds-note-link { border-bottom: 1px solid rgba(244,241,235,.34); color: var(--paper, #f4f1eb); display: inline-flex; font-family: var(--font-sans, 'DM Sans', sans-serif); font-size: 12px; padding-bottom: 7px; text-decoration: none; transition: color 180ms cubic-bezier(0.16,1,0.3,1), border-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-note-link:hover { border-bottom-color: var(--accent, #d8895b); color: var(--accent, #d8895b); } .ds-note-link:focus-visible { outline: 2px solid var(--paper, #f4f1eb); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Dark Room and the Counter",
+    "overview": "Two materials do all the work. Photographs hang on ink — a near-black warm brown that behaves like gallery wall paint, edge to edge, with nothing floating on it. Beside them, in cream or paper, is the counter: where the facts live, where sizes are chosen, where money is named. Every substantial surface in the site is one of these two things, and the join between them is a change of material, not a border, a card, or a shadow. The photograph is the product; the interface is the room it hangs in.\n\nThe density is editorial, not e-commerce. Information is set in rows separated by one-pixel rules rather than in boxes: the shop's size selector, the cart's ledger of chosen prints, the shipping tariffs, the work's technical facts all use the same hairline grammar at different scales. Where a card would be the default answer, this system uses a full-bleed plate or a ruled row instead. Radius is zero everywhere a box exists; the only circles in the system are two 17–19px nav dots that are read as marks, not as containers.\n\nType is a three-voice arrangement with one inherited signature. Familjen Grotesk sets every title, tight and large, using its drawn italic as the site's only rhetorical flourish. DM Sans carries prose at comfortable measure. DM Mono carries every label, size, quantity and price, always tabular, because the store shows figures in grids and proportional digits dance. The \"Turri\" of the wordmark stays in Playfair Display italic in its own variable; it is the last survivor of the previous title face and it does not change.",
+    "keyCharacteristics": [
+      "Two materials only: ink wall, cream/paper counter.",
+      "Zero radius on every box; hairline rules instead of containers.",
+      "Photographs full-bleed or in their true proportion — never cropped to a decorative square.",
+      "Mono for every number, always tabular.",
+      "One brand terracotta, used sparingly and never as small text on a light ground.",
+      "One easing curve and three durations for everything that moves."
+    ],
+    "rules": [
+      { "name": "The Two-Ground Accent Rule", "body": "The terracotta has two forms and they are not interchangeable. `accent` on ink (5.71:1), `accent-text` on paper or cream (4.67:1). Putting `accent` on a light ground is a contrast failure (2.44:1), not a style choice.", "section": "colors" },
+      { "name": "The Hairline Rule", "body": "Separation is a one-pixel rule in the ground's own rule color — `line` family on light, `footer-line` on ink. Never a box, never a border on four sides, never a shadow standing in for a divider.", "section": "colors" },
+      { "name": "The Numbers Are Mono Rule", "body": "Every price, quantity, dimension and count is DM Mono with `tabular-nums`. Figures in a grid must align in a column.", "section": "colors" },
+      { "name": "The Drawn Italic Rule", "body": "Italic is a requirement of the type stack, not decoration: three headlines use it as their accent. Any future title face must ship a drawn italic; synthetic oblique is not acceptable.", "section": "typography" },
+      { "name": "The Mono Slot Carries Data Rule", "body": "The small uppercase mono line above a title is a metadata slot, not a kicker. It may hold a count, a place, a trail, a dimension. If it would only restate the heading, it is not drawn at all — the cart suppresses its own count line below two prints for exactly this reason.", "section": "typography" },
+      { "name": "The Flat Plane Rule", "body": "Anything that stays in the page is flat. A shadow is permitted only on an element that has left the plane — the drawer and the lightbox. A shadow is never used to fake a card, a border, or a hierarchy.", "section": "elevation" },
+      { "name": "The Price Rides the Button Rule", "body": "The subtotal is set inside the commit button, not floating beside it. A figure repeated next to its own button is noise.", "section": "components" },
+      { "name": "The Touch Area Grows, The Drawing Doesn't Rule", "body": "At ≤900px controls reach 44px by expanding their hit area; icon and glyph sizes stay exactly as drawn at desktop.", "section": "components" }
+    ],
+    "dos": [
+      "Do build a surface from the two grounds: ink wall for the work, cream/paper counter for the facts.",
+      "Do separate items with a 1px rule in the ground's own rule color (`line` on light, `footer-line` on ink).",
+      "Do set every price, quantity, dimension and count in DM Mono with `tabular-nums`.",
+      "Do use `accent` only over ink and `accent-text` only over paper or cream.",
+      "Do keep radius at 0 for anything that contains content.",
+      "Do give a photograph `object-fit: contain` whenever the image is the thing being bought, so its proportion survives.",
+      "Do route every transition through `--ease` and one of `--dur-fast` / `--dur-base` / `--dur-slow`, inside a `prefers-reduced-motion: no-preference` guard.",
+      "Do reserve height for content that arrives after hydration (`min-height: 1lh` on a mono slot, ghost rows at the real line height) so nothing shifts.",
+      "Do grow touch targets to 44px at ≤900px without enlarging the glyph."
+    ],
+    "donts": [
+      "Don't put a card around anything. No bordered, padded, floating box as a list item or a summary.",
+      "Don't add a shadow to anything that stays in the page; only the off-canvas drawer and the lightbox leave the plane.",
+      "Don't put `accent` terracotta on small text over paper or cream — it measures 2.44:1.",
+      "Don't use `text-faint` for anything a reader must read; at 3.66:1 it is for struck-through and placeholder text only.",
+      "Don't crop merchandise photography to a square thumbnail.",
+      "Don't draw the small mono line unless it carries a fact; a slot that restates its own heading is a kicker and is not drawn.",
+      "Don't state a total the system cannot yet know; name the tariffs and where they are calculated instead.",
+      "Don't replace the title face with anything lacking a drawn italic, and don't move \"Turri\" off Playfair Display italic."
+    ]
+  }
+}

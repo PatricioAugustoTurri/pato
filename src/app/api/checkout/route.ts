@@ -1,0 +1,146 @@
+import { NextResponse } from "next/server";
+import type Stripe from "stripe";
+import { getStripe } from "@/lib/stripe";
+import { pool } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { stripeShippingOptions } from "@/lib/shipping";
+
+type CheckoutRequestItem = {
+  photoId: number;
+  size: string;
+  quantity: number;
+};
+
+const EU_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] = [
+  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT",
+  "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+];
+
+export async function POST(request: Request) {
+  const authSession = await auth();
+
+  if (!authSession?.user?.id) {
+    return NextResponse.json({ error: "Tenés que iniciar sesión para comprar." }, { status: 401 });
+  }
+
+  const userId = Number(authSession.user.id);
+  const userEmail = authSession.user.email ?? null;
+
+  let items: CheckoutRequestItem[];
+
+  try {
+    const body = (await request.json()) as { items?: CheckoutRequestItem[] };
+    items = Array.isArray(body.items) ? body.items : [];
+  } catch {
+    return NextResponse.json({ error: "El cuerpo de la solicitud no es un JSON válido." }, { status: 400 });
+  }
+
+  if (items.length === 0) {
+    return NextResponse.json({ error: "El carrito está vacío." }, { status: 400 });
+  }
+
+  let stripe;
+  try {
+    stripe = getStripe();
+  } catch {
+    return NextResponse.json({ error: "El pago no está configurado todavía." }, { status: 503 });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    const lineItems: Array<{
+      price_data: {
+        currency: string;
+        product_data: { name: string };
+        unit_amount: number;
+      };
+      quantity: number;
+    }> = [];
+    const orderItems: Array<{ photoId: number; size: string; quantity: number; unitAmountCents: number; name: string }> = [];
+    let totalCents = 0;
+
+    for (const item of items) {
+      const quantityRequested = Number(item.quantity) || 1;
+
+      const { rows } = await client.query<{
+        price: string;
+        currency: string;
+        stock: number;
+        name: string;
+      }>(
+        `SELECT pv.price, pv.currency, pv.stock, p.name
+         FROM photo_variants pv
+         INNER JOIN photos p ON p.id = pv.photo_id
+         WHERE pv.photo_id = $1 AND pv.size = $2
+         LIMIT 1`,
+        [item.photoId, item.size],
+      );
+
+      const variant = rows[0];
+
+      if (!variant) {
+        return NextResponse.json(
+          { error: `El tamaño ${item.size} ya no está disponible para esta fotografía.` },
+          { status: 400 },
+        );
+      }
+
+      if (variant.stock < quantityRequested) {
+        return NextResponse.json(
+          { error: `No hay stock suficiente de "${variant.name}" (${item.size}).` },
+          { status: 400 },
+        );
+      }
+
+      const unitAmount = Math.round(Number(variant.price) * 100);
+      totalCents += unitAmount * quantityRequested;
+
+      lineItems.push({
+        price_data: {
+          currency: variant.currency.trim().toLowerCase(),
+          product_data: { name: `${variant.name} (${item.size})` },
+          unit_amount: unitAmount,
+        },
+        quantity: quantityRequested,
+      });
+
+      orderItems.push({
+        photoId: item.photoId,
+        size: item.size,
+        quantity: quantityRequested,
+        unitAmountCents: unitAmount,
+        name: variant.name,
+      });
+    }
+
+    const origin = request.headers.get("origin") ?? new URL(request.url).origin;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: lineItems,
+      shipping_address_collection: {
+        allowed_countries: EU_COUNTRIES,
+      },
+      phone_number_collection: {
+        enabled: true,
+      },
+      shipping_options: stripeShippingOptions(),
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/checkout/cancel`,
+    });
+
+    await client.query(
+      `INSERT INTO orders (stripe_session_id, status, items, total_cents, email, user_id)
+       VALUES ($1, 'pending', $2::jsonb, $3, $4, $5)`,
+      [session.id, JSON.stringify(orderItems), totalCents, session.customer_email ?? userEmail, userId],
+    );
+
+    return NextResponse.json({ url: session.url });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "No se pudo iniciar el pago.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  } finally {
+    client.release();
+  }
+}
