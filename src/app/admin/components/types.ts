@@ -9,7 +9,8 @@ export type PhotoFormValues = {
   preferidos: boolean;
   pais: string;
   stock: string;
-  images: string;
+  imageUrl: string;
+  imageAlt: string;
 };
 
 export type AdminVariant = {
