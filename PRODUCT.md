@@ -71,8 +71,12 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 
 ## Brand Commitments
 
-- Nombre: **Pato Turri**. Wordmark tipográfico en dos líneas ("Pato" / "Turri"),
-  sin logotipo gráfico: no existe ningún SVG de marca en el repo. "Turri" va en
+- Nombre: **Pato Turri**. Wordmark tipográfico en dos líneas ("Pato" / "Turri").
+  No hay logotipo en la interfaz: la marca en pantalla es siempre el wordmark.
+  El único signo gráfico es el **icono del sitio** —un dibujo a plumín de una
+  cámara telemétrica, elegido por el usuario el 2026-09-12—, que vive solo en
+  la pestaña del navegador y en la pantalla de inicio; el original está en
+  `src/assets/camera-source.png`. "Turri" va en
   Playfair Display itálica y **no cambia**: es el único resto de esa familia en
   el sitio, y vive en su propia variable `--font-wordmark` para sobrevivir a
   cualquier cambio de la cara de títulos.
