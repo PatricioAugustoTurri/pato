@@ -1,10 +1,13 @@
 import Link from "next/link";
 import DestinationsSection from "@/components/DestinationsSection";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Destinations",
-  description: "Every country in the archive, with the work that came out of it.",
-};
+export const metadata = pageMetadata({
+  title: "Destinations",
+  description:
+    "Every country in the archive — from Thailand and Vietnam to Mexico, Guatemala, Brazil and Argentina — with the work that came out of it.",
+  path: "/destinations",
+});
 
 /* El mismo indice que cierra la portada, con todo el archivo en vez de los
    paises curados. Va envuelto en `.home` para heredar exactamente la misma

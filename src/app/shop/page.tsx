@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { pool } from "@/lib/db";
 import ShopRoom from "@/app/shop/components/ShopRoom";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Shop",
+  description:
+    "Every collection in the archive: History, City, Landscape and Portrait, printed to order in A4, A3 and A2.",
+  path: "/shop",
+});
 
 export type CategoryRow = {
   id: number;

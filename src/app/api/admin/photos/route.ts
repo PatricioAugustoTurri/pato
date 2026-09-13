@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { VARIANTS_SUBQUERY, catalogVariants, replaceVariants } from "@/lib/photo-variants";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import type { AdminPhoto } from "@/app/admin/components/types";
 
 type PhotoPayload = {
@@ -68,6 +69,8 @@ export async function POST(request: Request) {
     await replaceVariants(client, photoId, catalogVariants(stock));
 
     await client.query("COMMIT");
+
+    revalidateCatalog();
 
     return NextResponse.json({ id: photoId }, { status: 201 });
   } catch (error) {

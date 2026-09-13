@@ -29,7 +29,7 @@ export default function AdminHeader({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => signOut({ callbackUrl: "/admin/login" })}
+          onClick={() => signOut({ redirectTo: "/admin/login" })}
         >
           <LogOut aria-hidden="true" /> Cerrar sesión
         </Button>

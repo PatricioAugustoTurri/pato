@@ -90,14 +90,14 @@ export async function POST(request: Request) {
 
       if (!variant) {
         return NextResponse.json(
-          { error: `El tamaño ${item.size} ya no está disponible para esta fotografía.` },
+          { error: `The ${item.size} size is no longer available for this photograph.` },
           { status: 400 },
         );
       }
 
       if (variant.stock < quantityRequested) {
         return NextResponse.json(
-          { error: `No hay stock suficiente de "${variant.name}" (${item.size}).` },
+          { error: `There is not enough stock of "${variant.name}" (${item.size}).` },
           { status: 400 },
         );
       }
@@ -127,6 +127,11 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      /* El sitio está en inglés y la página de pago es la pantalla siguiente a
+         la nuestra. Sin esto Stripe usa `auto`, que mira el idioma del
+         navegador: el mismo carrito terminaba en español o en italiano según
+         quién comprara. */
+      locale: "en",
       line_items: lineItems,
       /* Solo los países de la zona elegida. Stripe se encarga de que no entre
          una dirección que no corresponda a la tarifa que se está cobrando. */

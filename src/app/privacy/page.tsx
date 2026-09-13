@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Privacy",
-  description: "What this shop collects, why, who else sees it, and how to get it deleted.",
-};
+export const metadata = pageMetadata({
+  title: "Privacy",
+  description:
+    "What this shop collects, why, who else sees it, and how to get it deleted.",
+  path: "/privacy",
+});
 
 /* Esta página describe lo que el código hace de verdad, comprobado contra él:
    no hay analítica, no hay rastreadores, las tipografías se auto-alojan y el
@@ -26,7 +29,7 @@ export default function PrivacyPage() {
         <p>
           Pato Turri. For anything on this page — a question, a correction, a request to
           delete something — the address is{" "}
-          <a href="mailto:hola@patoturri.com">hola@patoturri.com</a>, and the person who
+          <a href="mailto:info@patoturri.com">info@patoturri.com</a>, and the person who
           reads it is the same one who took the photographs.
         </p>
       </section>

@@ -4,6 +4,13 @@ import bcrypt from "bcryptjs";
 import { pool } from "@/lib/db";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  /* En producción el sitio no recibe el pedido directo: llega detrás del proxy
+     del hosting, que reescribe el `Host`. Sin esto NextAuth considera ese host
+     no confiable y rechaza el callback: el formulario de acceso queda dando
+     vueltas y nadie puede entrar, ni un cliente a sus pedidos ni el autor a su
+     panel. En local no cambia nada porque ahí el host ya es el real. */
+  trustHost: true,
+
   /* Una sola puerta: email y contraseña. Google se retiró por decisión del
      autor; con él se fueron su alta automática de cuentas y el puente que
      resolvía el id contra `users`. */

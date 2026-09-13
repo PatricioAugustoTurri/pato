@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_HOST } from "./src/lib/cloudinary";
 
 const nextConfig: NextConfig = {
+  // Empaqueta en `.next/standalone` solo lo que hace falta para correr, con un
+  // `server.js` propio en vez de `next start`. Sin esto la imagen de Docker se
+  // lleva los 601 MB de `node_modules`; con esto, una fraccion.
+  output: "standalone",
+
   images: {
     // Todo el catálogo vive en esta cuenta de Cloudinary. Declararla permite
     // que `next/image` optimice las fotografías en vez de servirlas crudas:
@@ -8,8 +14,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/dvmsjdcqi/**",
+        hostname: CLOUDINARY_HOST,
+        pathname: `/${CLOUDINARY_CLOUD_NAME}/**`,
       },
     ],
 

@@ -3,11 +3,14 @@ import { formatPrice } from "@/lib/money";
 import { CATALOG_SIZES } from "@/lib/photo-variants";
 import { getArchiveCounts } from "@/lib/photos";
 import { sizeDimensions } from "@/lib/sizes";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Frequently asked questions",
-  description: "Sizes, prices, shipping and accounts — the things people ask before ordering a print.",
-};
+export const metadata = pageMetadata({
+  title: "Frequently Asked Questions",
+  description:
+    "Print sizes and prices, shipping to Italy and the EU, delivery times and accounts — the things people ask before ordering.",
+  path: "/faq",
+});
 
 /* Solo se responde lo que el sistema sostiene. Los precios salen de
    `CATALOG_SIZES`, que es la lista con la que el servidor arma las variantes de
@@ -24,7 +27,7 @@ export default async function FaqPage() {
       </h1>
       <p className="doc-lead">
         The things people write to ask before ordering. If yours is not here, it goes to{" "}
-        <a href="mailto:hola@patoturri.com">hola@patoturri.com</a>.
+        <a href="mailto:info@patoturri.com">info@patoturri.com</a>.
       </p>
 
       <section className="doc-section">
