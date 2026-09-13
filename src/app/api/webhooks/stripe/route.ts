@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { pool } from "@/lib/db";
+import { sendOrderConfirmation, type OrderConfirmation } from "@/lib/order-email";
 
 /** Lo que el checkout guarda en `orders.items`. */
 type OrderItem = {
@@ -50,6 +51,11 @@ export async function POST(request: Request) {
       const shippingOptionName =
         shippingRate && typeof shippingRate !== "string" ? shippingRate.display_name : null;
 
+      /* Se llena solo si el UPDATE de abajo devuelve fila, o sea si este
+         evento es el primero que cobra este pedido. Vive fuera del `try` de la
+         transaccion porque el mail se manda despues de cerrarla. */
+      let confirmation: OrderConfirmation | null = null;
+
       const client = await pool.connect();
 
       try {
@@ -60,7 +66,7 @@ export async function POST(request: Request) {
            sin esta condición cada reintento volvería a descontar stock de una
            compra que ya se cobró una sola vez. Si no vuelve fila, el pedido ya
            estaba cobrado y no hay nada que hacer. */
-        const { rows } = await client.query<{ items: OrderItem[] }>(
+        const { rows } = await client.query<{ id: number; items: OrderItem[]; email: string | null }>(
           `UPDATE orders
            SET status = 'paid',
                email = COALESCE($2, email),
@@ -71,7 +77,7 @@ export async function POST(request: Request) {
                shipping_amount_cents = $7,
                amount_total_cents = $8
            WHERE stripe_session_id = $1 AND status <> 'paid'
-           RETURNING items`,
+           RETURNING id, items, email`,
           [
             session.id,
             customerDetails?.email ?? null,
@@ -101,12 +107,36 @@ export async function POST(request: Request) {
           );
         }
 
+        /* La misma fila que autoriza a descontar stock autoriza a mandar el
+           mail: si Stripe reintenta el evento, el UPDATE no devuelve nada y el
+           comprador no recibe una segunda confirmacion de la misma compra. */
+        const paid = rows[0];
+        if (paid?.email) {
+          confirmation = {
+            orderId: paid.id,
+            to: paid.email,
+            customerName: customerDetails?.name ?? null,
+            items: paid.items ?? [],
+            shippingOption: shippingOptionName,
+            shippingAmountCents: session.shipping_cost?.amount_total ?? null,
+            totalCents: session.amount_total ?? null,
+          };
+        }
+
         await client.query("COMMIT");
       } catch (error) {
         await client.query("ROLLBACK");
         throw error;
       } finally {
         client.release();
+      }
+
+      /* Despues de la respuesta, no antes. Stripe espera un 200 rapido y
+         reintenta el evento si tarda; que Resend este lento o caido no puede
+         hacer que un cobro ya procesado vuelva a entrar por la puerta. */
+      if (confirmation) {
+        const order = confirmation;
+        after(() => sendOrderConfirmation(order));
       }
     } catch {
       return NextResponse.json({ error: "No se pudo actualizar la orden." }, { status: 500 });
