@@ -86,7 +86,7 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   ("más moderno"). La itálica es requisito, no adorno: tres titulares la usan
   como acento (`contigo.`, `de este mes.`, `Mirar mejor.`), así que cualquier
   reemplazo futuro debe traer itálica dibujada, no sintética.
-- Email de contacto publicado en la UI: hola@patoturri.com
+- Email de contacto publicado en la UI: info@patoturri.com
 - Idioma del sitio: **inglés** (decisión del usuario). La UI en español
   rioplatense actualmente en el código es un remanente a traducir.
 

@@ -27,7 +27,7 @@ export default function ReturnsPage() {
           distance, and it applies here.
         </p>
         <p>
-          Write to <a href="mailto:hola@patoturri.com">hola@patoturri.com</a> first so we
+          Write to <a href="mailto:info@patoturri.com">info@patoturri.com</a> first so we
           agree on where it goes. Send it back the way it reached you — flat, protected,
           in the same condition — because a print that arrives creased cannot be sold to
           anyone else.

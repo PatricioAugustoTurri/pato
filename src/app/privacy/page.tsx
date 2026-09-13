@@ -29,7 +29,7 @@ export default function PrivacyPage() {
         <p>
           Pato Turri. For anything on this page — a question, a correction, a request to
           delete something — the address is{" "}
-          <a href="mailto:hola@patoturri.com">hola@patoturri.com</a>, and the person who
+          <a href="mailto:info@patoturri.com">info@patoturri.com</a>, and the person who
           reads it is the same one who took the photographs.
         </p>
       </section>

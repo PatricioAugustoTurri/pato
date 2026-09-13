@@ -70,7 +70,7 @@ export default function ShippingPage() {
           <Link href="/account">your account</Link>: what you chose, what it cost, and the
           address it goes to. There is no automatic tracking email yet, so for anything
           about a parcel in transit, write to{" "}
-          <a href="mailto:hola@patoturri.com">hola@patoturri.com</a> — the same person who
+          <a href="mailto:info@patoturri.com">info@patoturri.com</a> — the same person who
           took the photographs reads it.
         </p>
       </section>

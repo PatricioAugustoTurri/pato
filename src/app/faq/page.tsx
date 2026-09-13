@@ -27,7 +27,7 @@ export default async function FaqPage() {
       </h1>
       <p className="doc-lead">
         The things people write to ask before ordering. If yours is not here, it goes to{" "}
-        <a href="mailto:hola@patoturri.com">hola@patoturri.com</a>.
+        <a href="mailto:info@patoturri.com">info@patoturri.com</a>.
       </p>
 
       <section className="doc-section">
