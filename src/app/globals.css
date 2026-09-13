@@ -1327,6 +1327,16 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .auth-field input:hover { border-color: var(--line-soft); }
 .auth-field input:focus-visible { border-color: var(--accent-text); box-shadow: none; outline: none; }
 .auth-field input[aria-invalid="true"] { border-color: var(--error); box-shadow: none; }
+
+/* El ojo que descubre la contraseña. Se apoya sobre el campo en vez de ocupar
+   una linea propia: el formulario son tres filas cortas y una cuarta para un
+   control auxiliar desbalancearia la puerta. El campo le cede el espacio a la
+   derecha para que el texto largo no pase por debajo. */
+.auth-password { position: relative; }
+.auth-password input { padding-right: 46px; }
+.auth-reveal { align-items: center; bottom: 1px; color: var(--text-muted); display: flex; justify-content: center; position: absolute; right: 1px; top: 1px; width: 44px; }
+.auth-reveal:hover { color: var(--ink); }
+.auth-reveal:focus-visible { outline: 2px solid var(--ink); outline-offset: -3px; }
 .auth-hint { color: var(--text-muted); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
 .auth-error { color: var(--error); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
 .auth-submit { background: var(--ink); border: 0; border-radius: 0; color: var(--paper); font-size: 13px; height: 46px; justify-content: center; margin-top: 4px; width: 100%; }
@@ -1337,6 +1347,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 
 @media (prefers-reduced-motion: no-preference) {
   .auth-field input, .auth-submit { transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .auth-reveal { transition: color var(--dur-fast) var(--ease); }
 }
 /* --- El libro de pedidos ---------------------------------------------------
    La misma sala de dos materiales que el carrito, porque es el mismo tipo de
