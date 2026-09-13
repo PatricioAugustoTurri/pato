@@ -8,7 +8,7 @@ import { signOut } from "next-auth/react";
    que lo justifica. */
 export default function SignOutButton() {
   return (
-    <button className="order-signout" type="button" onClick={() => signOut({ callbackUrl: "/" })}>
+    <button className="order-signout" type="button" onClick={() => signOut({ redirectTo: "/" })}>
       <span className="order-signout-rule">Sign out</span>
     </button>
   );
