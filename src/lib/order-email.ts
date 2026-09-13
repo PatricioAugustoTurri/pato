@@ -68,6 +68,13 @@ function itemRows(items: OrderEmailItem[]): string {
 export async function sendOrderConfirmation(order: OrderConfirmation): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.CONTACT_FROM_EMAIL || "onboarding@resend.dev";
+  /* El remitente es una direccion del dominio que nadie lee: se verifico en
+     Resend para poder enviar, pero no hay casilla detras. Y esta confirmacion,
+     a diferencia del formulario de contacto, va al cliente: si responde —por el
+     envio, porque puso mal la direccion, porque quiere agregar una copia— le
+     esta escribiendo al unico lugar que le ofrecimos. Sin esto ese mail se
+     pierde sin rebote y sin aviso, y del otro lado parece que nadie contesta. */
+  const replyTo = process.env.CONTACT_TO_EMAIL;
 
   if (!apiKey) {
     console.error(`[order-email] pedido ${order.orderId}: falta RESEND_API_KEY`);
@@ -128,6 +135,9 @@ export async function sendOrderConfirmation(order: OrderConfirmation): Promise<v
     const { error } = await resend.emails.send({
       from: `Pato Turri <${from}>`,
       to: order.to,
+      /* Se omite la clave entera si no hay a donde responder, en vez de
+         mandarla en `undefined` y confiar en que el SDK la descarte. */
+      ...(replyTo ? { replyTo } : {}),
       subject: `Your order #${order.orderId}`,
       text,
       html,
