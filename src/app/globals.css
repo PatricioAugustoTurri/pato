@@ -616,6 +616,22 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 @media not all and (hover: hover) {
   .shop-plate-image { filter: brightness(.5) saturate(.9); }
 }
+/* Apilada, la misma fotografia se lee de otra manera. En el panel alto de
+   desktop el ojo la recorre y el .5 es penumbra de sala; en la banda baja y
+   ancha del telefono se ve entera de un golpe, y esa penumbra llegaba a
+   apagada justo donde la obra tiene que invitar a entrar. El .75 es la cifra
+   mas alta que el texto banca: el nombre cae sobre ~81% de tinta compuesta
+   —el velo del bloque mas el del panel— y con un reflejo quemado detras mide
+   4,6:1, apenas sobre el 4,5:1 de AA. Subir mas obliga a aflojar el velo, y
+   eso sale de la legibilidad, no del brillo.
+
+   El texto no depende de este numero: cae sobre el velo del propio bloque
+   —.9 a .95 de tinta— sumado al del panel, o sea que su fondo es tinta llena
+   con o sin fotografia detras. Lo que se aclara es la parte de la banda donde
+   no hay nada escrito. */
+@media not all and (hover: hover) and (max-width: 900px) {
+  .shop-plate-image { filter: brightness(.75) saturate(.9); }
+}
 @media (hover: none) and (min-width: 901px) {
   .shop-plate-line { display: none; }
 }
@@ -636,8 +652,21 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
     /* Proporcion pura: 40px por obra da 200 · 280 · 320 · 840, o sea
        1 : 1,4 : 1,6 : 4,2. Es `min-height`, no `height`, para que un nombre
        largo o un cuerpo de texto mas grande empujen la banda en vez de que
-       se corten en silencio. */
-    min-height: calc(var(--weight, 1) * 40px);
+       se corten en silencio.
+
+       Con techo, porque 840px en un telefono es la pantalla entera: Portrait
+       dejaba de leerse como una de cuatro colecciones y pasaba a ser una
+       pagina, sin borde visible que avisara que abajo sigue habiendo algo.
+       Cortada en 72svh siempre asoma el filo de la siguiente banda. La
+       proporcion cede un poco y no se pierde —Portrait sigue midiendo casi el
+       doble que la segunda—, que es el intercambio correcto: la cifra la
+       cantan igual el nombre y el `21 works` de al lado.
+
+       El piso de 420px es para que el techo nunca baje del alto de Landscape:
+       en horizontal, 72svh se vuelve chico y sin el piso las dos bandas mas
+       grandes quedarian iguales, que es justo lo que la proporcion existe
+       para evitar. */
+    min-height: min(calc(var(--weight, 1) * 40px), max(420px, 72svh));
     min-width: 0;
     /* La imagen es `fill`, o sea que ya esta acotada al panel: recortar no
        hace falta, y `hidden` convertiria el panel en contenedor de scroll,
