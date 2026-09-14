@@ -64,13 +64,19 @@ async function getCatalogRoutes(): Promise<CatalogRow[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
   const catalog = await getCatalogRoutes();
 
   return [
+    /* Sin `lastModified` a propósito. Era `new Date()`, o sea la hora en que el
+       robot pedía el archivo: las nueve páginas juraban haber cambiado hace un
+       segundo en cada visita. Una fecha que siempre dice lo mismo no es un
+       dato, es ruido —el mismo motivo por el que el catálogo usa su `updated_at`
+       real—, y cuando Google deja de creerle al campo lo ignora en todo el
+       archivo, también en las obras, que es donde sí significa algo. Estas
+       páginas cambian cuando se sube el sitio y el mapa no tiene forma de saber
+       cuándo fue eso, así que no lo dice. El campo es opcional. */
     ...STATIC_ROUTES.map(({ path, priority, changeFrequency }) => ({
       url: absoluteUrl(path),
-      lastModified: now,
       changeFrequency,
       priority,
     })),
