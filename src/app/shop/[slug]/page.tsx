@@ -9,6 +9,7 @@ import CategoryRoom from "@/app/shop/[slug]/components/CategoryRoom";
 import type { HungPhoto } from "@/app/shop/[slug]/components/CategoryRoom";
 import type { PhotoDetailRow } from "@/types/PhotoType";
 import JsonLd from "@/components/JsonLd";
+import { countryLabel } from "@/lib/countries";
 import { cleanTitle } from "@/lib/place";
 import { metaDescription, pageMetadata } from "@/lib/seo";
 import { breadcrumbSchema, collectionSchema } from "@/lib/structured-data";
@@ -102,10 +103,23 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const hung: HungPhoto[] = photos.map((photo, index) => ({ ...photo, ratio: ratios[index] }));
 
   const imageUrl = normalizePhotoImage(category.images);
-  // Países representados en esta colección, sin repetir y en orden.
+  /* Países representados en esta colección, sin repetir y en orden.
+
+     En inglés, como el resto de la página: la columna `pais` guarda el
+     castellano y esta ficha decía «Tailandia · Marruecos» debajo de un título
+     en inglés. Ahora que cada país tiene su propia sala, que ahí se llama
+     «Thailand», la traducción dejó de ser una prolijidad y pasó a ser lo que
+     evita que parezcan dos lugares distintos. Plegar por el nombre mostrado
+     junta además «México» y «Mexico», que son el mismo país escrito de dos
+     maneras en la base. */
   const paises = Array.from(
-    new Set(photos.map((photo) => photo.pais).filter((pais): pais is string => Boolean(pais))),
-  ).sort((a, b) => a.localeCompare(b, "es"));
+    new Set(
+      photos
+        .map((photo) => photo.pais)
+        .filter((pais): pais is string => Boolean(pais))
+        .map(countryLabel),
+    ),
+  ).sort((a, b) => a.localeCompare(b, "en"));
 
   return (
     <main className="category-page">
@@ -129,9 +143,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           { name: category.name, path: `/shop/${category.slug}` },
         ])}
       />
-      <CategoryHero imageUrl={imageUrl} title={category.name} obras={photos.length} paises={paises} />
+      <CategoryHero imageUrl={imageUrl} title={category.name} obras={photos.length} indexValues={paises} />
       <CategoryRoom
-        categoryName={category.name}
+        roomName={category.name}
         categorySlug={category.slug}
         description={category.descripcion || ""}
         photos={hung}

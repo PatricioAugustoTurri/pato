@@ -4,10 +4,22 @@ type CategoryHeroProps = {
   imageUrl: string;
   title: string;
   obras: number;
-  paises: string[];
+  /* La segunda cifra de la ficha es el OTRO eje del archivo, y cuál es
+     depende de qué sala abre esta tapa: una colección se cuenta por los
+     países que recorre, un país por las colecciones que atraviesa. Es la
+     misma ficha leída al revés, así que es un rótulo y una lista, no dos
+     componentes que se parecen. */
+  indexLabel?: string;
+  indexValues: string[];
 };
 
-export default function CategoryHero({ imageUrl, title, obras, paises }: CategoryHeroProps) {
+export default function CategoryHero({
+  imageUrl,
+  title,
+  obras,
+  indexLabel = "Countries",
+  indexValues,
+}: CategoryHeroProps) {
   return (
     <section className="hero-section">
       {/* Mismo elemento y mismo <Image> que la portada: así la fotografía se
@@ -24,10 +36,10 @@ export default function CategoryHero({ imageUrl, title, obras, paises }: Categor
 
         <dl className="hero-index">
           <div><dt>Works</dt><dd>{obras}</dd></div>
-          {paises.length > 0 && (
+          {indexValues.length > 0 && (
             <div className="hero-index-now">
-              <dt>Countries</dt>
-              <dd>{paises.join(" · ")}</dd>
+              <dt>{indexLabel}</dt>
+              <dd>{indexValues.join(" · ")}</dd>
             </div>
           )}
         </dl>

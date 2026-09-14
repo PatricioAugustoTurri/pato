@@ -322,6 +322,21 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
    sobre la fotografia. Se queda por debajo del hero a proposito —172px alli,
    152px aca— para que la portada siga teniendo una sola voz principal. */
 .home-chapter-mark h2, .home-chapter-mark h3 { color: var(--paper); font-family: var(--font-heading); font-size: var(--mast); font-weight: 500; letter-spacing: -.045em; line-height: .82; margin-bottom: 0; }
+/* El nombre del pais es la puerta a su archivo. Hereda el color del titular y
+   no lleva subrayado: una regla debajo de un titular de 152px no se lee como
+   un enlace, se lee como un filete de seccion. Lo que avisa es la flecha, la
+   misma que marca cada puerta del sitio, y el color al recorrerlo. */
+.home-chapter-link { color: inherit; text-decoration: none; }
+.home-chapter-link:hover { color: var(--accent); }
+/* Anillo de papel: es el contraste de esta sala, la misma regla que usan los
+   paneles de /shop. */
+.home-chapter-link:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px; }
+/* Proporcional al nombre, con piso. El titular va de 36px a 152px segun el
+   ancho: a .22em la flecha mide 33px en desktop y 8px en el telefono, mas
+   chica que la cifra en mono que tiene al lado, y en tactil es el UNICO aviso
+   de que ahi se entra —el color al recorrer no existe sin puntero—. El piso
+   la deja legible donde mas falta hace. */
+.home-chapter-go { display: inline-block; font-size: max(11px, .22em); letter-spacing: normal; margin-left: .14em; vertical-align: .62em; }
 /* Cifra del archivo, no rotulo decorativo: va DEBAJO del nombre del pais. */
 .home-chapter-count { color: var(--cream-200); font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin: 18px 0 0; text-transform: uppercase; }
 .home-chapter-note { color: var(--cream-200); font-size: 15.5px; line-height: 1.78; margin: 0; max-width: 46ch; }
@@ -423,6 +438,7 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
   .home-plate:hover .home-plate-go, .home-plate:focus-visible .home-plate-go { transform: translate(3px, -3px); }
   .home-pick-caption { transition: border-color var(--dur-base) var(--ease); }
   .home .text-link { transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+  .home-chapter-link { transition: color var(--dur-fast) var(--ease); }
 }
 
 /* El momento de la portada, y el unico: bajar por la pagina es abrir la sala.
@@ -741,8 +757,6 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
    igual que el ancho de los paneles de /shop sale de la cantidad de obras. */
 .room-hang { display: flex; flex-direction: column; gap: clamp(74px, 9vw, 158px); margin: 0 auto; max-width: 1280px; padding: 0 5vw; }
 .hang-wall { display: flex; gap: clamp(26px, 3.4vw, 62px); }
-.hang-wall[data-lean="left"] { padding-right: clamp(0px, 9vw, 128px); }
-.hang-wall[data-lean="right"] { padding-left: clamp(0px, 9vw, 128px); }
 /* El ancho de una obra sola sale de su proporcion: a un ancho fijo, una
    vertical 2:3 medira pantalla y media de alto y una 16:9 se quedara chica. */
 .hang-wall[data-solo] { justify-content: center; padding: 0; }
@@ -752,8 +766,6 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
    obra, de modo que ancho/proporcion —o sea el alto— da igual para las dos.
    Es la unica manera de alinear un 3:2 con un 2:3 sin recortar ninguno. */
 .hang-plate { display: block; flex: var(--ratio, 1) 1 0; min-width: 0; }
-/* Y la segunda del par baja: es un colgado, no una fila de planilla. */
-.hang-plate { margin-top: calc(var(--drop, 0) * clamp(26px, 4vw, 74px)); }
 .hang-frame { background: rgba(244, 241, 235, .05); display: block; overflow: hidden; position: relative; width: 100%; aspect-ratio: var(--ratio, 1.5); }
 .hang-image { object-fit: cover; }
 .hang-plate:focus-visible { outline: none; }
@@ -791,11 +803,10 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   
 }
 /* Angosto, una obra por pared: dos verticales en 390px darian 170px de ancho y
-   la cartela no entraria. El escalonado tambien se apaga, porque en una sola
-   columna no escalona nada, solo abre un hueco. */
+   la cartela no entraria. */
 @media (max-width: 700px) {
-  .hang-wall, .hang-wall[data-lean="left"], .hang-wall[data-lean="right"] { flex-direction: column; gap: clamp(52px, 11vw, 76px); padding: 0; }
-  .hang-plate, .hang-wall[data-solo] .hang-plate { margin-top: 0; width: 100%; }
+  .hang-wall { flex-direction: column; gap: clamp(52px, 11vw, 76px); padding: 0; }
+  .hang-plate, .hang-wall[data-solo] .hang-plate { width: 100%; }
 }
 /* --- La obra: mirar y comprar en la misma pantalla -------------------------
    Dos materiales, dos trabajos. La obra cuelga en el mismo campo de tinta del
@@ -1841,6 +1852,12 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   .hero-inner { gap: 26px; padding: 104px 7vw 26px; }
   .hero-title { font-size: clamp(46px, 13vw, 68px); letter-spacing: -.03em; }
   .hero-index { gap: 8px 26px; }
+  /* La ficha del hero dice cifras verificables, y en una linea sola no entran:
+     los nueve paises de Portrait se cortaban en «Argentina · Bolivia · Cos…».
+     Un dato a medias no es un dato. Acá la lista envuelve y la ficha crece,
+     que es lo unico que puede pasar en una columna que ya apila. */
+  .hero-index-now { flex-basis: 100%; justify-content: flex-start; }
+  .hero-index-now dd { overflow: visible; white-space: normal; }
 }
 
 /* --- Revelado al hacer scroll ----------------------------------------------

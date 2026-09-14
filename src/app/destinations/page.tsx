@@ -26,6 +26,8 @@ export default function DestinationsPage() {
         }
         headingLevel={1}
         curatedOnly={false}
+        /* Acá el visitante vino a elegir un lugar: cada nombre abre su archivo. */
+        linkCountries
         /* Un indice vacio en la portada es una franja que no se dibuja; acá es la
            pagina entera. Y `getCountryChapters` traga cualquier error de base en
            un `[]`, asi que sin esto un traspie de Postgres sirve una pagina en

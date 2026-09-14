@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { pool } from "@/lib/db";
 import { absoluteUrl } from "@/lib/seo";
+import { getCountryIndex } from "@/lib/photos";
 
 /**
  * El mapa que Google usa para descubrir el catálogo.
@@ -63,8 +64,28 @@ async function getCatalogRoutes(): Promise<CatalogRow[]> {
   }
 }
 
+/**
+ * Las páginas de país.
+ *
+ * Son el segundo eje del mismo archivo —las mismas obras leídas por lugar— y
+ * por eso pesan menos que una colección: la obra se compra en su dirección de
+ * colección, que es la canónica, y estas páginas están para que alguien que
+ * busca «vietnam photography prints» llegue al archivo.
+ *
+ * La lista sale de `getCountryIndex`, la misma que decide qué páginas se
+ * prerrenderizan: el mapa no puede anunciar una dirección que la aplicación no
+ * sirve. La fecha es la de la última obra editada de ese país, no la de hoy.
+ */
+async function getCountryRoutes(): Promise<CatalogRow[]> {
+  const countries = await getCountryIndex();
+  return countries.map(({ slug, updatedAt }) => ({
+    path: `/destinations/${slug}`,
+    updatedAt,
+  }));
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const catalog = await getCatalogRoutes();
+  const [catalog, countries] = await Promise.all([getCatalogRoutes(), getCountryRoutes()]);
 
   return [
     /* Sin `lastModified` a propósito. Era `new Date()`, o sea la hora en que el
@@ -87,6 +108,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       /* Una obra concreta es lo que alguien busca y lo que se vende; pesa más
          que cualquier página de condiciones y menos que la portada. */
       priority: path.split("/").length > 3 ? 0.8 : 0.9,
+    })),
+    ...countries.map(({ path, updatedAt }) => ({
+      url: absoluteUrl(path),
+      lastModified: updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
   ];
 }

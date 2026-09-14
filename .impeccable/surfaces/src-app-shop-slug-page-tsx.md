@@ -43,10 +43,17 @@ acercarse sube a 1.04 — la sala se enciende sobre el cuadro que estás mirando
 cada una es su propia proporción: por eso las dos miden lo mismo de alto sin
 que a ninguna haya que recortarla. Cada tercera pared cuelga una obra sola, con
 el ancho derivado también de su forma (una 2:3 a 78% mediría pantalla y media).
-La segunda del par baja un escalón, y las paredes entran alternadamente por un
-lado y por el otro. El ritmo no lo inventa la interfaz: sale del cuadro. Es el
+El ritmo no lo inventa la interfaz: sale del cuadro. Es el
 mismo argumento que el muro de /shop, donde el ancho del panel es la cantidad
 de obras — en los dos casos la forma la decide el catálogo, no la plantilla.
+
+*Retirado el 2026-09-14, a pedido del autor:* la segunda obra de cada par
+bajaba un escalón y las paredes entraban alternadamente por un lado y por el
+otro. Con cuadros de proporciones muy distintas —y más todavía en la sala de un
+país, donde las obras vienen de colecciones distintas— ese zigzag competía con
+la variación que ya traen las obras. Un par ahora arranca y termina a la misma
+altura, que es lo que su propia geometría venía diciendo: mismo alto por
+construcción. Queda una sola variación y significa algo: el ancho.
 
 **LA CARTELA.** Debajo del cuadro, nunca encima: una sala no imprime el título
 sobre la obra. Número correlativo en mono, título en Familjen Grotesk, país en
