@@ -106,10 +106,11 @@ export default function CategoryRoom({
       {/* El cartel de sala: solo la voz del autor. La ficha de medidas y precios
           que vivia al costado se retiro por decision del autor; los tamanos se
           eligen en la ficha de cada obra, que es donde se compra. */}
-      {/* Sin texto no se dibuja el cartel. Diez de los doce países todavía no
-          tienen relato escrito, y un bloque vacío entre la tapa y el muro es
-          una sala con un marco colgado sin cuadro: mejor que la fotografía
-          empiece antes. */}
+      {/* Sin texto no se dibuja el cartel. La proporción se dio vuelta —cuando
+          esto se escribió, diez de doce países no tenían relato; hoy solo falta
+          el de China—, pero la regla no cambia: un bloque vacío entre la tapa y
+          el muro es una sala con un marco colgado sin cuadro, y es mejor que la
+          fotografía empiece antes. */}
       {lead && (
         <div className="room-entry">
           <div className="room-statement">

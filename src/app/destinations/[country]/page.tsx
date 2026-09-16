@@ -17,14 +17,17 @@ import { breadcrumbSchema, collectionSchema } from "@/lib/structured-data";
    por visita en vez de una. */
 const getArchive = cache(getCountryArchive);
 
-/* El catálogo se edita desde el panel, no en un deploy, así que estas doce
-   páginas se rehacen solas cada hora en vez de consultar la base —41 filas más
-   una proporción por obra— en cada visita. Es la misma cifra que usa el mapa
-   del sitio, y en un servidor que se paga por mes es la diferencia entre doce
-   páginas que cuestan una consulta por hora y doce que cuestan una por lector. */
+/* El catálogo se edita desde el panel, no en un deploy, así que estas páginas
+   —una por país con obra— se rehacen solas cada hora en vez de consultar la
+   base en cada visita: el archivo entero más una proporción por obra. Es la
+   misma cifra que usa el mapa del sitio, y en un servidor que se paga por mes
+   es la diferencia entre una consulta por hora y una por lector.
+
+   Sin la cantidad escrita a propósito: eran doce cuando esto se redactó y hoy
+   son diecisiete. La cifra vive en `getCountryIndex`, que es quien la cuenta. */
 export const revalidate = 3600;
 
-/* Los doce países se prerrenderizan al compilar. `dynamicParams` sigue en su
+/* Los países con obra se prerrenderizan al compilar. `dynamicParams` sigue en su
    valor por defecto a propósito: un país nuevo cargado desde el panel se sirve
    igual, a pedido, en vez de dar 404 hasta la próxima subida. */
 export async function generateStaticParams() {

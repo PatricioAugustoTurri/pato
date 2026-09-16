@@ -118,8 +118,11 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "europa",
-    /* Sin fotografías: no hay obra europea en el archivo, y no se sustituye
-       con nada que no sea de Pato. El capítulo respira. */
+    /* Sin fotografías por una razón que ya caducó: cuando el capítulo se armó
+       no había una sola obra europea en el archivo, y no se iba a rellenar con
+       nada que no fuera de Pato. Hoy España e Italia sí tienen obra cargada, así
+       que el hueco se puede llenar —falta que el autor elija qué dos anclan acá
+       y sumar sus slugs a `ANCHORED_SLUGS`, como hacen los demás capítulos. */
     title: {
       es: "Europa y un cierre que en realidad es un comienzo",
       en: "Europe, and an Ending That Is Really a Beginning",
