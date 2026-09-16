@@ -681,8 +681,18 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
        El piso de 420px es para que el techo nunca baje del alto de Landscape:
        en horizontal, 72svh se vuelve chico y sin el piso las dos bandas mas
        grandes quedarian iguales, que es justo lo que la proporcion existe
-       para evitar. */
-    min-height: min(calc(var(--weight, 1) * 40px), max(420px, 72svh));
+       para evitar.
+
+       Y un piso para la banda misma, por la razon simetrica. History son 5
+       obras, o sea 200px, y de esos el bloque de texto —nombre, cifra y dos
+       lineas de prosa sobre su velo— se lleva unos 140: quedaba una banda
+       donde casi no se ve fotografia, que es el unico argumento que tiene una
+       banda en una sala. 260px la dejan apenas por debajo de City (280px) y no
+       tocan a ninguna otra, porque son la unica que estaba debajo del piso.
+       Apilado la proporcion ya venia recortada arriba por el techo; recortarla
+       tambien abajo es la misma decision, no una excepcion. En desktop, donde
+       la proporcion es ancho y hay lugar para las cuatro, sigue entera. */
+    min-height: clamp(260px, calc(var(--weight, 1) * 40px), max(420px, 72svh));
     min-width: 0;
     /* La imagen es `fill`, o sea que ya esta acotada al panel: recortar no
        hace falta, y `hidden` convertiria el panel en contenedor de scroll,
