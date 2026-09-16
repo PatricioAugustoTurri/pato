@@ -135,7 +135,7 @@ h1 i, h2 i { color: var(--accent-text); font-weight: 500; }
 /* --- Hero -----------------------------------------------------------------
    Una sola fotografía del archivo a sangre completa. La obra ocupa la pantalla
    y la interfaz se apoya encima; nada compite con ella. */
-.hero-section { background: var(--ink); color: var(--paper); display: flex; min-height: 100svh; overflow: hidden; position: relative; }
+.hero-section { background: var(--ink); color: var(--paper); display: flex; min-height: 100svh; overflow: hidden; position: relative; --cover-y: 42%; }
 .hero-media { inset: 0; position: absolute; }
 
 /* 42%, no el centro: la tapa es vertical (2:3) y en un hero apaisado solo entra
@@ -143,7 +143,36 @@ h1 i, h2 i { color: var(--accent-text); font-weight: 500; }
    asomando por abajo; a 62% la figura manda pero la montana desaparece. A 42%
    la montana sostiene el titular y la cara y el brazo se leen, mientras el
    cuerpo baja hacia el velo, que es donde viven las tarjetas. */
-.hero-media img { object-fit: cover; object-position: center 42%; }
+.hero-media img, .hero-cutout img { object-fit: cover; object-position: center var(--cover-y); }
+
+/* La silueta, encima de los velos y del titular. Es el mismo archivo recortado
+   con alfa, asi que el borde no tiene nada que disimular: cae sobre sus propios
+   pixeles. Lo unico que cambia es que la figura deja de estar debajo del velo.
+   Depende de que las dos capas compartan `--cover-y`, que es justamente por lo
+   que el encuadre es una variable y no un numero escrito dos veces. */
+.hero-cutout { inset: 0; pointer-events: none; position: absolute; z-index: 3; }
+/* Abajo se disuelve: ahi viven las cifras y los enlaces, apoyados en el velo, y
+   un cuerpo iluminado a pantalla completa les pelearia el fondo. Al fundirse
+   vuelve a aparecer la misma figura de la capa de abajo, ya velada, asi que la
+   transicion se lee como luz que cae y no como un corte. */
+.hero-cutout img { -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 82%); mask-image: linear-gradient(to bottom, #000 58%, transparent 82%); }
+
+/* En escritorio la franja baja a 52%, por pedido del autor (2026-09-16): a 42%
+   la figura entra cortada por la cintura y la cara cae dentro del velo de
+   abajo, que es lo que la apagaba. A 52% se lee de puno a cadera y la cara sube
+   al aire limpio de la fotografia, el que queda entre los dos velos. Diez
+   puntos y ni uno mas: a 60% la montana se va del todo y lo que queda es un
+   retrato contra unos arboles, que es otra tapa y no esta.
+   Solo de 901px para arriba, que es lo que se pidio. En un telefono la caja es
+   mas alta que ancha, la fotografia entra casi entera y el recorte pasa a
+   comerse los lados: ahi este numero ya casi no mueve nada.
+   Y colgado de `.home`, que es la envoltura de la portada: la misma pareja
+   `.hero-section`/`.hero-media` la usan la tapa de coleccion y la de la
+   historia, cada una con su fotografia y su encuadre. Sin ese ancla, mover la
+   figura de esta tapa movia tambien las otras dos. */
+@media (min-width: 901px) {
+  .home .hero-section { --cover-y: 52%; }
+}
 /* Dos velos, no uno: arriba para que la navegación se lea, abajo para el texto.
    Separados, así el centro de la fotografía queda limpio. */
 .hero-section:before, .hero-section:after { content: ''; left: 0; position: absolute; right: 0; z-index: 1; }
