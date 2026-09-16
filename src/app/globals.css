@@ -1654,6 +1654,29 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .admin-order-card-items ul { display: flex; flex-direction: column; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .admin-order-card-items li { display: flex; font-size: 13px; justify-content: space-between; }
 .admin-order-card-totals { border-top: 1px solid var(--line-faint); display: flex; flex-direction: column; gap: 6px; padding-top: 14px; }
+/* --- Portadas de las colecciones ------------------------------------------
+   La portada de una coleccion es una fotografia, asi que se elige mirandola y
+   no leyendo su nombre en una lista: cada coleccion muestra la que tiene puesta
+   en grande y debajo la tira de sus obras, donde la actual esta marcada. */
+.admin-collections { display: flex; flex-direction: column; gap: 40px; max-width: 1180px; }
+.admin-collection { background: var(--paper); border: 1px solid var(--line); padding: 26px 28px 30px; }
+.admin-collection-head { align-items: end; display: flex; gap: 28px; justify-content: space-between; margin-bottom: 26px; }
+.admin-collection-head h2 { font-size: clamp(30px, 4vw, 44px); margin: 0 0 7px; }
+.admin-collection-head small { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.admin-collection-cover { align-items: center; aspect-ratio: 1.25; background: var(--line) center/cover no-repeat; display: flex; flex: none; justify-content: center; width: 210px; }
+.admin-collection-cover span { color: var(--text-faint); font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.admin-collection-strip { display: grid; gap: 14px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.admin-collection-thumb { background: none; border: 1px solid transparent; display: grid; gap: 7px; padding: 0 0 8px; position: relative; text-align: left; transition: border-color .2s, transform .2s; }
+.admin-collection-thumb:hover { border-color: var(--accent); transform: translateY(-2px); }
+.admin-collection-thumb:disabled { cursor: progress; opacity: .5; }
+/* La que esta puesta se marca con el mismo tinta del panel, no con el acento:
+   el acento es el hover, y si los dos fueran iguales la tira no diria cual es
+   la portada, solo cual toca el mouse. */
+.admin-collection-thumb.is-cover { border-color: var(--ink); }
+.admin-collection-thumb-image { aspect-ratio: 1; background: var(--line) center/cover no-repeat; display: block; }
+.admin-collection-thumb-name { -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--text-muted); display: -webkit-box; font-family: var(--font-mono); font-size: 9px; line-height: 1.45; overflow: hidden; padding: 0 7px; }
+.admin-collection-thumb svg { background: var(--ink); color: var(--paper); height: 21px; padding: 4px; position: absolute; right: 7px; top: 7px; width: 21px; }
+
 .admin-nav { display: flex; gap: 22px; margin-bottom: 20px; }
 .admin-nav-link { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; padding-bottom: 6px; text-transform: uppercase; }
 .admin-nav-link.is-active { border-bottom: 2px solid var(--accent); color: var(--ink); }
@@ -1798,6 +1821,9 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   .admin-new-photo { width: 100%; }
   .admin-customer-row { grid-template-columns: 1fr; gap: 6px; }
   .admin-customer-row-head { display: none; }
+  .admin-collection-head { align-items: start; flex-direction: column-reverse; gap: 18px; }
+  .admin-collection-cover { width: 100%; }
+  .admin-collection-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* --- El carrito en angosto -------------------------------------------------

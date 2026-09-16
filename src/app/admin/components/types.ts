@@ -39,6 +39,9 @@ export type AdminCategory = {
   id: number;
   name: string;
   slug: string;
+  /* La portada de la colección, ya normalizada por la API: la columna guarda
+     `[["url"]]` y acá llega como la cadena o como null si nunca se eligió. */
+  cover: string | null;
 };
 
 export type PhotoFormProps = {
