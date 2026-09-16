@@ -10,6 +10,13 @@ export const metadata: Metadata = pageMetadata({
   path: "/shop",
 });
 
+/* Las colecciones y sus cifras se editan desde el panel, no en un deploy, asi
+   que esta portada se rehace sola cada hora en vez de quedar congelada en el
+   recuento que hubiera al compilar. Misma cifra que la portada y que
+   /destinations: las tres leen el mismo catalogo y no hay razon para que
+   caduquen a ritmos distintos. */
+export const revalidate = 3600;
+
 export type CategoryRow = {
   id: number;
   name: string;

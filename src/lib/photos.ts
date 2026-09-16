@@ -1,5 +1,5 @@
 import { pool } from "@/lib/db";
-import { countryRank, countrySlug } from "@/lib/countries";
+import { countryLabel, countryRank, countrySlug } from "@/lib/countries";
 
 export type PreferredPhoto = {
   id: number;
@@ -130,14 +130,33 @@ export type CountryChapter = CountryGroup & { total: number };
  * se muestran: es la cifra que va bajo el nombre del país, y sale de contar la
  * base, no de una promesa.
  *
- * `curatedOnly` es lo único que separa la portada de /destinations: la portada
- * muestra los países que el panel curó, y el índice completo muestra todos los
- * que tienen obra. La consulta y el armado son los mismos; cambiar solo el
- * filtro evita que las dos páginas puedan contar cosas distintas.
+ * Dos opciones separan la portada de /destinations, y nada más: la consulta y
+ * el armado del capítulo son los mismos, así que las dos páginas no pueden
+ * contar cosas distintas.
+ *
+ * `curatedOnly` decide QUÉ países entran: la portada muestra los que el panel
+ * curó, el índice completo muestra todos los que tienen obra.
+ *
+ * `order` decide EN QUÉ ORDEN salen, y las dos superficies quieren cosas
+ * distintas porque el visitante llega a cada una con otra intención. En la
+ * portada el índice es una franja curada que se lee de arriba abajo sin buscar
+ * nada: manda `COUNTRIES`, que es una decisión del autor. En /destinations el
+ * visitante viene a encontrar un lugar que ya tiene en la cabeza, y en una
+ * lista de diecisiete nombres el orden del autor no lo ayuda a barrer —lo
+ * obliga a leerla entera. Ahí manda el alfabeto.
+ *
+ * Alfabético **por el nombre en inglés**, que es el que está impreso en la
+ * página: ordenar por el castellano de la base pondría «Japón» entre Italia y
+ * Malasia y el visitante leería «Italy, Japan, Malaysia» sin entender por qué
+ * España cae al final. Es el mismo argumento que ya gobierna el orden de
+ * `COUNTRIES` en `countries.ts`, aplicado acá.
  */
 export async function getCountryChapters(
   perCountry = 4,
-  { curatedOnly = true }: { curatedOnly?: boolean } = {},
+  {
+    curatedOnly = true,
+    order = "curated",
+  }: { curatedOnly?: boolean; order?: "curated" | "alphabetical" } = {},
 ): Promise<CountryChapter[]> {
   try {
     const { rows } = await pool.query<PreferredPhoto & { preferida: boolean }>(
@@ -164,10 +183,11 @@ export async function getCountryChapters(
 
     return Array.from(byCountry, ([country, group]) => ({ country, ...group }))
       .filter((chapter) => (curatedOnly ? chapter.curated : true) && chapter.photos.length > 0)
-      .sort(
-        (a, b) =>
-          countryRank(a.country) - countryRank(b.country) ||
-          a.country.localeCompare(b.country, "es"),
+      .sort((a, b) =>
+        order === "alphabetical"
+          ? countryLabel(a.country).localeCompare(countryLabel(b.country), "en")
+          : countryRank(a.country) - countryRank(b.country) ||
+            a.country.localeCompare(b.country, "es"),
       )
       .map(({ country, photos, total }) => ({ country, photos, total }));
   } catch {

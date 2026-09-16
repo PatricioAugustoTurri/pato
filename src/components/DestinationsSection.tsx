@@ -4,10 +4,12 @@ import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
 import { getCountryChapters } from "@/lib/photos";
 import { countryIntro, countryLabel, countrySlug } from "@/lib/countries";
 
-/* La portada y /destinations son el mismo indice con distinto alcance: una
-   muestra los paises curados desde el panel y la otra todos los que tienen
-   obra. Se comparte el componente en vez de copiarlo para que las dos no puedan
-   contar cosas distintas ni separarse visualmente con el tiempo. */
+/* La portada y /destinations son el mismo indice leido con otra intencion: una
+   muestra los paises curados desde el panel, en el orden del autor, y la otra
+   todos los que tienen obra, en orden alfabetico para que se pueda buscar. Las
+   dos diferencias viajan como props —`curatedOnly` y `order`— y no como una
+   copia del componente: asi las dos paginas no pueden contar cosas distintas
+   ni separarse visualmente con el tiempo. */
 export default async function DestinationsSection({
   heading = (
     <>
@@ -26,15 +28,21 @@ export default async function DestinationsSection({
      toca. Es una diferencia decidida y escrita, no una copia del componente
      que se separe con el tiempo. */
   linkCountries = false,
+  /* El orden de los capítulos. La portada usa el del autor (`COUNTRIES`), que
+     es el que pone Japón adelante; /destinations usa el alfabético, porque ahí
+     el visitante busca un lugar concreto entre diecisiete y necesita barrer la
+     lista, no leerla. El porqué largo está en `getCountryChapters`. */
+  order = "curated",
   empty = null,
 }: {
   heading?: ReactNode;
   headingLevel?: 1 | 2;
   curatedOnly?: boolean;
   linkCountries?: boolean;
+  order?: "curated" | "alphabetical";
   empty?: ReactNode;
 } = {}) {
-  const chapters = await getCountryChapters(4, { curatedOnly });
+  const chapters = await getCountryChapters(4, { curatedOnly, order });
   const Heading = headingLevel === 1 ? "h1" : "h2";
   const CountryHeading = headingLevel === 1 ? "h2" : "h3";
 

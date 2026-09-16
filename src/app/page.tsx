@@ -15,6 +15,18 @@ export const metadata: Metadata = pageMetadata({
   path: "/",
 });
 
+/* La portada lee el catálogo a través de `DestinationsSection` y
+   `CollectionSection`, pero lo lee por `pg` y no por `fetch`, así que Next no
+   ve ninguna lectura que pueda caducar: prerrenderiza la página al compilar y
+   la sirve congelada hasta el próximo deploy. Marcar una foto como preferida
+   en el panel movía la base y no movía la portada.
+
+   Una hora es la misma cifra que `/destinations/[country]`, y por la misma
+   razón: el catálogo se edita desde el panel, no en un deploy, y en un
+   servidor que se paga por mes conviene una consulta por hora antes que una
+   por lector. */
+export const revalidate = 3600;
+
 export default function Home() {
   return (
     <div className="home" id="inicio">
