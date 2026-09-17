@@ -1913,6 +1913,26 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   .cart-note { padding: clamp(46px, 11vw, 70px) 5vw clamp(56px, 12vw, 80px); }
 }
 
+/* --- El titular de la portada, en pantalla vertical -------------------------
+   `.hero-inner` apila contra el borde de abajo, y en la portada el titular se
+   apoya en esa pila: `.home h1` pone `margin-bottom: 0` y con eso anula el
+   `margin-bottom: auto` con el que `.hero-title` se sube al techo en el resto
+   de los heroes. En apaisado eso se lee bien —la caja nace mas ancha que alta y
+   el bloque cae por la mitad—, pero en vertical las tres piezas se juntan en el
+   ultimo tercio y arriba queda media pantalla de cielo vacio.
+
+   La regla mira la ORIENTACION y no el ancho a proposito: un iPad de 1024 en
+   vertical tiene exactamente el problema de un telefono de 390, y el mismo iPad
+   acostado no lo tiene. Un umbral de ancho habria dejado afuera al primero y
+   metido adentro al segundo.
+
+   Sube solo el titular. Los sociales y la ficha se quedan contra el borde, que
+   es su sitio. En `svh`, como el alto del propio hero, para que la barra del
+   navegador del telefono no lo corra al hacer scroll. */
+@media (orientation: portrait) {
+  .home .hero-title { margin-bottom: clamp(26px, 5svh, 64px); }
+}
+
 @media (max-width: 700px) {
   .hero-inner { gap: 26px; padding: 104px 7vw 26px; }
   .hero-title { font-size: clamp(46px, 13vw, 68px); letter-spacing: -.03em; }
