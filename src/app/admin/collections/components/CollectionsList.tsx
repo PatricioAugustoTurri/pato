@@ -1,4 +1,5 @@
-import { Check } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { catalogImage } from "@/lib/cloudinary";
 import { normalizePhotoImage } from "@/lib/photo-image";
 import type { AdminCategory, AdminPhoto } from "../../components/types";
@@ -8,9 +9,18 @@ type CollectionsListProps = {
   photos: AdminPhoto[];
   savingId: number | null;
   onSelect: (category: AdminCategory, photo: AdminPhoto) => void;
+  onEdit: (category: AdminCategory) => void;
+  onDelete: (category: AdminCategory) => void;
 };
 
-export default function CollectionsList({ categories, photos, savingId, onSelect }: CollectionsListProps) {
+export default function CollectionsList({
+  categories,
+  photos,
+  savingId,
+  onSelect,
+  onEdit,
+  onDelete,
+}: CollectionsListProps) {
   return (
     <section className="admin-collections">
       {categories.map((category) => {
@@ -36,6 +46,26 @@ export default function CollectionsList({ categories, photos, savingId, onSelect
                 <small>
                   /shop/{category.slug} · {works.length} {works.length === 1 ? "obra" : "obras"}
                 </small>
+                <div className="admin-collection-actions">
+                  <Button type="button" variant="ghost" onClick={() => onEdit(category)}>
+                    <Pencil aria-hidden="true" /> Editar
+                  </Button>
+                  {/* Borrar solo se ofrece si está vacía. El servidor se niega
+                      igual y con el número puesto, pero un botón que siempre
+                      falla para las colecciones con obra es un botón que enseña
+                      a desconfiar de los botones. */}
+                  {works.length === 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="admin-collection-delete"
+                      onClick={() => onDelete(category)}
+                      disabled={isSaving}
+                    >
+                      <Trash2 aria-hidden="true" /> Borrar
+                    </Button>
+                  )}
+                </div>
               </div>
               <div
                 className="admin-collection-cover"

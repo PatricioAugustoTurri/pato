@@ -42,6 +42,16 @@ export type AdminCategory = {
   /* La portada de la colección, ya normalizada por la API: la columna guarda
      `[["url"]]` y acá llega como la cadena o como null si nunca se eligió. */
   cover: string | null;
+  /* El texto editorial de `/shop/<colección>`. Lo escribe el autor y puede no
+     estar: una colección recién creada nace sin relato. */
+  descripcion: string | null;
+};
+
+export type AdminSize = {
+  id: number;
+  size: string;
+  price: number;
+  position: number;
 };
 
 export type PhotoFormProps = {

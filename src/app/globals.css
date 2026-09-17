@@ -1706,7 +1706,56 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .admin-collection-thumb-name { -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--text-muted); display: -webkit-box; font-family: var(--font-mono); font-size: 9px; line-height: 1.45; overflow: hidden; padding: 0 7px; }
 .admin-collection-thumb svg { background: var(--ink); color: var(--paper); height: 21px; padding: 4px; position: absolute; right: 7px; top: 7px; width: 21px; }
 
-.admin-nav { display: flex; gap: 22px; margin-bottom: 20px; }
+/* --- Alta y edicion de una coleccion ---------------------------------------
+   Los dos botones cuelgan del nombre, no de la tarjeta: son acciones sobre ESTA
+   coleccion y tienen que leerse pegados a la que nombran. En fantasma, porque
+   el boton lleno del panel es el que guarda. */
+.admin-collection-actions { display: flex; gap: 6px; margin-top: 12px; }
+.admin-collection-actions button { font-family: var(--font-mono); font-size: 10px; gap: 7px; height: 32px; letter-spacing: .06em; padding: 0 10px; text-transform: uppercase; }
+.admin-collection-actions svg { height: 13px; width: 13px; }
+/* Borrar se dibuja en el rojo del sistema recien al pasar por encima: en reposo
+   es una accion mas, y en el momento de tocarla dice lo que es. */
+.admin-collection-delete:hover { background: var(--error); color: var(--paper); }
+.admin-collection-form { margin-bottom: 40px; }
+
+/* --- Que se ve en la portada -----------------------------------------------
+   Reusa la tarjeta y la tira de las colecciones: es la misma operacion —mirar
+   fotos y marcar una— sobre otra columna. Lo unico propio son las dos solapas
+   y la linea que dice si el pais entra o no. */
+.admin-featured-tabs { display: flex; gap: 4px; margin-bottom: 18px; }
+.admin-featured-tab { background: var(--paper); border: 1px solid var(--line); color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; min-height: 40px; padding: 0 18px; text-transform: uppercase; transition: border-color .2s, color .2s; }
+.admin-featured-tab:hover { border-color: var(--line-soft); color: var(--ink); }
+.admin-featured-tab.is-active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.admin-featured-note { color: var(--text-muted); font-size: 13px; margin: 0 0 26px; max-width: 68ch; }
+/* Tinta y no acento: dice un hecho —este pais esta en la portada—, no llama la
+   atencion sobre si mismo. El acento en este panel es el hover. */
+.admin-featured-state { color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; margin: 0; text-align: right; text-transform: uppercase; }
+.admin-featured-state.is-on { color: var(--ink); }
+
+/* --- Tamanos y precios -----------------------------------------------------
+   Una fila por tamano, separadas por filete y no en tarjetas: es un listado de
+   precios, la misma gramatica que el selector de tamanos de la tienda y que las
+   tarifas de envio. */
+.admin-sizes { background: var(--paper); max-width: 680px; padding: clamp(25px, 5vw, 50px); }
+.admin-size-rows { border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+.admin-size-row { align-items: center; border-top: 1px solid var(--line); display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 150px 44px; padding: 14px 0; }
+.admin-size-name strong { display: block; font-family: var(--font-heading); font-size: 20px; font-weight: 500; }
+.admin-size-name small { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.admin-size-price { align-items: center; display: flex; gap: 8px; }
+.admin-size-currency { color: var(--text-muted); font-family: var(--font-mono); font-size: 13px; }
+/* Tabular: los precios se leen en columna y con cifras proporcionales bailan. */
+.admin-size-price input { border-color: var(--line); border-radius: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; height: 44px; text-align: right; }
+.admin-size-remove { color: var(--text-muted); height: 44px; padding: 0; width: 44px; }
+.admin-size-remove:hover { background: var(--error); color: var(--paper); }
+.admin-size-remove svg { height: 15px; width: 15px; }
+.admin-size-actions { display: flex; gap: 12px; justify-content: space-between; }
+.admin-size-add { border-color: var(--line); border-radius: 0; font-family: var(--font-mono); font-size: 11px; gap: 8px; height: 48px; letter-spacing: .06em; text-transform: uppercase; }
+.admin-size-add svg { height: 14px; width: 14px; }
+.admin-note { border-top: 1px solid var(--line-faint); color: var(--text-muted); font-size: 13px; margin-top: 30px; padding-top: 20px; }
+.admin-note p { margin: 0 0 8px; }
+.admin-note p:last-child { margin-bottom: 0; }
+
+.admin-nav { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 20px; }
 .admin-nav-link { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; padding-bottom: 6px; text-transform: uppercase; }
 .admin-nav-link.is-active { border-bottom: 2px solid var(--accent); color: var(--ink); }
 .admin-customer-table { display: flex; flex-direction: column; }

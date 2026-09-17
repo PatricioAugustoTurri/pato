@@ -66,7 +66,7 @@ export async function POST(request: Request) {
 
     // Los tamaños no se cargan: son los del catálogo, iguales para toda obra.
     const photoId = photoResult.rows[0].id;
-    await replaceVariants(client, photoId, catalogVariants(stock));
+    await replaceVariants(client, photoId, await catalogVariants(client, stock));
 
     await client.query("COMMIT");
 

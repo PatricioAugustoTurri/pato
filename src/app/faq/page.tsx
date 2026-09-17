@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatPrice } from "@/lib/money";
-import { CATALOG_SIZES } from "@/lib/photo-variants";
+import { catalogSizes } from "@/lib/photo-variants";
 import { getArchiveCounts } from "@/lib/photos";
 import { sizeDimensions } from "@/lib/sizes";
 import { pageMetadata } from "@/lib/seo";
@@ -13,12 +13,19 @@ export const metadata = pageMetadata({
 });
 
 /* Solo se responde lo que el sistema sostiene. Los precios salen de
-   `CATALOG_SIZES`, que es la lista con la que el servidor arma las variantes de
-   cada obra, y las cifras del archivo se cuentan contra la base. Nada sobre
+   `catalog_sizes`, que es la lista con la que el servidor arma las variantes de
+   cada obra, y las cifras del archivo se cuentan contra la base. Que se editen
+   desde el panel es justamente lo que mantiene esta respuesta cierta: antes un
+   precio nuevo obligaba a acordarse de venir a cambiarlo acá. Nada sobre
    papel, laboratorio ni enmarcado: no está confirmado, y una pregunta frecuente
    respondida a ojo es peor que una pregunta ausente. */
+/* La misma hora que la portada, y por lo mismo: esta página ya leía la base
+   para contar el archivo, y ahora también lee los precios. Sin esto quedaba
+   congelada en el build y un precio nuevo no llegaba nunca. */
+export const revalidate = 3600;
+
 export default async function FaqPage() {
-  const counts = await getArchiveCounts();
+  const [counts, sizes] = await Promise.all([getArchiveCounts(), catalogSizes()]);
 
   return (
     <main className="doc-page is-dark-room">
@@ -33,7 +40,7 @@ export default async function FaqPage() {
       <section className="doc-section">
         <h2>What sizes are there, and what do they cost?</h2>
         <dl className="doc-rates">
-          {CATALOG_SIZES.map(({ size, price }) => (
+          {sizes.map(({ size, price }) => (
             <div key={size}>
               <dt>
                 {size} <span className="doc-unit">· {sizeDimensions(size)}</span>
