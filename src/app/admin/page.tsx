@@ -22,7 +22,6 @@ const createDefaultValues = (): PhotoFormValues => ({
   oferta: false,
   preferidos: false,
   pais: "",
-  stock: "0",
   imageUrl: "",
   imageAlt: "",
 });
@@ -113,7 +112,6 @@ export default function AdminPage() {
       oferta: photo.oferta,
       preferidos: photo.preferidos,
       pais: photo.pais ?? "",
-      stock: photo.stock.toString(),
       imageUrl: normalizePhotoImage(photo.images),
       imageAlt: normalizePhotoAlt(photo.images, ""),
     });
@@ -140,7 +138,6 @@ export default function AdminPage() {
         oferta: values.oferta,
         preferidos: values.preferidos,
         pais: values.pais,
-        stock: Number(values.stock),
         images,
       };
       const { data } = editingPhoto

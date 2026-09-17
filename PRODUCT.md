@@ -63,11 +63,14 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 - Imágenes del catálogo alojadas en Cloudinary (cuenta `dvmsjdcqi`).
 - Guardas en `src/proxy.ts` (nombre de middleware en Next 16) sobre
   `/admin/*`, `/api/admin/*` y `/api/checkout`.
-- El stock se descuenta cuando Stripe confirma el cobro, en el webhook y no en
-  el checkout: hasta que no hay cobro no hay venta, y una sesión abandonada no
-  puede descontar una copia que nadie pagó. Baja con `GREATEST(stock - n, 0)`,
-  porque el stock no es una reserva y dos compras simultáneas del mismo tamaño
-  no pueden dejar el número en negativo.
+- **No hay existencias y el sitio no las cuenta.** Confirmado por el usuario el
+  2026-09-17: nada está impreso de antemano, cada copia se hace cuando alguien
+  la compra. El número de stock que había en la base era simbólico. Por eso
+  ninguna pantalla lo lee: la ficha no dice "Sold out", el checkout no rechaza
+  por cantidad, el webhook no descuenta, el panel ya no pide el número y el dato
+  estructurado declara `InStock` siempre. La columna sigue en la base, sin uso.
+  Antes de esto una obra —«Red Bridge»— estaba publicada como agotada y
+  anunciada a Google como `OutOfStock` sin motivo.
 - El panel crea, renombra y borra colecciones, pero se niega a borrar una que
   todavía tenga obras: la llave es `ON DELETE SET NULL` y una obra sin colección
   no tiene ruta, así que desaparecería de la tienda sin que nadie lo pida.
@@ -80,9 +83,10 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   colección (History/City/Landscape/Portrait, que es lo que hay en la base) o
   por destino (lo que promete la home actual). Ningún trabajo futuro debe
   asumir una de las dos.
-- **Producción e impresión**: la copia actual afirma impresión bajo demanda en
-  papeles de algodón. Sin verificar con el usuario. Tratar como NO confirmado:
-  no repetirlo en copia nueva hasta que se confirme el laboratorio y el papel.
+- **Producción e impresión**: la impresión bajo demanda SÍ está confirmada por
+  el usuario (2026-09-17). Lo que sigue sin confirmar es el **papel y el
+  laboratorio**: la copia actual afirma papeles de algodón y eso no está
+  verificado. No repetirlo en copia nueva hasta que se confirmen.
 
 ## Brand Commitments
 

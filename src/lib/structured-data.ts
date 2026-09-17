@@ -74,7 +74,6 @@ type ProductInput = {
   path: string;
   /** Los precios reales de `photo_variants`, en euros. */
   prices: number[];
-  inStock: boolean;
 };
 
 /**
@@ -94,7 +93,6 @@ export function productSchema({
   image,
   path,
   prices,
-  inStock,
 }: ProductInput) {
   const url = absoluteUrl(path);
 
@@ -114,9 +112,12 @@ export function productSchema({
       lowPrice: Math.min(...prices),
       highPrice: Math.max(...prices),
       offerCount: prices.length,
-      availability: inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
+      /* Siempre disponible, y no es una licencia: no hay copias guardadas que
+         se puedan acabar. Cada impresión se hace cuando alguien la compra, así
+         que mientras la obra esté publicada se puede vender. Acá vivía un
+         cálculo sobre la columna `stock`, y con eso una obra cuyo número
+         hubiera llegado a cero se anunciaba a Google como agotada sin estarlo. */
+      availability: "https://schema.org/InStock",
       url,
       seller: { "@id": PERSON_ID },
     },

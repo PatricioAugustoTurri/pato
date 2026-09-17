@@ -52,10 +52,9 @@ export async function POST(request: Request) {
   /* Lo que se pide, ya comprobado y con las líneas repetidas sumadas.
 
      Sumarlas importa: la misma obra y el mismo tamaño podían llegar en dos
-     líneas —dos pestañas abiertas, un carrito viejo— y cada una comprobaba el
-     stock por su cuenta, así que dos líneas de una copia pasaban el control de
-     una sola copia disponible. Juntas, el stock se compara contra lo que de
-     verdad se lleva.
+     líneas —dos pestañas abiertas, un carrito viejo— y Stripe las cobraba como
+     dos renglones idénticos. Juntas, el comprador ve "3 copias" y no la misma
+     obra escrita tres veces.
 
      Y comprobarlas importa igual: la cantidad entraba por `Number(...) || 1`,
      que aceptaba un -3, un 1,5 y un 1e21. Ninguno llegaba a cobrarse porque
@@ -111,10 +110,9 @@ export async function POST(request: Request) {
       const { rows } = await client.query<{
         price: string;
         currency: string;
-        stock: number;
         name: string;
       }>(
-        `SELECT pv.price, pv.currency, pv.stock, p.name
+        `SELECT pv.price, pv.currency, p.name
          FROM photo_variants pv
          INNER JOIN photos p ON p.id = pv.photo_id
          WHERE pv.photo_id = $1 AND pv.size = $2
@@ -127,13 +125,6 @@ export async function POST(request: Request) {
       if (!variant) {
         return NextResponse.json(
           { error: `The ${item.size} size is no longer available for this photograph.` },
-          { status: 400 },
-        );
-      }
-
-      if (variant.stock < item.quantity) {
-        return NextResponse.json(
-          { error: `There is not enough stock of "${variant.name}" (${item.size}).` },
           { status: 400 },
         );
       }

@@ -63,11 +63,6 @@ export default function PhotoDetailsSection({ register, errors, categories, coun
           </datalist>
           <small>Agrupa la obra en la portada. Sin país, no aparece ahí.</small>
         </div>
-        <div className="admin-field">
-          <label htmlFor="stock">Copias disponibles</label>
-          <Input id="stock" type="number" min="0" {...register("stock", { min: 0 })} />
-          <small>Se aplica a los tres tamaños. En 0, la obra se muestra sin stock.</small>
-        </div>
       </div>
       <div className="admin-checkbox-row">
         <label className="admin-checkbox">

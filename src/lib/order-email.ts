@@ -8,8 +8,8 @@ import { deliveryWindow } from "@/lib/shipping";
  * para quien compró y el aviso de venta para quien tiene que imprimir.
  *
  * Viven acá y no dentro del webhook porque el webhook ya tiene un trabajo
- * delicado —marcar cobrado y bajar stock en una transacción— y mezclarle el
- * armado de dos mails lo vuelve ilegible.
+ * delicado —marcar el pedido cobrado sin repetirlo si Stripe reintenta— y
+ * mezclarle el armado de dos mails lo vuelve ilegible.
  *
  * Los dos se dibujan con las mismas piezas (`shell`, `lineRows`, `moneyRows`)
  * y se diferencian en tres cosas: el idioma, el destinatario y qué bloques
@@ -277,9 +277,9 @@ async function deliver(
  * calendario al lado—, y la dirección a la que va el paquete, que es lo único
  * que el comprador todavía puede corregir a tiempo si se equivocó.
  *
- * No lanza nunca: la llama el webhook, y un pedido cobrado y con el stock ya
- * descontado no se puede dar por fallido porque el proveedor de mail esté
- * caído. Si algo sale mal queda en el log del servidor.
+ * No lanza nunca: la llama el webhook, y un pedido ya cobrado no se puede dar
+ * por fallido porque el proveedor de mail esté caído. Si algo sale mal queda en
+ * el log del servidor.
  */
 export async function sendOrderConfirmation(order: OrderConfirmation): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;

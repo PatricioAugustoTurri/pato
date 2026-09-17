@@ -13,7 +13,6 @@ type PhotoPayload = {
   preferidos?: boolean;
   pais?: string | null;
   images?: unknown;
-  stock?: number;
 };
 
 function isValidImages(images: unknown): images is unknown[] {
@@ -30,19 +29,11 @@ export async function POST(request: Request) {
     const description = payload.description?.trim() || null;
     const categoryId = payload.categoryId || null;
     const pais = payload.pais?.trim() || null;
-    const stock = payload.stock ?? 0;
     const images = payload.images ?? [];
 
     if (!name || !slug) {
       return NextResponse.json(
         { error: "El nombre y el slug son obligatorios." },
-        { status: 400 },
-      );
-    }
-
-    if (!Number.isInteger(stock) || stock < 0) {
-      return NextResponse.json(
-        { error: "El stock debe ser un número entero positivo." },
         { status: 400 },
       );
     }
@@ -58,15 +49,16 @@ export async function POST(request: Request) {
     await client.query("BEGIN");
 
     const photoResult = await client.query<{ id: number }>(
-      `INSERT INTO photos (category_id, name, slug, description, oferta, preferidos, pais, images, stock)
+      `INSERT INTO photos (category_id, name, slug, description, oferta, preferidos, pais, images)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9)
        RETURNING id`,
-      [categoryId, name, slug, description, Boolean(payload.oferta), Boolean(payload.preferidos), pais, JSON.stringify(images), stock],
+      [categoryId, name, slug, description, Boolean(payload.oferta), Boolean(payload.preferidos), pais, JSON.stringify(images)],
     );
 
-    // Los tamaños no se cargan: son los del catálogo, iguales para toda obra.
+    /* Los tamaños no se cargan: son los del catálogo, iguales para toda obra,
+       y sin existencias porque cada copia se imprime cuando se vende. */
     const photoId = photoResult.rows[0].id;
-    await replaceVariants(client, photoId, await catalogVariants(client, stock));
+    await replaceVariants(client, photoId, await catalogVariants(client));
 
     await client.query("COMMIT");
 
@@ -93,7 +85,7 @@ export async function POST(request: Request) {
 export async function GET() {
   const { rows } = await pool.query<AdminPhoto>(
     `SELECT p.id, p.category_id AS "categoryId", p.name, p.slug, p.description,
-            p.oferta, p.preferidos, p.pais, p.images, p.stock,
+            p.oferta, p.preferidos, p.pais, p.images,
             ${VARIANTS_SUBQUERY}
      FROM photos p
      ORDER BY p.id DESC`,

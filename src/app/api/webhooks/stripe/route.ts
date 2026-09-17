@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
         /* `AND status <> 'paid'` es lo que hace segura esta ruta. Stripe
            reintenta el mismo evento —ante un timeout, un 500, o porque sí— y
-           sin esta condición cada reintento volvería a descontar stock de una
+           sin esta condición cada reintento volvería a mandar los mails de una
            compra que ya se cobró una sola vez. Si no vuelve fila, el pedido ya
            estaba cobrado y no hay nada que hacer. */
         const { rows } = await client.query<{
@@ -109,26 +109,9 @@ export async function POST(request: Request) {
           ],
         );
 
-        /* El stock baja acá y no en el checkout: hasta que Stripe no confirma
-           el cobro no hay venta, y una sesión abandonada no puede descontar
-           una copia que nadie pagó.
-
-           `GREATEST(..., 0)` porque el stock no es una reserva: entre que se
-           comprueba en el checkout y que se cobra pueden entrar dos compras
-           del mismo tamaño. Con eso el número queda en cero en vez de en
-           negativo, que es un dato que ninguna pantalla sabría leer. */
-        for (const item of rows[0]?.items ?? []) {
-          await client.query(
-            `UPDATE photo_variants
-             SET stock = GREATEST(stock - $3, 0)
-             WHERE photo_id = $1 AND size = $2`,
-            [item.photoId, item.size, item.quantity],
-          );
-        }
-
-        /* La misma fila que autoriza a descontar stock autoriza a mandar el
-           mail: si Stripe reintenta el evento, el UPDATE no devuelve nada y el
-           comprador no recibe una segunda confirmacion de la misma compra. */
+        /* La fila que devuelve el UPDATE es la que autoriza a mandar los mails:
+           si Stripe reintenta el evento, no vuelve ninguna y nadie recibe una
+           segunda confirmacion de la misma compra. */
         sold = rows[0] ?? null;
 
         await client.query("COMMIT");

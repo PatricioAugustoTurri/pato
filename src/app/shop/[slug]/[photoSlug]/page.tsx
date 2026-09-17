@@ -41,7 +41,7 @@ const getPhotoDetail = cache(async (slug: string, photoSlug: string): Promise<Ph
   if (!photo) return null;
 
   const { rows: variants } = await pool.query<PhotoVariant>(
-    `SELECT id, size, price, stock
+    `SELECT id, size, price
      FROM photo_variants
      WHERE photo_id = $1
      ORDER BY price ASC`,
@@ -160,9 +160,9 @@ export default async function PhotoDetailPage({
   return (
     <main className="work-page">
       {/* Lo que ya dice la pantalla, en el formato que lee Google: el título,
-          la nota del autor, la imagen, el rango de precios de los tres tamaños
-          y si queda stock. Nada inventado — los precios salen de las mismas
-          `photo_variants` con las que el servidor cobra. */}
+          la nota del autor, la imagen y el rango de precios de los tamaños.
+          Nada inventado — los precios salen de las mismas `photo_variants` con
+          las que el servidor cobra. */}
       {prices.length > 0 && (
         <JsonLd
           data={productSchema({
@@ -171,7 +171,6 @@ export default async function PhotoDetailPage({
             image: imageUrl,
             path,
             prices,
-            inStock: photo.variants.some((variant) => variant.stock > 0),
           })}
         />
       )}

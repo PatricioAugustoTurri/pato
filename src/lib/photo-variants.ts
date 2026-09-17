@@ -34,20 +34,19 @@ export async function catalogSizes(db: Pool | PoolClient = pool): Promise<Catalo
 export type NormalizedVariant = {
   size: string;
   price: number;
-  stock: number;
 };
 
 /**
- * Construye el juego de variantes de una fotografía a partir de la lista de
- * precios del catálogo. El stock es el de la obra: si hay 10 copias, hay 10 en
- * cada tamaño, porque se imprime por pedido y no hay inventario por medida.
+ * El juego de variantes de una fotografía, a partir de la lista de precios del
+ * catálogo. Toda obra se vende en los mismos tamaños y al mismo precio.
+ *
+ * No lleva stock, y no es un olvido: las copias se imprimen cuando alguien las
+ * compra, así que no hay un número de existencias que repartir entre medidas.
+ * La columna sigue en la base porque borrarla no aporta nada, pero nadie la
+ * lee: ni la ficha de la obra, ni el checkout, ni el webhook.
  */
-export async function catalogVariants(
-  db: Pool | PoolClient,
-  stock: number,
-): Promise<NormalizedVariant[]> {
-  const sizes = await catalogSizes(db);
-  return sizes.map(({ size, price }) => ({ size, price, stock }));
+export async function catalogVariants(db: Pool | PoolClient): Promise<NormalizedVariant[]> {
+  return catalogSizes(db);
 }
 
 /**
@@ -62,11 +61,11 @@ export async function replaceVariants(
 ) {
   for (const variant of variants) {
     await client.query(
-      `INSERT INTO photo_variants (photo_id, size, price, stock)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO photo_variants (photo_id, size, price)
+       VALUES ($1, $2, $3)
        ON CONFLICT (photo_id, size)
-       DO UPDATE SET price = EXCLUDED.price, stock = EXCLUDED.stock`,
-      [photoId, variant.size, variant.price, variant.stock],
+       DO UPDATE SET price = EXCLUDED.price`,
+      [photoId, variant.size, variant.price],
     );
   }
 
@@ -89,8 +88,7 @@ export const VARIANTS_SUBQUERY = `
                'id', v.id,
                'size', v.size,
                'price', v.price,
-               'currency', v.currency,
-               'stock', v.stock
+               'currency', v.currency
              ) ORDER BY v.price ASC
            )
     FROM photo_variants v

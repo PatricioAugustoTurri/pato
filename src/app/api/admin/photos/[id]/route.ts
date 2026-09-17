@@ -12,7 +12,6 @@ type PhotoPayload = {
   preferidos?: boolean;
   pais?: string | null;
   images?: unknown;
-  stock?: number;
 };
 
 export async function PUT(
@@ -34,10 +33,9 @@ export async function PUT(
   const description = payload.description?.trim() || null;
   const categoryId = payload.categoryId || null;
   const pais = payload.pais?.trim() || null;
-  const stock = payload.stock ?? 0;
   const images = payload.images ?? [];
 
-  if (!Number.isInteger(photoId) || !name || !slug || !Array.isArray(images) || !Number.isInteger(stock) || stock < 0) {
+  if (!Number.isInteger(photoId) || !name || !slug || !Array.isArray(images)) {
     return NextResponse.json({ error: "Los datos de la fotografía no son válidos." }, { status: 400 });
   }
 
@@ -50,10 +48,10 @@ export async function PUT(
     const result = await client.query(
       `UPDATE photos
        SET category_id = $1, name = $2, slug = $3, description = $4,
-           oferta = $5, preferidos = $6, pais = $7, images = $8::jsonb, stock = $9, updated_at = now()
-       WHERE id = $10
+           oferta = $5, preferidos = $6, pais = $7, images = $8::jsonb, updated_at = now()
+       WHERE id = $9
        RETURNING id`,
-      [categoryId, name, slug, description, Boolean(payload.oferta), Boolean(payload.preferidos), pais, JSON.stringify(images), stock, photoId],
+      [categoryId, name, slug, description, Boolean(payload.oferta), Boolean(payload.preferidos), pais, JSON.stringify(images), photoId],
     );
 
     if (result.rowCount === 0) {
@@ -61,8 +59,7 @@ export async function PUT(
       return NextResponse.json({ error: "Fotografía no encontrada." }, { status: 404 });
     }
 
-    // El stock de la obra vale para todos sus tamaños.
-    await replaceVariants(client, photoId, await catalogVariants(client, stock));
+    await replaceVariants(client, photoId, await catalogVariants(client));
     await client.query("COMMIT");
 
     revalidateCatalog();
@@ -91,7 +88,7 @@ type FlagsPayload = {
 /**
  * Enciende o apaga una bandera de portada de una obra, y nada más.
  *
- * El PUT de arriba pide la obra entera: nombre, slug, país, imagen, stock. Es
+ * El PUT de arriba pide la obra entera: nombre, slug, país, imagen. Es
  * lo correcto para el formulario, y es justo lo que no sirve para una pantalla
  * donde se marcan diez obras seguidas —cada tilde tendría que mandar de vuelta
  * todo el registro, y un campo que llegue vacío por error pisaría el dato

@@ -8,7 +8,6 @@ export type PhotoFormValues = {
   oferta: boolean;
   preferidos: boolean;
   pais: string;
-  stock: string;
   imageUrl: string;
   imageAlt: string;
 };
@@ -18,7 +17,6 @@ export type AdminVariant = {
   size: string;
   price: string;
   currency: string;
-  stock: number;
 };
 
 export type AdminPhoto = {
@@ -31,7 +29,6 @@ export type AdminPhoto = {
   preferidos: boolean;
   pais: string | null;
   images: unknown;
-  stock: number;
   variants: AdminVariant[];
 };
 
