@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { catalogImage } from "@/lib/cloudinary";
 import { normalizePhotoImage } from "@/lib/photo-image";
 import type { AdminCategory, AdminPhoto } from "../../components/types";
 
@@ -38,7 +39,7 @@ export default function CollectionsList({ categories, photos, savingId, onSelect
               </div>
               <div
                 className="admin-collection-cover"
-                style={category.cover ? { backgroundImage: `url(${category.cover})` } : undefined}
+                style={category.cover ? { backgroundImage: `url(${catalogImage(category.cover, 500)})` } : undefined}
               >
                 {!category.cover && <span>Sin portada</span>}
               </div>
@@ -64,7 +65,7 @@ export default function CollectionsList({ categories, photos, savingId, onSelect
                     >
                       <span
                         className="admin-collection-thumb-image"
-                        style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+                        style={imageUrl ? { backgroundImage: `url(${catalogImage(imageUrl, 400)})` } : undefined}
                       />
                       <span className="admin-collection-thumb-name">{photo.name}</span>
                       {isCover && <Check aria-hidden="true" />}

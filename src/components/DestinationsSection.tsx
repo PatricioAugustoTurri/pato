@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
 import { getCountryChapters } from "@/lib/photos";
+import { catalogImage } from "@/lib/cloudinary";
 import { countryIntro, countryLabel, countrySlug } from "@/lib/countries";
 
 /* La portada y /destinations son el mismo indice leido con otra intencion: una
@@ -106,9 +107,12 @@ export default async function DestinationsSection({
                     style={{ "--weight": plateIndex === 0 ? 1.45 : 1 } as CSSProperties}
                     aria-label={`${photo.name} — ${normalizePhotoAlt(photo.images, photo.name)}`}
                   >
+                    {/* 1000 px: el cuadro más ancho de la franja mide 495 en
+                        pantalla y una retina dibuja dos por cada uno. Pedir el
+                        original acá era bajar 3,7 MB para una miniatura. */}
                     <span
                       className="home-plate-image"
-                      style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+                      style={imageUrl ? { backgroundImage: `url(${catalogImage(imageUrl, 1000)})` } : undefined}
                       aria-hidden="true"
                     />
                     <span className="home-plate-body">
