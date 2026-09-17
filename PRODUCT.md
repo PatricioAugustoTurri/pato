@@ -33,7 +33,11 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   por (photoId, size).
 - Checkout re-tarifa en el servidor desde `photo_variants`; el precio del
   cliente nunca se confía. El webhook `checkout.session.completed` pasa el
-  pedido a `paid`.
+  pedido a `paid`, descuenta stock y manda dos mails por Resend: la
+  confirmación al comprador (en inglés) y el aviso de venta a
+  `CONTACT_TO_EMAIL` (en castellano, con obras, tamaños y dirección de envío).
+  Los dos salen después de responderle a Stripe y ninguno puede hacer fallar un
+  cobro ya procesado.
 - Envío: "Envío en Italia" €5,00 (2-5 días hábiles) y "Envío al resto de la
   Unión Europea" €10,00 (4-10 días hábiles). Stripe recolecta dirección en 27
   países de la UE y teléfono.

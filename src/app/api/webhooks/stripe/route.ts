@@ -2,7 +2,12 @@ import { NextResponse, after } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { pool } from "@/lib/db";
-import { sendOrderConfirmation, type OrderConfirmation } from "@/lib/order-email";
+import {
+  sendOrderAlert,
+  sendOrderConfirmation,
+  type OrderAlert,
+  type OrderConfirmation,
+} from "@/lib/order-email";
 
 /** Lo que el checkout guarda en `orders.items`. */
 type OrderItem = {
@@ -51,10 +56,16 @@ export async function POST(request: Request) {
       const shippingOptionName =
         shippingRate && typeof shippingRate !== "string" ? shippingRate.display_name : null;
 
-      /* Se llena solo si el UPDATE de abajo devuelve fila, o sea si este
-         evento es el primero que cobra este pedido. Vive fuera del `try` de la
-         transaccion porque el mail se manda despues de cerrarla. */
+      /* Se llenan solo si el UPDATE de abajo devuelve fila, o sea si este
+         evento es el primero que cobra este pedido. Viven fuera del `try` de la
+         transaccion porque los mails se mandan despues de cerrarla.
+
+         Son dos y no uno: la confirmacion al comprador necesita su direccion de
+         mail, el aviso a Pato no. Una compra en la que Stripe no nos deja un
+         mail del comprador es rara pero posible, y en ese caso el pedido tiene
+         que llegarle igual a quien lo va a imprimir. */
       let confirmation: OrderConfirmation | null = null;
+      let alert: OrderAlert | null = null;
 
       const client = await pool.connect();
 
@@ -111,6 +122,21 @@ export async function POST(request: Request) {
            mail: si Stripe reintenta el evento, el UPDATE no devuelve nada y el
            comprador no recibe una segunda confirmacion de la misma compra. */
         const paid = rows[0];
+
+        if (paid) {
+          alert = {
+            orderId: paid.id,
+            items: paid.items ?? [],
+            shippingOption: shippingOptionName,
+            shippingAmountCents: session.shipping_cost?.amount_total ?? null,
+            totalCents: session.amount_total ?? null,
+            customerName: customerDetails?.name ?? null,
+            customerEmail: paid.email,
+            customerPhone: customerDetails?.phone ?? null,
+            shippingAddress: shippingAddress,
+          };
+        }
+
         if (paid?.email) {
           confirmation = {
             orderId: paid.id,
@@ -137,6 +163,14 @@ export async function POST(request: Request) {
       if (confirmation) {
         const order = confirmation;
         after(() => sendOrderConfirmation(order));
+      }
+
+      /* En su propio `after`, no encadenado al de arriba: si el mail del
+         comprador falla, el aviso de la venta tiene que salir igual. Son dos
+         destinatarios distintos y ninguno depende del otro. */
+      if (alert) {
+        const order = alert;
+        after(() => sendOrderAlert(order));
       }
     } catch {
       return NextResponse.json({ error: "No se pudo actualizar la orden." }, { status: 500 });
