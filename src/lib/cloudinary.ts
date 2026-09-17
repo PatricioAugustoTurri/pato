@@ -74,3 +74,43 @@ export function catalogImage(url: string, width: number): string {
 
   return `${head}f_auto,q_auto,w_${width},c_limit/${tail}`;
 }
+
+/**
+ * La miniatura cuadrada de una obra para un mail.
+ *
+ * No recorta: la obra entra entera y lo que sobra del cuadrado se rellena con
+ * el color de fondo del mail, así que el relleno es invisible y una copia
+ * vertical y una horizontal se siguen leyendo distintas. Recortar la mercadería
+ * a un cuadrado decorativo está prohibido en el sistema de diseño, y un recibo
+ * no es la excepción: la proporción es parte de lo que la persona compró.
+ *
+ * `c_pad` y no `c_fit`, que fue lo primero que hubo acá. `c_fit` devuelve la
+ * imagen con SU proporción —una vertical de 4128×6192 vuelve 107×160, no
+ * 160×160—, y en un mail la miniatura lleva `width` y `height` como atributos
+ * porque varios clientes ignoran el CSS de una imagen. Con una imagen que no es
+ * cuadrada, esos dos atributos la aplastan. Pidiendo el cuadrado ya hecho, los
+ * atributos dicen la verdad y no hace falta que el cliente entienda
+ * `object-fit` para que la obra se vea bien.
+ *
+ * Al doble del tamaño en que se dibuja, porque los teléfonos donde se abre un
+ * mail son casi todos de densidad doble.
+ */
+export function catalogThumb(url: string, box: number, background = "f4f1eb"): string {
+  if (!isCatalogImageUrl(url)) {
+    return url;
+  }
+
+  const at = url.indexOf(UPLOAD_MARKER);
+  if (at === -1) {
+    return url;
+  }
+
+  const head = url.slice(0, at + UPLOAD_MARKER.length);
+  const tail = url.slice(at + UPLOAD_MARKER.length);
+
+  if (/^[a-z]{1,2}_[^/]*\//.test(tail)) {
+    return url;
+  }
+
+  return `${head}f_auto,q_auto,c_pad,b_rgb:${background},w_${box},h_${box}/${tail}`;
+}

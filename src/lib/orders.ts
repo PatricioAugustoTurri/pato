@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db";
 import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
+import { catalogThumb } from "@/lib/cloudinary";
 import { cleanTitle } from "@/lib/place";
 import { sizeDimensions } from "@/lib/sizes";
 
@@ -88,6 +89,7 @@ type OrderRow = {
 };
 
 type PhotoRow = {
+  description?: string | null;
   /* `photos.id` es `bigint` en la base, y node-postgres devuelve los bigint
      como CADENA para no perder precisión. Todo lo demás que leemos acá es
      `integer` y llega como número, así que este es el único campo que hay que
@@ -150,7 +152,7 @@ async function fetchPhotos(ids: number[]): Promise<Map<number, PhotoRow>> {
   if (ids.length === 0) return new Map();
 
   const { rows } = await pool.query<PhotoRow>(
-    `SELECT p.id, p.name, p.slug, p.images, c.slug AS "categorySlug"
+    `SELECT p.id, p.name, p.slug, p.description, p.images, c.slug AS "categorySlug"
        FROM photos p
        LEFT JOIN categories c ON c.id = p.category_id
       WHERE p.id = ANY($1::int[])`,
@@ -244,4 +246,98 @@ export function formatAddress(address: OrderAddress | null): string {
     .map((part) => part?.trim())
     .filter(Boolean)
     .join(", ");
+}
+
+/** Una línea del pedido con todo lo que un mail necesita para describirla. */
+export type OrderEmailLine = {
+  title: string;
+  /** El texto de autor de la obra, recortado a lo que se lee en un recibo. */
+  description: string | null;
+  /** Miniatura ya pedida a Cloudinary en el tamaño del mail. Vacía si no hay. */
+  imageUrl: string;
+  alt: string;
+  /** Dirección absoluta a la ficha: en un mail no sirve una relativa. */
+  href: string | null;
+  size: string;
+  dimensions: string;
+  quantity: number;
+  lineCents: number;
+};
+
+/**
+ * Las líneas de un pedido, enriquecidas contra el catálogo, para los mails.
+ *
+ * `orders.items` guarda un congelado de la compra —nombre, tamaño, cantidad y
+ * precio— y eso es correcto: un recibo tiene que decir lo que se pagó aunque
+ * después cambie el catálogo. Pero un congelado no trae imagen ni descripción,
+ * y un mail que enumera nombres sin mostrar la obra es un extracto bancario,
+ * no la confirmación de haber comprado una fotografía.
+ *
+ * Así que el precio y la cantidad salen del congelado, y la imagen y el texto
+ * del catálogo de hoy. Si la obra ya no está, la línea se dibuja igual con lo
+ * que quedó guardado: un pedido viejo no puede perder su recibo porque alguien
+ * borró una foto.
+ */
+export async function orderEmailLines(
+  items: unknown,
+  thumbBox = 160,
+): Promise<OrderEmailLine[]> {
+  const snapshots = readItems(items);
+
+  const ids = [...new Set(snapshots.map((item) => Number(item.photoId)))].filter(
+    (id) => Number.isInteger(id) && id > 0,
+  );
+
+  /* Si la consulta falla, las líneas salen sin miniatura en vez de no salir:
+     el mail avisa de una venta y eso no puede depender del catálogo. */
+  let photos = new Map<number, PhotoRow>();
+  try {
+    photos = await fetchPhotos(ids);
+  } catch {
+    photos = new Map();
+  }
+
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://patoturri.com";
+
+  return snapshots.map((item) => {
+    const photo = photos.get(Number(item.photoId));
+    const title = cleanTitle(photo?.name ?? item.name ?? `Work #${item.photoId}`);
+    const quantity = Number(item.quantity) || 1;
+    const imageUrl = photo ? normalizePhotoImage(photo.images) : "";
+
+    return {
+      title,
+      description: trimDescription(photo?.description ?? null),
+      imageUrl: imageUrl ? catalogThumb(imageUrl, thumbBox) : "",
+      alt: photo ? normalizePhotoAlt(photo.images, title) : title,
+      href:
+        photo && photo.categorySlug ? `${site}/shop/${photo.categorySlug}/${photo.slug}` : null,
+      size: item.size,
+      dimensions: sizeDimensions(item.size),
+      quantity,
+      lineCents: Number(item.unitAmountCents) * quantity,
+    };
+  });
+}
+
+/**
+ * La descripción de la obra, recortada para un recibo.
+ *
+ * Las del catálogo son textos de autor de varios párrafos, escritos para la
+ * ficha de venta donde la persona está decidiendo. En un mail que ya confirma
+ * una compra, ese largo empuja el resto del pedido fuera de la pantalla. Se
+ * corta en la primera oración, que es la que presenta la obra, y se marca el
+ * corte para que se note que hay más donde se compró.
+ */
+function trimDescription(value: string | null): string | null {
+  const text = value?.trim();
+  if (!text) return null;
+
+  const firstSentence = text.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? text;
+
+  if (firstSentence.length >= text.length) {
+    return firstSentence;
+  }
+
+  return `${firstSentence} …`;
 }

@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { pool } from "@/lib/db";
+import { orderEmailLines } from "@/lib/orders";
 import {
   sendOrderAlert,
   sendOrderConfirmation,
@@ -66,6 +67,8 @@ export async function POST(request: Request) {
          que llegarle igual a quien lo va a imprimir. */
       let confirmation: OrderConfirmation | null = null;
       let alert: OrderAlert | null = null;
+      let sold: { id: number; items: OrderItem[]; email: string | null; createdAt: Date | null } | null =
+        null;
 
       const client = await pool.connect();
 
@@ -77,7 +80,12 @@ export async function POST(request: Request) {
            sin esta condición cada reintento volvería a descontar stock de una
            compra que ya se cobró una sola vez. Si no vuelve fila, el pedido ya
            estaba cobrado y no hay nada que hacer. */
-        const { rows } = await client.query<{ id: number; items: OrderItem[]; email: string | null }>(
+        const { rows } = await client.query<{
+          id: number;
+          items: OrderItem[];
+          email: string | null;
+          createdAt: Date | null;
+        }>(
           `UPDATE orders
            SET status = 'paid',
                email = COALESCE($2, email),
@@ -88,7 +96,7 @@ export async function POST(request: Request) {
                shipping_amount_cents = $7,
                amount_total_cents = $8
            WHERE stripe_session_id = $1 AND status <> 'paid'
-           RETURNING id, items, email`,
+           RETURNING id, items, email, created_at AS "createdAt"`,
           [
             session.id,
             customerDetails?.email ?? null,
@@ -121,33 +129,7 @@ export async function POST(request: Request) {
         /* La misma fila que autoriza a descontar stock autoriza a mandar el
            mail: si Stripe reintenta el evento, el UPDATE no devuelve nada y el
            comprador no recibe una segunda confirmacion de la misma compra. */
-        const paid = rows[0];
-
-        if (paid) {
-          alert = {
-            orderId: paid.id,
-            items: paid.items ?? [],
-            shippingOption: shippingOptionName,
-            shippingAmountCents: session.shipping_cost?.amount_total ?? null,
-            totalCents: session.amount_total ?? null,
-            customerName: customerDetails?.name ?? null,
-            customerEmail: paid.email,
-            customerPhone: customerDetails?.phone ?? null,
-            shippingAddress: shippingAddress,
-          };
-        }
-
-        if (paid?.email) {
-          confirmation = {
-            orderId: paid.id,
-            to: paid.email,
-            customerName: customerDetails?.name ?? null,
-            items: paid.items ?? [],
-            shippingOption: shippingOptionName,
-            shippingAmountCents: session.shipping_cost?.amount_total ?? null,
-            totalCents: session.amount_total ?? null,
-          };
-        }
+        sold = rows[0] ?? null;
 
         await client.query("COMMIT");
       } catch (error) {
@@ -155,6 +137,32 @@ export async function POST(request: Request) {
         throw error;
       } finally {
         client.release();
+      }
+
+      /* Las lineas se arman DESPUES de cerrar la transaccion: enriquecerlas
+         consulta el catalogo —la miniatura y la descripcion de cada obra— y eso
+         no tiene por que ocurrir con la fila del pedido bloqueada. */
+      if (sold) {
+        const base = {
+          orderId: sold.id,
+          placedAt: sold.createdAt ?? new Date(),
+          lines: await orderEmailLines(sold.items ?? []),
+          shippingOption: shippingOptionName,
+          shippingAmountCents: session.shipping_cost?.amount_total ?? null,
+          totalCents: session.amount_total ?? null,
+          shippingAddress,
+        };
+
+        alert = {
+          ...base,
+          customerName: customerDetails?.name ?? null,
+          customerEmail: sold.email,
+          customerPhone: customerDetails?.phone ?? null,
+        };
+
+        if (sold.email) {
+          confirmation = { ...base, to: sold.email, customerName: customerDetails?.name ?? null };
+        }
       }
 
       /* Despues de la respuesta, no antes. Stripe espera un 200 rapido y

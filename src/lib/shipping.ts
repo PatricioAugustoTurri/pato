@@ -88,3 +88,58 @@ export function stripeShippingOptions(region: ShippingRegion) {
     },
   }));
 }
+
+/**
+ * La tarifa, buscada por el nombre que viaja a Stripe.
+ *
+ * El webhook recibe de vuelta el `display_name` que se mandó —"Shipping in
+ * Italy"—, no la zona. Este es el camino de regreso, y por eso `name` es la
+ * clave: es el único dato que sobrevive el viaje de ida y vuelta por Stripe.
+ */
+export function shippingRateByName(name: string | null) {
+  if (!name) return null;
+  return SHIPPING_RATES.find((rate) => rate.name === name) ?? null;
+}
+
+/** Suma días hábiles a una fecha, salteando sábados y domingos. */
+function addBusinessDays(from: Date, days: number): Date {
+  const date = new Date(from);
+  let left = days;
+
+  while (left > 0) {
+    date.setDate(date.getDate() + 1);
+    const day = date.getDay();
+    if (day !== 0 && day !== 6) {
+      left -= 1;
+    }
+  }
+
+  return date;
+}
+
+/**
+ * La ventana de entrega de un pedido, en fechas concretas.
+ *
+ * Los plazos del sitio están en días hábiles —"2-5 días"— porque así se
+ * anuncian y así los entiende Stripe. Pero a quien acaba de comprar, "2-5 días
+ * hábiles" le pide una cuenta con un calendario al lado; una fecha no. Se
+ * calcula sobre la fecha del pedido y salteando fines de semana, que es lo que
+ * "hábil" significa.
+ *
+ * No contempla feriados: son distintos en cada uno de los 27 países a los que
+ * se envía, y una estimación que se pasa por un día es honesta mientras se
+ * anuncie como estimación. Por eso las dos puntas viajan siempre, y quien la
+ * muestra la escribe como un rango y no como una promesa.
+ */
+export function deliveryWindow(
+  optionName: string | null,
+  from: Date,
+): { min: Date; max: Date } | null {
+  const rate = shippingRateByName(optionName);
+  if (!rate) return null;
+
+  return {
+    min: addBusinessDays(from, rate.minDays),
+    max: addBusinessDays(from, rate.maxDays),
+  };
+}

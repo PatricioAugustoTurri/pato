@@ -1,69 +1,285 @@
 import { Resend } from "resend";
 import { formatPrice } from "@/lib/money";
+import type { OrderEmailLine } from "@/lib/orders";
+import { deliveryWindow } from "@/lib/shipping";
 
 /**
- * El mail que recibe quien compra, cuando Stripe confirma el cobro.
+ * Los dos mails que salen cuando Stripe confirma un cobro: la confirmación
+ * para quien compró y el aviso de venta para quien tiene que imprimir.
  *
- * Hasta ahora la única confirmación era la pantalla de éxito: si el comprador
- * la cerraba, no le quedaba constancia de nada. Un pedido de fotografía tarda
- * días en imprimirse y enviarse, y en ese hueco lo normal es dudar de si la
- * compra entró.
- *
- * Vive acá y no dentro del webhook porque el webhook ya tiene un trabajo
+ * Viven acá y no dentro del webhook porque el webhook ya tiene un trabajo
  * delicado —marcar cobrado y bajar stock en una transacción— y mezclarle el
- * armado de un mail lo vuelve ilegible.
+ * armado de dos mails lo vuelve ilegible.
+ *
+ * Los dos se dibujan con las mismas piezas (`shell`, `lineRows`, `moneyRows`)
+ * y se diferencian en tres cosas: el idioma, el destinatario y qué bloques
+ * llevan. Que compartan el armado es lo que evita que dentro de un año el
+ * comprador reciba un recibo prolijo y el vendedor uno que quedó viejo.
+ *
+ * QUÉ NO VIAJA EN NINGUNO DE LOS DOS: datos de tarjeta —nunca los tenemos, los
+ * toca Stripe y no nosotros—, ids internos que no sean el número de pedido, ni
+ * nada de otros compradores. En el del comprador tampoco va ningún enlace al
+ * panel. Los datos de contacto y la dirección SÍ van en el del vendedor: sin
+ * eso no se puede despachar un paquete, que es para lo que existe ese mail.
  */
 
-export type OrderEmailItem = {
-  name: string;
-  size: string;
-  quantity: number;
-  unitAmountCents: number;
+/** La dirección tal como la entrega Stripe. Se declara la forma mínima que se
+    usa acá en vez de importar el tipo de Stripe: esta librería arma mails y no
+    tiene por qué saber de dónde salió el dato. */
+export type ShippingAddress = {
+  line1?: string | null;
+  line2?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
 };
 
-export type OrderConfirmation = {
+type OrderBase = {
   orderId: number;
-  to: string;
-  customerName: string | null;
-  items: OrderEmailItem[];
+  placedAt: Date;
+  lines: OrderEmailLine[];
   shippingOption: string | null;
   shippingAmountCents: number | null;
   totalCents: number | null;
+  shippingAddress: ShippingAddress | null;
 };
+
+export type OrderConfirmation = OrderBase & {
+  to: string;
+  customerName: string | null;
+};
+
+export type OrderAlert = OrderBase & {
+  customerName: string | null;
+  customerEmail: string | null;
+  customerPhone: string | null;
+};
+
+/* --- La paleta del sitio, escrita a mano ---------------------------------
+   Un mail no puede cargar una hoja de estilos ni una variable CSS: cada color
+   viaja pegado al elemento. Son los mismos valores que `globals.css`, y el
+   mismo criterio de DESIGN.md —tinta y papel, filete de un píxel, cero radio—,
+   porque el recibo es la última pantalla de la compra y tiene que parecerse a
+   las anteriores. */
+const INK = "#25231f";
+const PAPER = "#f4f1eb";
+const MUTED = "#6f675d";
+const LINE = "#d9d3c9";
+const ACCENT = "#a85527";
+
+/* Las tipografías son de sistema a propósito: una fuente web en un mail se
+   descarga en pocos clientes y en el resto cae en una sustitución que no
+   elegimos. Mejor una pila que se ve bien en todos. */
+const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+const MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
 
 /** Los céntimos que cobra Stripe, en la misma forma que muestra el sitio. */
 const euros = (cents: number) => formatPrice(cents / 100);
 
-function itemLines(items: OrderEmailItem[]): string {
-  return items
-    .map(
-      (item) =>
-        `  ${item.quantity} x ${item.name} (${item.size})   ${euros(item.unitAmountCents * item.quantity)}`,
-    )
-    .join("\n");
+const escape = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+function formatDate(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }
 
-function itemRows(items: OrderEmailItem[]): string {
-  return items
-    .map(
-      (item) => `
-        <tr>
-          <td style="padding:8px 0;border-bottom:1px solid #eee">
-            ${item.quantity} &times; ${item.name}
-            <span style="color:#777">(${item.size})</span>
-          </td>
-          <td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;white-space:nowrap">
-            ${euros(item.unitAmountCents * item.quantity)}
-          </td>
-        </tr>`,
-    )
-    .join("");
+/** Las líneas de una dirección, sin las que vengan vacías. */
+function addressLines(address: ShippingAddress | null): string[] {
+  if (!address) {
+    return [];
+  }
+
+  const cityLine = [address.postal_code, address.city].filter(Boolean).join(" ");
+
+  return [address.line1, address.line2, cityLine, address.state, address.country].filter(
+    (line): line is string => Boolean(line && line.trim()),
+  );
 }
 
 /**
- * Manda la confirmación. No lanza nunca: la llama el webhook, y un pedido
- * cobrado y con el stock ya descontado no se puede dar por fallido porque el
- * proveedor de mail esté caído. Si algo sale mal queda en el log del servidor.
+ * La cáscara del mail: ancho fijo, fondo papel, y una regla de oro de los
+ * clientes de correo —tablas y estilos pegados, nada de flex ni clases—.
+ */
+function shell(inner: string): string {
+  return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};margin:0;padding:24px 12px">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:${PAPER};font-family:${SANS};color:${INK};line-height:1.55">
+        ${inner}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+/** El wordmark, en texto. Una imagen de logo la bloquean la mitad de los
+    clientes y el mail abriría con un hueco. */
+function masthead(): string {
+  return `
+  <tr><td style="padding:0 0 22px">
+    <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">Pato&nbsp;Turri</span>
+    <span style="color:${MUTED};font-size:17px;font-style:italic">·</span>
+    <span style="color:${MUTED};font-family:${MONO};font-size:10px;letter-spacing:.12em;text-transform:uppercase">Travel photography prints</span>
+  </td></tr>`;
+}
+
+/** El encabezado del recibo: qué es este mail y de qué pedido habla. */
+function heading(title: string, orderId: number, dateLabel: string, date: string): string {
+  return `
+  <tr><td style="border-top:1px solid ${LINE};padding:22px 0 0">
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 10px">${escape(title)}</h1>
+    <p style="color:${MUTED};font-family:${MONO};font-size:11px;letter-spacing:.06em;margin:0;text-transform:uppercase">
+      #${orderId} &nbsp;·&nbsp; ${escape(dateLabel)} ${escape(date)}
+    </p>
+  </td></tr>`;
+}
+
+/**
+ * Una obra por fila: miniatura, título, descripción, medida y precio.
+ *
+ * La miniatura va con `width` y `height` como ATRIBUTOS además de en el estilo,
+ * porque varios clientes ignoran el CSS de una imagen y sin eso se dibuja a
+ * tamaño original y rompe la tabla. Y toda imagen lleva `alt` con el título:
+ * Gmail y Outlook bloquean imágenes por defecto, así que la primera vez que se
+ * abre el mail lo que se lee es el texto alternativo.
+ */
+function lineRows(lines: OrderEmailLine[], eachLabel: string): string {
+  return lines
+    .map((line) => {
+      const title = line.href
+        ? `<a href="${escape(line.href)}" style="color:${INK};text-decoration:none">${escape(line.title)}</a>`
+        : escape(line.title);
+
+      const spec = [line.size, line.dimensions].filter(Boolean).join(" · ");
+
+      return `
+  <tr><td style="border-top:1px solid ${LINE};padding:18px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="84" valign="top" style="width:84px;padding-right:16px">
+          ${
+            line.imageUrl
+              ? `<img src="${escape(line.imageUrl)}" alt="${escape(line.alt)}" width="80" height="80" style="width:80px;height:80px;object-fit:contain;display:block;background:${LINE}">`
+              : `<div style="width:80px;height:80px;background:${LINE}"></div>`
+          }
+        </td>
+        <td valign="top">
+          <div style="font-size:15px;font-weight:600;letter-spacing:-.01em;margin-bottom:4px">${title}</div>
+          ${
+            line.description
+              ? `<div style="color:${MUTED};font-size:13px;margin-bottom:7px">${escape(line.description)}</div>`
+              : ""
+          }
+          <div style="color:${MUTED};font-family:${MONO};font-size:11px;letter-spacing:.04em">
+            ${escape(spec)}${line.quantity > 1 ? ` &nbsp;·&nbsp; ${line.quantity} ${escape(eachLabel)}` : ""}
+          </div>
+        </td>
+        <td valign="top" align="right" style="font-family:${MONO};font-size:13px;white-space:nowrap">
+          ${euros(line.lineCents)}
+        </td>
+      </tr>
+    </table>
+  </td></tr>`;
+    })
+    .join("");
+}
+
+/** Envío y total, en filas regladas y con las cifras en mono y alineadas. */
+function moneyRows(order: OrderBase, shippingLabel: string, totalLabel: string): string {
+  const shipping =
+    order.shippingAmountCents !== null
+      ? `
+      <tr>
+        <td style="color:${MUTED};font-size:13px;padding:4px 0">${escape(order.shippingOption ?? shippingLabel)}</td>
+        <td align="right" style="color:${MUTED};font-family:${MONO};font-size:13px;padding:4px 0">${euros(order.shippingAmountCents)}</td>
+      </tr>`
+      : "";
+
+  const total =
+    order.totalCents !== null
+      ? `
+      <tr>
+        <td style="font-size:15px;font-weight:600;padding:10px 0 0">${escape(totalLabel)}</td>
+        <td align="right" style="font-family:${MONO};font-size:15px;font-weight:600;padding:10px 0 0">${euros(order.totalCents)}</td>
+      </tr>`
+      : "";
+
+  return `
+  <tr><td style="border-top:1px solid ${LINE};padding:14px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${shipping}${total}</table>
+  </td></tr>`;
+}
+
+/** Un bloque con rótulo mono arriba y líneas debajo. */
+function block(label: string, body: string): string {
+  return `
+  <tr><td style="border-top:1px solid ${LINE};padding:18px 0">
+    <p style="color:${MUTED};font-family:${MONO};font-size:10px;letter-spacing:.12em;margin:0 0 7px;text-transform:uppercase">${escape(label)}</p>
+    <div style="font-size:14px">${body}</div>
+  </td></tr>`;
+}
+
+/** La misma información en texto plano. No es un respaldo por si acaso: hay
+    quien lee el correo en texto, y un mail sin parte de texto puntúa peor en
+    los filtros de spam. */
+function plainLines(lines: OrderEmailLine[], eachLabel: string): string {
+  return lines
+    .map((line) => {
+      const spec = [line.size, line.dimensions].filter(Boolean).join(" · ");
+      const count = line.quantity > 1 ? ` — ${line.quantity} ${eachLabel}` : "";
+      return `  ${line.title}\n    ${spec}${count}    ${euros(line.lineCents)}`;
+    })
+    .join("\n");
+}
+
+/** Une descartando lo que no va, pero conservando las líneas en blanco que sí.
+    `null` es una línea que no corresponde; `""` es aire a propósito. */
+const joinLines = (lines: (string | null)[]) =>
+  lines.filter((line): line is string => line !== null).join("\n");
+
+async function deliver(
+  message: { from: string; to: string; replyTo?: string; subject: string; text: string; html: string },
+  tag: string,
+  orderId: number,
+): Promise<void> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY as string);
+    const { error } = await resend.emails.send(message);
+
+    if (error) {
+      console.error(`[${tag}] pedido ${orderId}:`, error);
+    }
+  } catch (error) {
+    console.error(`[${tag}] pedido ${orderId}:`, error);
+  }
+}
+
+/**
+ * La confirmación que recibe quien compra, en inglés como el resto del sitio.
+ *
+ * Hasta acá la única confirmación era la pantalla de éxito: si el comprador la
+ * cerraba, no le quedaba constancia de nada. Un pedido de fotografía tarda días
+ * en imprimirse y enviarse, y en ese hueco lo normal es dudar de si la compra
+ * entró.
+ *
+ * Por eso lleva la obra dibujada y no solo nombrada, la fecha estimada de
+ * entrega en fechas y no en "días hábiles" —que obliga a contar con un
+ * calendario al lado—, y la dirección a la que va el paquete, que es lo único
+ * que el comprador todavía puede corregir a tiempo si se equivocó.
+ *
+ * No lanza nunca: la llama el webhook, y un pedido cobrado y con el stock ya
+ * descontado no se puede dar por fallido porque el proveedor de mail esté
+ * caído. Si algo sale mal queda en el log del servidor.
  */
 export async function sendOrderConfirmation(order: OrderConfirmation): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -82,130 +298,98 @@ export async function sendOrderConfirmation(order: OrderConfirmation): Promise<v
   }
 
   const greeting = order.customerName ? `Hi ${order.customerName},` : "Hi,";
-  const shipping =
-    order.shippingAmountCents !== null
-      ? `${order.shippingOption ?? "Shipping"}: ${euros(order.shippingAmountCents)}`
-      : null;
-  const total = order.totalCents !== null ? euros(order.totalCents) : null;
+  const placed = formatDate(order.placedAt, "en-GB");
+  const window = deliveryWindow(order.shippingOption, order.placedAt);
+  const estimate = window
+    ? `${formatDate(window.min, "en-GB")} – ${formatDate(window.max, "en-GB")}`
+    : null;
+  const address = addressLines(order.shippingAddress);
+  const prints = order.lines.reduce((total, line) => total + line.quantity, 0);
 
-  const text = [
+  const text = joinLines([
     greeting,
     "",
     "Thank you for your order. Your prints are being prepared.",
     "",
-    `Order #${order.orderId}`,
+    `Order #${order.orderId} — placed ${placed}`,
     "",
-    itemLines(order.items),
-    shipping ? `\n  ${shipping}` : "",
-    total ? `\n  Total: ${total}` : "",
+    plainLines(order.lines, "prints"),
     "",
-    "You will hear from us again when the parcel is on its way.",
+    order.shippingAmountCents !== null
+      ? `  ${order.shippingOption ?? "Shipping"}    ${euros(order.shippingAmountCents)}`
+      : null,
+    order.totalCents !== null ? `  Total    ${euros(order.totalCents)}` : null,
+    "",
+    estimate ? `Estimated delivery: ${estimate}` : null,
+    estimate ? "" : null,
+    address.length > 0 ? "Shipping to:" : null,
+    address.length > 0 ? address.map((line) => `  ${line}`).join("\n") : null,
+    address.length > 0 ? "" : null,
+    "If anything is wrong, reply to this email and it reaches us directly.",
     "",
     "Pato Turri",
-  ]
-    .filter((line) => line !== "")
-    .join("\n");
+    "patoturri.com",
+  ]);
 
-  const html = `
-    <div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:520px;margin:0 auto;color:#111;line-height:1.5">
-      <p>${greeting}</p>
-      <p>Thank you for your order. Your prints are being prepared.</p>
-      <p style="color:#777;font-size:14px;margin-bottom:4px">Order #${order.orderId}</p>
-      <table style="width:100%;border-collapse:collapse;font-size:15px">
-        ${itemRows(order.items)}
-        ${
-          shipping
-            ? `<tr><td style="padding:8px 0;color:#777">${order.shippingOption ?? "Shipping"}</td>
-               <td style="padding:8px 0;text-align:right;color:#777">${euros(order.shippingAmountCents as number)}</td></tr>`
-            : ""
-        }
-        ${
-          total
-            ? `<tr><td style="padding:12px 0;font-weight:600">Total</td>
-               <td style="padding:12px 0;text-align:right;font-weight:600">${total}</td></tr>`
-            : ""
-        }
-      </table>
-      <p>You will hear from us again when the parcel is on its way.</p>
-      <p style="color:#777">Pato Turri</p>
-    </div>`;
+  const html = shell(`
+  ${masthead()}
+  ${heading(prints === 1 ? "Your print is on its way" : "Your prints are on their way", order.orderId, "Placed", placed)}
+  <tr><td style="padding:16px 0 4px;font-size:15px">
+    <p style="margin:0 0 10px">${escape(greeting)}</p>
+    <p style="margin:0">Thank you for your order. Everything below is being prepared and printed by hand.</p>
+  </td></tr>
+  ${lineRows(order.lines, "prints")}
+  ${moneyRows(order, "Shipping", "Total")}
+  ${
+    estimate
+      ? block(
+          "Estimated delivery",
+          `<span style="font-family:${MONO};font-size:13px">${escape(estimate)}</span>
+           <div style="color:${MUTED};font-size:13px;margin-top:5px">Business days, weekends excluded. We will write again when the parcel is on its way.</div>`,
+        )
+      : ""
+  }
+  ${address.length > 0 ? block("Shipping to", address.map(escape).join("<br>")) : ""}
+  <tr><td style="border-top:1px solid ${LINE};padding:18px 0 0">
+    <p style="color:${MUTED};font-size:13px;margin:0 0 6px">
+      If anything here is wrong, reply to this email — it reaches us directly.
+    </p>
+    <p style="margin:0;font-size:13px">
+      <a href="https://patoturri.com" style="color:${ACCENT};text-decoration:none">patoturri.com</a>
+    </p>
+  </td></tr>`);
 
-  try {
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
+  await deliver(
+    {
       from: `Pato Turri <${from}>`,
       to: order.to,
       /* Se omite la clave entera si no hay a donde responder, en vez de
          mandarla en `undefined` y confiar en que el SDK la descarte. */
       ...(replyTo ? { replyTo } : {}),
-      subject: `Your order #${order.orderId}`,
+      subject: `Your order #${order.orderId} — Pato Turri`,
       text,
       html,
-    });
-
-    if (error) {
-      console.error(`[order-email] pedido ${order.orderId}:`, error);
-    }
-  } catch (error) {
-    console.error(`[order-email] pedido ${order.orderId}:`, error);
-  }
-}
-
-/** La dirección tal como la entrega Stripe. Se declara la forma mínima que se
-    usa acá en vez de importar el tipo de Stripe: esta librería arma mails y no
-    tiene por qué saber de dónde salió el dato. */
-export type ShippingAddress = {
-  line1?: string | null;
-  line2?: string | null;
-  postal_code?: string | null;
-  city?: string | null;
-  state?: string | null;
-  country?: string | null;
-};
-
-export type OrderAlert = {
-  orderId: number;
-  items: OrderEmailItem[];
-  shippingOption: string | null;
-  shippingAmountCents: number | null;
-  totalCents: number | null;
-  customerName: string | null;
-  customerEmail: string | null;
-  customerPhone: string | null;
-  shippingAddress: ShippingAddress | null;
-};
-
-/** Las líneas de una dirección, sin las que vengan vacías. */
-function addressLines(address: ShippingAddress | null): string[] {
-  if (!address) {
-    return [];
-  }
-
-  const cityLine = [address.postal_code, address.city].filter(Boolean).join(" ");
-
-  return [address.line1, address.line2, cityLine, address.state, address.country].filter(
-    (line): line is string => Boolean(line && line.trim()),
+    },
+    "order-email",
+    order.orderId,
   );
 }
 
 /**
  * El aviso de venta, para el fotógrafo.
  *
- * Hasta acá una compra no le avisaba a nadie: el comprador recibía su
- * confirmación y del lado de Pato la venta solo existía si entraba a
- * /admin/orders a mirar. Un pedido que hay que imprimir y despachar no puede
- * depender de que a alguien se le ocurra revisar una pantalla.
+ * Antes una compra no le avisaba a nadie: el comprador recibía su confirmación
+ * y de este lado la venta solo existía si alguien entraba a /admin/orders a
+ * mirar. Un pedido que hay que imprimir y despachar no puede depender de que se
+ * le ocurra a alguien revisar una pantalla.
  *
  * Va en castellano y no en inglés como el del comprador: este mail no es del
  * sitio, es del taller. Lo lee una sola persona, la misma que usa el panel.
  *
- * Lleva TODO lo necesario para trabajar el pedido —qué obras, en qué tamaño,
- * cuántas y a qué dirección— para que despachar no obligue a volver al panel.
- * Y el `replyTo` es el comprador: contestarle es apretar responder.
- *
- * Como su hermano, no lanza nunca. Se manda después de que el webhook ya le
- * contestó a Stripe, y una venta cobrada no se puede dar por fallida porque el
- * proveedor de mail esté caído.
+ * Lleva TODO lo necesario para trabajar el pedido sin volver al panel: qué
+ * obras, en qué tamaño, cuántas copias, a qué dirección y para cuándo está
+ * prometido. Los datos de contacto del comprador van justamente porque son
+ * necesarios para despachar; lo que no viaja es todo lo demás.
  */
 export async function sendOrderAlert(order: OrderAlert): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -219,28 +403,30 @@ export async function sendOrderAlert(order: OrderAlert): Promise<void> {
     return;
   }
 
-  const copies = order.items.reduce((total, item) => total + item.quantity, 0);
+  const copies = order.lines.reduce((total, line) => total + line.quantity, 0);
   const total = order.totalCents !== null ? euros(order.totalCents) : "—";
+  const placed = formatDate(order.placedAt, "es-AR");
+  const window = deliveryWindow(order.shippingOption, order.placedAt);
+  const promised = window ? `${formatDate(window.min, "es-AR")} – ${formatDate(window.max, "es-AR")}` : null;
   const address = addressLines(order.shippingAddress);
 
   /* El asunto es lo único que se lee en la notificación del teléfono, así que
      dice lo que hay que saber sin abrir: cuántas copias y por cuánto. */
   const subject = `Venta: ${copies} ${copies === 1 ? "copia" : "copias"} · ${total} · pedido #${order.orderId}`;
 
-  /* `null` es una línea que no va; `""` es una línea en blanco que sí va. Sin
-     esa distinción —y el mail del comprador, que filtra las vacías a secas, la
-     perdía— las secciones salen pegadas una a otra y esto se lee de un vistazo
-     en el teléfono o no se lee. */
-  const text = [
-    `Pedido #${order.orderId}`,
+  const text = joinLines([
+    `Pedido #${order.orderId} — ${placed}`,
     "",
     "A imprimir:",
-    itemLines(order.items),
-    order.shippingAmountCents !== null
-      ? `  ${order.shippingOption ?? "Envío"}: ${euros(order.shippingAmountCents)}`
-      : null,
-    `  Total cobrado: ${total}`,
+    plainLines(order.lines, "copias"),
     "",
+    order.shippingAmountCents !== null
+      ? `  ${order.shippingOption ?? "Envío"}    ${euros(order.shippingAmountCents)}`
+      : null,
+    `  Total cobrado    ${total}`,
+    "",
+    promised ? `Prometido para: ${promised}` : null,
+    promised ? "" : null,
     "Comprador:",
     `  ${order.customerName ?? "Sin nombre"}`,
     `  ${order.customerEmail ?? "Sin email"}`,
@@ -250,49 +436,43 @@ export async function sendOrderAlert(order: OrderAlert): Promise<void> {
     address.length > 0 ? address.map((line) => `  ${line}`).join("\n") : "  Sin dirección",
     "",
     "El pedido también está en patoturri.com/admin/orders",
-  ]
-    .filter((line): line is string => line !== null)
-    .join("\n");
+  ]);
 
-  const html = `
-    <div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:520px;margin:0 auto;color:#111;line-height:1.5">
-      <p style="color:#777;font-size:14px;margin-bottom:4px">Pedido #${order.orderId}</p>
-      <h2 style="font-size:20px;margin:0 0 18px">${copies} ${copies === 1 ? "copia" : "copias"} · ${total}</h2>
+  const html = shell(`
+  ${masthead()}
+  ${heading(`${copies} ${copies === 1 ? "copia vendida" : "copias vendidas"} · ${total}`, order.orderId, "Cobrado el", placed)}
+  ${lineRows(order.lines, "copias")}
+  ${moneyRows(order, "Envío", "Total cobrado")}
+  ${
+    promised
+      ? block(
+          "Prometido para",
+          `<span style="font-family:${MONO};font-size:13px">${escape(promised)}</span>
+           <div style="color:${MUTED};font-size:13px;margin-top:5px">Días hábiles desde hoy, según la tarifa que eligió.</div>`,
+        )
+      : ""
+  }
+  ${block(
+    "Comprador",
+    joinLines([
+      escape(order.customerName ?? "Sin nombre"),
+      order.customerEmail
+        ? `<a href="mailto:${escape(order.customerEmail)}" style="color:${ACCENT};text-decoration:none">${escape(order.customerEmail)}</a>`
+        : "Sin email",
+      order.customerPhone ? escape(order.customerPhone) : null,
+    ]).replace(/\n/g, "<br>"),
+  )}
+  ${block("Enviar a", address.length > 0 ? address.map(escape).join("<br>") : "Sin dirección")}
+  <tr><td style="border-top:1px solid ${LINE};padding:18px 0 0">
+    <p style="color:${MUTED};font-size:13px;margin:0">
+      Respondiendo a este mail le escribís al comprador.
+      El pedido también está en
+      <a href="https://patoturri.com/admin/orders" style="color:${ACCENT};text-decoration:none">/admin/orders</a>.
+    </p>
+  </td></tr>`);
 
-      <p style="font-weight:600;margin-bottom:4px">A imprimir</p>
-      <table style="width:100%;border-collapse:collapse;font-size:15px">
-        ${itemRows(order.items)}
-        ${
-          order.shippingAmountCents !== null
-            ? `<tr><td style="padding:8px 0;color:#777">${order.shippingOption ?? "Envío"}</td>
-               <td style="padding:8px 0;text-align:right;color:#777">${euros(order.shippingAmountCents)}</td></tr>`
-            : ""
-        }
-        <tr><td style="padding:12px 0;font-weight:600">Total cobrado</td>
-            <td style="padding:12px 0;text-align:right;font-weight:600">${total}</td></tr>
-      </table>
-
-      <p style="font-weight:600;margin-bottom:4px">Comprador</p>
-      <p style="margin-top:0">
-        ${order.customerName ?? "Sin nombre"}<br>
-        ${order.customerEmail ?? "Sin email"}
-        ${order.customerPhone ? `<br>${order.customerPhone}` : ""}
-      </p>
-
-      <p style="font-weight:600;margin-bottom:4px">Enviar a</p>
-      <p style="margin-top:0">
-        ${address.length > 0 ? address.join("<br>") : "Sin dirección"}
-      </p>
-
-      <p style="color:#777;font-size:14px">
-        El pedido también está en
-        <a href="https://patoturri.com/admin/orders">/admin/orders</a>.
-      </p>
-    </div>`;
-
-  try {
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
+  await deliver(
+    {
       from: `Tienda Pato Turri <${from}>`,
       to,
       /* Responder a este mail le escribe al comprador, que es lo que se quiere
@@ -301,12 +481,8 @@ export async function sendOrderAlert(order: OrderAlert): Promise<void> {
       subject,
       text,
       html,
-    });
-
-    if (error) {
-      console.error(`[order-alert] pedido ${order.orderId}:`, error);
-    }
-  } catch (error) {
-    console.error(`[order-alert] pedido ${order.orderId}:`, error);
-  }
+    },
+    "order-alert",
+    order.orderId,
+  );
 }
