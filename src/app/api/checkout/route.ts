@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { pool } from "@/lib/db";
+import { MAX_PER_LINE } from "@/lib/cart-limits";
 import { auth } from "@/lib/auth";
 import {
   SHIPPING_COUNTRIES,
@@ -83,6 +84,21 @@ export async function POST(request: Request) {
     const key = `${photoId}|${size}`;
     const already = wanted.get(key)?.quantity ?? 0;
     wanted.set(key, { photoId, size, quantity: already + quantity });
+  }
+
+  /* El tope se comprueba DESPUES de sumar las lineas repetidas, que es la unica
+     forma de que valga: dos lineas de seis copias de la misma obra y el mismo
+     tamano pasan cualquier control que las mire por separado.
+
+     Y se comprueba acá aunque el carrito ya lo impida, porque el carrito corre
+     en el navegador: esto no es una segunda opinion, es la unica que cuenta. */
+  for (const item of wanted.values()) {
+    if (item.quantity > MAX_PER_LINE) {
+      return NextResponse.json(
+        { error: `The maximum is ${MAX_PER_LINE} copies of the same size. Lower the quantity and try again.` },
+        { status: 400 },
+      );
+    }
   }
 
   let stripe;

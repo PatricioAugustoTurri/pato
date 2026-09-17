@@ -16,9 +16,15 @@ function NavBar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const router = useRouter();
     const { data: session, status } = useSession();
-    /* Copias, no lineas. Contar `items.length` hacia que la insignia dijera 3
-       mientras el carrito, que suma cantidades, decia 4 en la misma pantalla. */
-    const itemCount = useCart((state) => state.items.reduce((sum, item) => sum + item.quantity, 0));
+    /* Lineas, no copias: la insignia dice cuantas cosas distintas hay en la
+       bolsa, que es lo que se espera de ella y lo que se puede verificar de un
+       vistazo —coincide exactamente con las filas que se ven al abrir el
+       carrito—. Sumar cantidades hacia que dijera 12 por una sola obra pedida
+       doce veces, un numero que asusta y no informa.
+
+       La pagina del carrito sigue diciendo las dos cosas ("12 prints · 1 work")
+       porque ahi si hay lugar para el matiz; acá entran dos digitos. */
+    const itemCount = useCart((state) => state.items.length);
 
     const drawerRef = useRef<HTMLDivElement>(null);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -160,7 +166,7 @@ function NavBar() {
                         {status === "loading" ? <Skeleton className="h-3 w-14" /> : session ? session.user?.name : "Sign in"}
                     </span>
                 </Button>
-                <Button className="bag-button" variant="ghost" type="button" aria-label={`Open cart (${itemCount} ${itemCount === 1 ? "print" : "prints"})`} onClick={() => router.push("/cart")}>
+                <Button className="bag-button" variant="ghost" type="button" aria-label={`Open cart (${itemCount} ${itemCount === 1 ? "item" : "items"})`} onClick={() => router.push("/cart")}>
                     <span aria-hidden="true"><ShoppingCart /></span>
                     <b>{itemCount}</b>
                 </Button>

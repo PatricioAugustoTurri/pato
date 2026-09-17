@@ -63,6 +63,14 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 - Imágenes del catálogo alojadas en Cloudinary (cuenta `dvmsjdcqi`).
 - Guardas en `src/proxy.ts` (nombre de middleware en Next 16) sobre
   `/admin/*`, `/api/admin/*` y `/api/checkout`.
+- **Máximo 10 copias de una misma obra en el mismo tamaño**, por decisión del
+  usuario (2026-09-17): es lo que está dispuesto a imprimir de una sentada para
+  un pedido, no una restricción de existencias. Vive en `src/lib/cart-limits.ts`
+  y lo hace cumplir `/api/checkout` después de sumar las líneas repetidas; el
+  carrito apaga el botón `+` al llegar, que es comodidad y no la guarda.
+- **La insignia del carrito cuenta productos distintos, no copias**: coincide
+  con las filas que se ven al abrir el carrito. La página del carrito sí dice
+  las dos cifras ("11 prints · 2 works").
 - **No hay existencias y el sitio no las cuenta.** Confirmado por el usuario el
   2026-09-17: nada está impreso de antemano, cada copia se hace cuando alguien
   la compra. El número de stock que había en la base era simbólico. Por eso
