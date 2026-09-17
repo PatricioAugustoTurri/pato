@@ -25,6 +25,17 @@ export const SHIPPING_RATES = [
 export type ShippingRegion = (typeof SHIPPING_RATES)[number]["region"];
 
 /**
+ * La moneda en la que cobra la tienda.
+ *
+ * El envío es un importe fijo en euros, y Stripe no acepta una sesión con dos
+ * monedas mezcladas: si una variante del catálogo quedara cargada en otra, la
+ * sesión entera se cae. Declarada acá, el checkout puede comprobar cada precio
+ * contra la misma constante que arma la tarifa, en vez de contra un "eur"
+ * escrito a mano en dos archivos que podrían dejar de coincidir.
+ */
+export const SHIPPING_CURRENCY = "eur";
+
+/**
  * Los países de cada zona.
  *
  * Antes la lista de los 27 vivía dentro de la ruta de checkout y las dos
@@ -68,7 +79,7 @@ export function stripeShippingOptions(region: ShippingRegion) {
   return [shippingRate(region)].map(({ name, amount, minDays, maxDays }) => ({
     shipping_rate_data: {
       type: "fixed_amount" as const,
-      fixed_amount: { amount, currency: "eur" },
+      fixed_amount: { amount, currency: SHIPPING_CURRENCY },
       display_name: name,
       delivery_estimate: {
         minimum: { unit: "business_day" as const, value: minDays },

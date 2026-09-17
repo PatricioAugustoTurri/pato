@@ -5,9 +5,16 @@ import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
 import { cleanTitle, titleNamesPlace } from "@/lib/place";
 import type { PhotoDetailRow } from "@/types/PhotoType";
 
-export type HungPhoto = PhotoDetailRow & {
+export type HungPhoto = Omit<PhotoDetailRow, "categoryName" | "categorySlug" | "variants"> & {
   /* ancho/alto del original: 1.5 = 3:2 horizontal, 0.667 = 2:3 vertical */
   ratio: number;
+  /* Solo los trae la sala de un país, donde las obras vienen de colecciones
+     distintas: ahí cada cuadro tiene que saber a cuál pertenece, tanto para
+     enlazar a su ficha como para decirlo en la cartela. En una sala de
+     colección son los mismos para las veintiuna obras, así que no viajan por
+     fila: los pone la sala. */
+  categoryName?: string;
+  categorySlug?: string;
 };
 
 /* La descripcion de coleccion es texto de autor de unos 1.100 caracteres.
@@ -24,11 +31,19 @@ function splitStatement(text: string): [string, string] {
 
    Las obras se agrupan de a pares, y dentro de un par el ancho de cada una es
    su propia proporcion: asi las dos miden lo mismo de alto sin que a ninguna
-   haya que recortarla. Cada quinta obra cuelga sola. El ritmo no lo inventa la
-   interfaz, sale del cuadro: un par de horizontales es una banda ancha y baja,
-   un par de verticales son dos columnas altas, y la pared siguiente entra por
-   el lado contrario. Es el mismo argumento que el muro de /shop, donde el
-   ancho del panel es la cantidad de obras: la forma la decide el catalogo. */
+   haya que recortarla, y por eso un par arranca y termina a la misma altura.
+   Cada quinta obra cuelga sola. El ritmo no lo inventa la interfaz, sale del
+   cuadro: un par de horizontales es una banda ancha y baja, un par de
+   verticales son dos columnas altas. Es el mismo argumento que el muro de
+   /shop, donde el ancho del panel es la cantidad de obras: la forma la decide
+   el catalogo.
+
+   Las paredes entraban ademas alternadamente por un lado y por el otro, y la
+   segunda obra de cada par bajaba un escalon. Los dos se retiraron por
+   decision del autor (2026-09-14): con obras de proporciones muy distintas
+   —y mas todavia en una sala de pais, donde vienen de colecciones distintas—
+   el zigzag competia con la variacion que ya traen los cuadros. Lo que quedo
+   es la variacion que significa algo: el ancho, que es la forma de la obra. */
 type Wall = { photos: HungPhoto[]; solo: boolean };
 
 function hang(photos: HungPhoto[]): Wall[] {
@@ -59,16 +74,28 @@ function soloSpan(ratio: number): string {
   return "42%";
 }
 
+/* La sala sirve dos ejes del mismo archivo: una colección y un país. Lo único
+   que cambia entre las dos es qué dice la cartela debajo del cuadro, y eso se
+   le pasa: inferirlo de si la obra trae o no su colección haría que un dato
+   que falta en la base se vea como una decisión de diseño —el país repetido
+   veintiún veces— en vez de como lo que es, un hueco. */
+type PlateMeta = "place" | "collection";
+
 export default function CategoryRoom({
-  categoryName,
+  roomName,
   categorySlug,
   description,
   photos,
+  plateMeta = "place",
 }: {
-  categoryName: string;
+  /* El nombre de la sala: la colección o el país. Solo se lee cuando no hay
+     obra que colgar, y por eso la pantalla vacía no nombra ninguno de los dos
+     ejes: sirve igual a los dos. */
+  roomName: string;
   categorySlug: string;
   description: string;
   photos: HungPhoto[];
+  plateMeta?: PlateMeta;
 }) {
   const [lead, rest] = splitStatement(description);
   const walls = hang(photos);
@@ -79,55 +106,58 @@ export default function CategoryRoom({
       {/* El cartel de sala: solo la voz del autor. La ficha de medidas y precios
           que vivia al costado se retiro por decision del autor; los tamanos se
           eligen en la ficha de cada obra, que es donde se compra. */}
-      <div className="room-entry">
-        <div className="room-statement">
-          <p className="room-statement-lead">{lead}</p>
-          {rest && <p className="room-statement-rest">{rest}</p>}
+      {/* Sin texto no se dibuja el cartel. La proporción se dio vuelta —cuando
+          esto se escribió, diez de doce países no tenían relato; hoy solo falta
+          el de China—, pero la regla no cambia: un bloque vacío entre la tapa y
+          el muro es una sala con un marco colgado sin cuadro, y es mejor que la
+          fotografía empiece antes. */}
+      {lead && (
+        <div className="room-entry">
+          <div className="room-statement">
+            <p className="room-statement-lead">{lead}</p>
+            {rest && <p className="room-statement-rest">{rest}</p>}
+          </div>
         </div>
-      </div>
+      )}
 
       {photos.length === 0 ? (
         <div className="room-empty">
-          <p className="room-empty-title">This collection is still in the darkroom.</p>
+          <p className="room-empty-title">{roomName} is still in the darkroom.</p>
           <p className="room-empty-body">
-            The works in {categoryName} are not published yet. The rest of the archive
-            is already up.
+            These works are not published yet. The rest of the archive is already up.
           </p>
           <Link className="room-empty-link" href="/shop">
-            See the other collections <span aria-hidden="true">↗</span>
+            See the rest of the archive <span aria-hidden="true">↗</span>
           </Link>
         </div>
       ) : (
         <div className="room-hang">
           {walls.map((wall, wallIndex) => (
-            <div
-              className="hang-wall"
-              key={wallIndex}
-              data-solo={wall.solo ? "" : undefined}
-              /* La pared entra por un lado y la siguiente por el otro. Sin esto
-                 veintiuna obras caen en la misma columna y el muro se vuelve
-                 una lista. */
-              data-lean={wallIndex % 2 === 0 ? "left" : "right"}
-            >
-              {wall.photos.map((photo, indexInWall) => {
+            <div className="hang-wall" key={wallIndex} data-solo={wall.solo ? "" : undefined}>
+              {wall.photos.map((photo) => {
                 const imageUrl = normalizePhotoImage(photo.images);
                 const title = cleanTitle(photo.name);
-                /* El pais solo cuando el titulo no lo dijo ya. */
-                const place = titleNamesPlace(title, photo.pais) ? "" : photo.pais;
+                /* La cartela nombra el eje que NO es el de la sala. En una
+                   coleccion eso es el lugar —y solo cuando el titulo no lo
+                   dijo ya—; en un pais, donde el lugar seria el mismo veintiun
+                   veces, es la coleccion de la que viene la obra. */
+                const place =
+                  plateMeta === "collection"
+                    ? photo.categoryName
+                    : titleNamesPlace(title, photo.pais)
+                      ? ""
+                      : photo.pais;
                 plateNumber += 1;
 
                 return (
                   <Link
                     className="hang-plate"
                     key={photo.id}
-                    href={`/shop/${categorySlug}/${photo.slug}`}
+                    href={`/shop/${photo.categorySlug ?? categorySlug}/${photo.slug}`}
                     style={
                       {
                         "--ratio": photo.ratio,
                         "--span": wall.solo ? soloSpan(photo.ratio) : undefined,
-                        /* La segunda obra de cada par baja un poco: es un
-                           colgado, no una fila de una planilla. */
-                        "--drop": !wall.solo && indexInWall === 1 ? "1" : "0",
                       } as React.CSSProperties
                     }
                   >

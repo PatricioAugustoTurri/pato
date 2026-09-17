@@ -6,6 +6,10 @@ import { DM_Sans, Familjen_Grotesk, Playfair_Display, DM_Mono } from "next/font/
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import Providers from "./providers";
+import { AUTHOR, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { personSchema, webSiteSchema } from "@/lib/structured-data";
+import JsonLd from "@/components/JsonLd";
+import { SOCIAL } from "@/components/SocialLinks";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -34,19 +38,62 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pato Turri | Photographs That Take You Far",
-  description: "Travel photography prints, made to be lived slowly.",
-  keywords: ["travel photography", "fine art prints", "street photography", "Malaysia photography", "night market photography"],
-  authors: [{ name: "Pato Turri" }],
+  /* Sin esto, cada imagen y cada canónica relativa de todo el sitio se
+     resuelve contra `localhost` en producción: las vistas previas al compartir
+     un enlace salen rotas y Google ve canónicas que no apuntan a ningún lado. */
+  metadataBase: new URL(SITE_URL),
+
+  title: {
+    default: `${SITE_NAME} · Travel Photography Prints`,
+    /* El nombre de la obra va primero y la marca después. Google corta el
+       título cerca de los 60 caracteres, y "Pato Turri | " al principio gastaba
+       13 de esos en cada página: lo primero que leía el buscador era siempre lo
+       mismo en vez de qué tiene esa página. */
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+
+  applicationName: SITE_NAME,
+  authors: [{ name: AUTHOR, url: SITE_URL }],
+  creator: AUTHOR,
+  publisher: AUTHOR,
+  category: "photography",
+
+  /* Sin `alternates` acá a proposito: una canónica declarada en el raíz la
+     hereda toda página que no declare la suya, y media tienda terminaría
+     diciéndole a Google que la versión buena de sí misma es la portada. Cada
+     página pone la suya con `pageMetadata`. */
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      /* La línea que más importa en una tienda de fotografía: sin ella Google
+         muestra una miniatura diminuta o ninguna. El producto es la imagen, así
+         que el resultado de búsqueda tiene que poder mostrarla grande. */
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
   openGraph: {
-    title: "Pato Turri | Photographs That Take You Far",
-    description: "Travel photography prints, made to be lived slowly.",
     type: "website",
+    siteName: SITE_NAME,
+    locale: "en_GB",
+    url: SITE_URL,
+    title: `${SITE_NAME} · Travel Photography Prints`,
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pato Turri | Photographs That Take You Far",
-    description: "Travel photography prints, made to be lived slowly.",
+    title: `${SITE_NAME} · Travel Photography Prints`,
+    description: SITE_DESCRIPTION,
+    /* Sin `creator`: no hay cuenta de X/Twitter de Pato. Las redes reales
+       —Instagram y YouTube— se declaran en el JSON-LD de `Person`, que es
+       donde Google las usa para atar el sitio a la persona. */
   },
 };
 
@@ -63,6 +110,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body>
+        {/* Quién es el autor y qué es este sitio, una sola vez para todo el
+            dominio: las páginas de abajo solo describen su propia obra. */}
+        <JsonLd data={personSchema(SOCIAL.map((account) => account.href))} />
+        <JsonLd data={webSiteSchema()} />
         <Providers>
           <Toaster />
           <header>

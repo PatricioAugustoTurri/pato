@@ -41,7 +41,7 @@ export default function ShopRoom({
         {categories === null ? (
           <p className="shop-room-empty">
             The archive did not load. Reload the page — if it keeps failing,
-            write to hola@patoturri.com and we will sort it out.
+            write to info@patoturri.com and we will sort it out.
           </p>
         ) : categories.length === 0 ? (
           <p className="shop-room-empty">

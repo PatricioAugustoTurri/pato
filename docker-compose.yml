@@ -1,0 +1,62 @@
+# Para probar la imagen de produccion completa en tu Mac antes de tocar el VPS,
+# y como referencia de como queda armado en Coolify.
+#
+#   docker compose up --build
+#   -> http://localhost:3000
+#
+# En Coolify conviene crear el Postgres como recurso aparte (te da backups
+# programados desde el panel) y desplegar la app apuntando al Dockerfile.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pato
+      POSTGRES_PASSWORD: pato_local
+      POSTGRES_DB: FOTOS
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      # Postgres corre esto solo la primera vez, con la base vacia: crea las
+      # seis tablas sin que tengas que acordarte de hacerlo a mano.
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pato -d FOTOS"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      args:
+        # El build prerenderiza paginas que consultan la base, asi que necesita
+        # llegar a ella tambien en esta etapa, no solo al arrancar.
+        DATABASE_URL: postgresql://pato:pato_local@db:5432/FOTOS
+        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://pato:pato_local@db:5432/FOTOS
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: "true"
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      CONTACT_TO_EMAIL: ${CONTACT_TO_EMAIL}
+      CONTACT_FROM_EMAIL: ${CONTACT_FROM_EMAIL}
+      RESEND_AUDIENCE_ID: ${RESEND_AUDIENCE_ID}
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    volumes:
+      # El cache de ISR. Sin volumen, cada reinicio vuelve a generar todo
+      # contra la base.
+      - next_cache:/app/.next/cache
+
+volumes:
+  db_data:
+  next_cache:

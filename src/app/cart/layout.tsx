@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "Pato Turri | Cart",
+  title: "Cart",
   description: "Review your selection of prints before placing the order.",
   robots: { index: false, follow: false },
 };

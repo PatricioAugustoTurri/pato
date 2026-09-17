@@ -135,7 +135,7 @@ h1 i, h2 i { color: var(--accent-text); font-weight: 500; }
 /* --- Hero -----------------------------------------------------------------
    Una sola fotografía del archivo a sangre completa. La obra ocupa la pantalla
    y la interfaz se apoya encima; nada compite con ella. */
-.hero-section { background: var(--ink); color: var(--paper); display: flex; min-height: 100svh; overflow: hidden; position: relative; }
+.hero-section { background: var(--ink); color: var(--paper); display: flex; min-height: 100svh; overflow: hidden; position: relative; --cover-y: 42%; }
 .hero-media { inset: 0; position: absolute; }
 
 /* 42%, no el centro: la tapa es vertical (2:3) y en un hero apaisado solo entra
@@ -143,7 +143,36 @@ h1 i, h2 i { color: var(--accent-text); font-weight: 500; }
    asomando por abajo; a 62% la figura manda pero la montana desaparece. A 42%
    la montana sostiene el titular y la cara y el brazo se leen, mientras el
    cuerpo baja hacia el velo, que es donde viven las tarjetas. */
-.hero-media img { object-fit: cover; object-position: center 42%; }
+.hero-media img, .hero-cutout img { object-fit: cover; object-position: center var(--cover-y); }
+
+/* La silueta, encima de los velos y del titular. Es el mismo archivo recortado
+   con alfa, asi que el borde no tiene nada que disimular: cae sobre sus propios
+   pixeles. Lo unico que cambia es que la figura deja de estar debajo del velo.
+   Depende de que las dos capas compartan `--cover-y`, que es justamente por lo
+   que el encuadre es una variable y no un numero escrito dos veces. */
+.hero-cutout { inset: 0; pointer-events: none; position: absolute; z-index: 3; }
+/* Abajo se disuelve: ahi viven las cifras y los enlaces, apoyados en el velo, y
+   un cuerpo iluminado a pantalla completa les pelearia el fondo. Al fundirse
+   vuelve a aparecer la misma figura de la capa de abajo, ya velada, asi que la
+   transicion se lee como luz que cae y no como un corte. */
+.hero-cutout img { -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 82%); mask-image: linear-gradient(to bottom, #000 58%, transparent 82%); }
+
+/* En escritorio la franja baja a 52%, por pedido del autor (2026-09-16): a 42%
+   la figura entra cortada por la cintura y la cara cae dentro del velo de
+   abajo, que es lo que la apagaba. A 52% se lee de puno a cadera y la cara sube
+   al aire limpio de la fotografia, el que queda entre los dos velos. Diez
+   puntos y ni uno mas: a 60% la montana se va del todo y lo que queda es un
+   retrato contra unos arboles, que es otra tapa y no esta.
+   Solo de 901px para arriba, que es lo que se pidio. En un telefono la caja es
+   mas alta que ancha, la fotografia entra casi entera y el recorte pasa a
+   comerse los lados: ahi este numero ya casi no mueve nada.
+   Y colgado de `.home`, que es la envoltura de la portada: la misma pareja
+   `.hero-section`/`.hero-media` la usan la tapa de coleccion y la de la
+   historia, cada una con su fotografia y su encuadre. Sin ese ancla, mover la
+   figura de esta tapa movia tambien las otras dos. */
+@media (min-width: 901px) {
+  .home .hero-section { --cover-y: 52%; }
+}
 /* Dos velos, no uno: arriba para que la navegación se lea, abajo para el texto.
    Separados, así el centro de la fotografía queda limpio. */
 .hero-section:before, .hero-section:after { content: ''; left: 0; position: absolute; right: 0; z-index: 1; }
@@ -322,6 +351,21 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
    sobre la fotografia. Se queda por debajo del hero a proposito —172px alli,
    152px aca— para que la portada siga teniendo una sola voz principal. */
 .home-chapter-mark h2, .home-chapter-mark h3 { color: var(--paper); font-family: var(--font-heading); font-size: var(--mast); font-weight: 500; letter-spacing: -.045em; line-height: .82; margin-bottom: 0; }
+/* El nombre del pais es la puerta a su archivo. Hereda el color del titular y
+   no lleva subrayado: una regla debajo de un titular de 152px no se lee como
+   un enlace, se lee como un filete de seccion. Lo que avisa es la flecha, la
+   misma que marca cada puerta del sitio, y el color al recorrerlo. */
+.home-chapter-link { color: inherit; text-decoration: none; }
+.home-chapter-link:hover { color: var(--accent); }
+/* Anillo de papel: es el contraste de esta sala, la misma regla que usan los
+   paneles de /shop. */
+.home-chapter-link:focus-visible { outline: 2px solid var(--paper); outline-offset: 6px; }
+/* Proporcional al nombre, con piso. El titular va de 36px a 152px segun el
+   ancho: a .22em la flecha mide 33px en desktop y 8px en el telefono, mas
+   chica que la cifra en mono que tiene al lado, y en tactil es el UNICO aviso
+   de que ahi se entra —el color al recorrer no existe sin puntero—. El piso
+   la deja legible donde mas falta hace. */
+.home-chapter-go { display: inline-block; font-size: max(11px, .22em); letter-spacing: normal; margin-left: .14em; vertical-align: .62em; }
 /* Cifra del archivo, no rotulo decorativo: va DEBAJO del nombre del pais. */
 .home-chapter-count { color: var(--cream-200); font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin: 18px 0 0; text-transform: uppercase; }
 .home-chapter-note { color: var(--cream-200); font-size: 15.5px; line-height: 1.78; margin: 0; max-width: 46ch; }
@@ -423,6 +467,7 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
   .home-plate:hover .home-plate-go, .home-plate:focus-visible .home-plate-go { transform: translate(3px, -3px); }
   .home-pick-caption { transition: border-color var(--dur-base) var(--ease); }
   .home .text-link { transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+  .home-chapter-link { transition: color var(--dur-fast) var(--ease); }
 }
 
 /* El momento de la portada, y el unico: bajar por la pagina es abrir la sala.
@@ -616,6 +661,22 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 @media not all and (hover: hover) {
   .shop-plate-image { filter: brightness(.5) saturate(.9); }
 }
+/* Apilada, la misma fotografia se lee de otra manera. En el panel alto de
+   desktop el ojo la recorre y el .5 es penumbra de sala; en la banda baja y
+   ancha del telefono se ve entera de un golpe, y esa penumbra llegaba a
+   apagada justo donde la obra tiene que invitar a entrar. El .75 es la cifra
+   mas alta que el texto banca: el nombre cae sobre ~81% de tinta compuesta
+   —el velo del bloque mas el del panel— y con un reflejo quemado detras mide
+   4,6:1, apenas sobre el 4,5:1 de AA. Subir mas obliga a aflojar el velo, y
+   eso sale de la legibilidad, no del brillo.
+
+   El texto no depende de este numero: cae sobre el velo del propio bloque
+   —.9 a .95 de tinta— sumado al del panel, o sea que su fondo es tinta llena
+   con o sin fotografia detras. Lo que se aclara es la parte de la banda donde
+   no hay nada escrito. */
+@media not all and (hover: hover) and (max-width: 900px) {
+  .shop-plate-image { filter: brightness(.75) saturate(.9); }
+}
 @media (hover: none) and (min-width: 901px) {
   .shop-plate-line { display: none; }
 }
@@ -636,8 +697,31 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
     /* Proporcion pura: 40px por obra da 200 · 280 · 320 · 840, o sea
        1 : 1,4 : 1,6 : 4,2. Es `min-height`, no `height`, para que un nombre
        largo o un cuerpo de texto mas grande empujen la banda en vez de que
-       se corten en silencio. */
-    min-height: calc(var(--weight, 1) * 40px);
+       se corten en silencio.
+
+       Con techo, porque 840px en un telefono es la pantalla entera: Portrait
+       dejaba de leerse como una de cuatro colecciones y pasaba a ser una
+       pagina, sin borde visible que avisara que abajo sigue habiendo algo.
+       Cortada en 72svh siempre asoma el filo de la siguiente banda. La
+       proporcion cede un poco y no se pierde —Portrait sigue midiendo casi el
+       doble que la segunda—, que es el intercambio correcto: la cifra la
+       cantan igual el nombre y el `21 works` de al lado.
+
+       El piso de 420px es para que el techo nunca baje del alto de Landscape:
+       en horizontal, 72svh se vuelve chico y sin el piso las dos bandas mas
+       grandes quedarian iguales, que es justo lo que la proporcion existe
+       para evitar.
+
+       Y un piso para la banda misma, por la razon simetrica. History son 5
+       obras, o sea 200px, y de esos el bloque de texto —nombre, cifra y dos
+       lineas de prosa sobre su velo— se lleva unos 140: quedaba una banda
+       donde casi no se ve fotografia, que es el unico argumento que tiene una
+       banda en una sala. 260px la dejan apenas por debajo de City (280px) y no
+       tocan a ninguna otra, porque son la unica que estaba debajo del piso.
+       Apilado la proporcion ya venia recortada arriba por el techo; recortarla
+       tambien abajo es la misma decision, no una excepcion. En desktop, donde
+       la proporcion es ancho y hay lugar para las cuatro, sigue entera. */
+    min-height: clamp(260px, calc(var(--weight, 1) * 40px), max(420px, 72svh));
     min-width: 0;
     /* La imagen es `fill`, o sea que ya esta acotada al panel: recortar no
        hace falta, y `hidden` convertiria el panel en contenedor de scroll,
@@ -712,8 +796,6 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
    igual que el ancho de los paneles de /shop sale de la cantidad de obras. */
 .room-hang { display: flex; flex-direction: column; gap: clamp(74px, 9vw, 158px); margin: 0 auto; max-width: 1280px; padding: 0 5vw; }
 .hang-wall { display: flex; gap: clamp(26px, 3.4vw, 62px); }
-.hang-wall[data-lean="left"] { padding-right: clamp(0px, 9vw, 128px); }
-.hang-wall[data-lean="right"] { padding-left: clamp(0px, 9vw, 128px); }
 /* El ancho de una obra sola sale de su proporcion: a un ancho fijo, una
    vertical 2:3 medira pantalla y media de alto y una 16:9 se quedara chica. */
 .hang-wall[data-solo] { justify-content: center; padding: 0; }
@@ -723,8 +805,6 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
    obra, de modo que ancho/proporcion —o sea el alto— da igual para las dos.
    Es la unica manera de alinear un 3:2 con un 2:3 sin recortar ninguno. */
 .hang-plate { display: block; flex: var(--ratio, 1) 1 0; min-width: 0; }
-/* Y la segunda del par baja: es un colgado, no una fila de planilla. */
-.hang-plate { margin-top: calc(var(--drop, 0) * clamp(26px, 4vw, 74px)); }
 .hang-frame { background: rgba(244, 241, 235, .05); display: block; overflow: hidden; position: relative; width: 100%; aspect-ratio: var(--ratio, 1.5); }
 .hang-image { object-fit: cover; }
 .hang-plate:focus-visible { outline: none; }
@@ -762,11 +842,10 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   
 }
 /* Angosto, una obra por pared: dos verticales en 390px darian 170px de ancho y
-   la cartela no entraria. El escalonado tambien se apaga, porque en una sola
-   columna no escalona nada, solo abre un hueco. */
+   la cartela no entraria. */
 @media (max-width: 700px) {
-  .hang-wall, .hang-wall[data-lean="left"], .hang-wall[data-lean="right"] { flex-direction: column; gap: clamp(52px, 11vw, 76px); padding: 0; }
-  .hang-plate, .hang-wall[data-solo] .hang-plate { margin-top: 0; width: 100%; }
+  .hang-wall { flex-direction: column; gap: clamp(52px, 11vw, 76px); padding: 0; }
+  .hang-plate, .hang-wall[data-solo] .hang-plate { width: 100%; }
 }
 /* --- La obra: mirar y comprar en la misma pantalla -------------------------
    Dos materiales, dos trabajos. La obra cuelga en el mismo campo de tinta del
@@ -1327,6 +1406,16 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .auth-field input:hover { border-color: var(--line-soft); }
 .auth-field input:focus-visible { border-color: var(--accent-text); box-shadow: none; outline: none; }
 .auth-field input[aria-invalid="true"] { border-color: var(--error); box-shadow: none; }
+
+/* El ojo que descubre la contraseña. Se apoya sobre el campo en vez de ocupar
+   una linea propia: el formulario son tres filas cortas y una cuarta para un
+   control auxiliar desbalancearia la puerta. El campo le cede el espacio a la
+   derecha para que el texto largo no pase por debajo. */
+.auth-password { position: relative; }
+.auth-password input { padding-right: 46px; }
+.auth-reveal { align-items: center; bottom: 1px; color: var(--text-muted); display: flex; justify-content: center; position: absolute; right: 1px; top: 1px; width: 44px; }
+.auth-reveal:hover { color: var(--ink); }
+.auth-reveal:focus-visible { outline: 2px solid var(--ink); outline-offset: -3px; }
 .auth-hint { color: var(--text-muted); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
 .auth-error { color: var(--error); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
 .auth-submit { background: var(--ink); border: 0; border-radius: 0; color: var(--paper); font-size: 13px; height: 46px; justify-content: center; margin-top: 4px; width: 100%; }
@@ -1337,6 +1426,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 
 @media (prefers-reduced-motion: no-preference) {
   .auth-field input, .auth-submit { transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .auth-reveal { transition: color var(--dur-fast) var(--ease); }
 }
 /* --- El libro de pedidos ---------------------------------------------------
    La misma sala de dos materiales que el carrito, porque es el mismo tipo de
@@ -1593,7 +1683,79 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .admin-order-card-items ul { display: flex; flex-direction: column; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .admin-order-card-items li { display: flex; font-size: 13px; justify-content: space-between; }
 .admin-order-card-totals { border-top: 1px solid var(--line-faint); display: flex; flex-direction: column; gap: 6px; padding-top: 14px; }
-.admin-nav { display: flex; gap: 22px; margin-bottom: 20px; }
+/* --- Portadas de las colecciones ------------------------------------------
+   La portada de una coleccion es una fotografia, asi que se elige mirandola y
+   no leyendo su nombre en una lista: cada coleccion muestra la que tiene puesta
+   en grande y debajo la tira de sus obras, donde la actual esta marcada. */
+.admin-collections { display: flex; flex-direction: column; gap: 40px; max-width: 1180px; }
+.admin-collection { background: var(--paper); border: 1px solid var(--line); padding: 26px 28px 30px; }
+.admin-collection-head { align-items: end; display: flex; gap: 28px; justify-content: space-between; margin-bottom: 26px; }
+.admin-collection-head h2 { font-size: clamp(30px, 4vw, 44px); margin: 0 0 7px; }
+.admin-collection-head small { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.admin-collection-cover { align-items: center; aspect-ratio: 1.25; background: var(--line) center/cover no-repeat; display: flex; flex: none; justify-content: center; width: 210px; }
+.admin-collection-cover span { color: var(--text-faint); font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.admin-collection-strip { display: grid; gap: 14px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.admin-collection-thumb { background: none; border: 1px solid transparent; display: grid; gap: 7px; padding: 0 0 8px; position: relative; text-align: left; transition: border-color .2s, transform .2s; }
+.admin-collection-thumb:hover { border-color: var(--accent); transform: translateY(-2px); }
+.admin-collection-thumb:disabled { cursor: progress; opacity: .5; }
+/* La que esta puesta se marca con el mismo tinta del panel, no con el acento:
+   el acento es el hover, y si los dos fueran iguales la tira no diria cual es
+   la portada, solo cual toca el mouse. */
+.admin-collection-thumb.is-cover { border-color: var(--ink); }
+.admin-collection-thumb-image { aspect-ratio: 1; background: var(--line) center/cover no-repeat; display: block; }
+.admin-collection-thumb-name { -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--text-muted); display: -webkit-box; font-family: var(--font-mono); font-size: 9px; line-height: 1.45; overflow: hidden; padding: 0 7px; }
+.admin-collection-thumb svg { background: var(--ink); color: var(--paper); height: 21px; padding: 4px; position: absolute; right: 7px; top: 7px; width: 21px; }
+
+/* --- Alta y edicion de una coleccion ---------------------------------------
+   Los dos botones cuelgan del nombre, no de la tarjeta: son acciones sobre ESTA
+   coleccion y tienen que leerse pegados a la que nombran. En fantasma, porque
+   el boton lleno del panel es el que guarda. */
+.admin-collection-actions { display: flex; gap: 6px; margin-top: 12px; }
+.admin-collection-actions button { font-family: var(--font-mono); font-size: 10px; gap: 7px; height: 32px; letter-spacing: .06em; padding: 0 10px; text-transform: uppercase; }
+.admin-collection-actions svg { height: 13px; width: 13px; }
+/* Borrar se dibuja en el rojo del sistema recien al pasar por encima: en reposo
+   es una accion mas, y en el momento de tocarla dice lo que es. */
+.admin-collection-delete:hover { background: var(--error); color: var(--paper); }
+.admin-collection-form { margin-bottom: 40px; }
+
+/* --- Que se ve en la portada -----------------------------------------------
+   Reusa la tarjeta y la tira de las colecciones: es la misma operacion —mirar
+   fotos y marcar una— sobre otra columna. Lo unico propio son las dos solapas
+   y la linea que dice si el pais entra o no. */
+.admin-featured-tabs { display: flex; gap: 4px; margin-bottom: 18px; }
+.admin-featured-tab { background: var(--paper); border: 1px solid var(--line); color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; min-height: 40px; padding: 0 18px; text-transform: uppercase; transition: border-color .2s, color .2s; }
+.admin-featured-tab:hover { border-color: var(--line-soft); color: var(--ink); }
+.admin-featured-tab.is-active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.admin-featured-note { color: var(--text-muted); font-size: 13px; margin: 0 0 26px; max-width: 68ch; }
+/* Tinta y no acento: dice un hecho —este pais esta en la portada—, no llama la
+   atencion sobre si mismo. El acento en este panel es el hover. */
+.admin-featured-state { color: var(--text-faint); font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; margin: 0; text-align: right; text-transform: uppercase; }
+.admin-featured-state.is-on { color: var(--ink); }
+
+/* --- Tamanos y precios -----------------------------------------------------
+   Una fila por tamano, separadas por filete y no en tarjetas: es un listado de
+   precios, la misma gramatica que el selector de tamanos de la tienda y que las
+   tarifas de envio. */
+.admin-sizes { background: var(--paper); max-width: 680px; padding: clamp(25px, 5vw, 50px); }
+.admin-size-rows { border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+.admin-size-row { align-items: center; border-top: 1px solid var(--line); display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 150px 44px; padding: 14px 0; }
+.admin-size-name strong { display: block; font-family: var(--font-heading); font-size: 20px; font-weight: 500; }
+.admin-size-name small { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.admin-size-price { align-items: center; display: flex; gap: 8px; }
+.admin-size-currency { color: var(--text-muted); font-family: var(--font-mono); font-size: 13px; }
+/* Tabular: los precios se leen en columna y con cifras proporcionales bailan. */
+.admin-size-price input { border-color: var(--line); border-radius: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; height: 44px; text-align: right; }
+.admin-size-remove { color: var(--text-muted); height: 44px; padding: 0; width: 44px; }
+.admin-size-remove:hover { background: var(--error); color: var(--paper); }
+.admin-size-remove svg { height: 15px; width: 15px; }
+.admin-size-actions { display: flex; gap: 12px; justify-content: space-between; }
+.admin-size-add { border-color: var(--line); border-radius: 0; font-family: var(--font-mono); font-size: 11px; gap: 8px; height: 48px; letter-spacing: .06em; text-transform: uppercase; }
+.admin-size-add svg { height: 14px; width: 14px; }
+.admin-note { border-top: 1px solid var(--line-faint); color: var(--text-muted); font-size: 13px; margin-top: 30px; padding-top: 20px; }
+.admin-note p { margin: 0 0 8px; }
+.admin-note p:last-child { margin-bottom: 0; }
+
+.admin-nav { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 20px; }
 .admin-nav-link { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; padding-bottom: 6px; text-transform: uppercase; }
 .admin-nav-link.is-active { border-bottom: 2px solid var(--accent); color: var(--ink); }
 .admin-customer-table { display: flex; flex-direction: column; }
@@ -1737,6 +1899,9 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   .admin-new-photo { width: 100%; }
   .admin-customer-row { grid-template-columns: 1fr; gap: 6px; }
   .admin-customer-row-head { display: none; }
+  .admin-collection-head { align-items: start; flex-direction: column-reverse; gap: 18px; }
+  .admin-collection-cover { width: 100%; }
+  .admin-collection-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* --- El carrito en angosto -------------------------------------------------
@@ -1797,10 +1962,36 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   .cart-note { padding: clamp(46px, 11vw, 70px) 5vw clamp(56px, 12vw, 80px); }
 }
 
+/* --- El titular de la portada, en pantalla vertical -------------------------
+   `.hero-inner` apila contra el borde de abajo, y en la portada el titular se
+   apoya en esa pila: `.home h1` pone `margin-bottom: 0` y con eso anula el
+   `margin-bottom: auto` con el que `.hero-title` se sube al techo en el resto
+   de los heroes. En apaisado eso se lee bien —la caja nace mas ancha que alta y
+   el bloque cae por la mitad—, pero en vertical las tres piezas se juntan en el
+   ultimo tercio y arriba queda media pantalla de cielo vacio.
+
+   La regla mira la ORIENTACION y no el ancho a proposito: un iPad de 1024 en
+   vertical tiene exactamente el problema de un telefono de 390, y el mismo iPad
+   acostado no lo tiene. Un umbral de ancho habria dejado afuera al primero y
+   metido adentro al segundo.
+
+   Sube solo el titular. Los sociales y la ficha se quedan contra el borde, que
+   es su sitio. En `svh`, como el alto del propio hero, para que la barra del
+   navegador del telefono no lo corra al hacer scroll. */
+@media (orientation: portrait) {
+  .home .hero-title { margin-bottom: clamp(26px, 5svh, 64px); }
+}
+
 @media (max-width: 700px) {
   .hero-inner { gap: 26px; padding: 104px 7vw 26px; }
   .hero-title { font-size: clamp(46px, 13vw, 68px); letter-spacing: -.03em; }
   .hero-index { gap: 8px 26px; }
+  /* La ficha del hero dice cifras verificables, y en una linea sola no entran:
+     los nueve paises de Portrait se cortaban en «Argentina · Bolivia · Cos…».
+     Un dato a medias no es un dato. Acá la lista envuelve y la ficha crece,
+     que es lo unico que puede pasar en una columna que ya apila. */
+  .hero-index-now { flex-basis: 100%; justify-content: flex-start; }
+  .hero-index-now dd { overflow: visible; white-space: normal; }
 }
 
 /* --- Revelado al hacer scroll ----------------------------------------------

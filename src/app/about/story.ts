@@ -118,8 +118,6 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "europa",
-    /* Sin fotografías: no hay obra europea en el archivo, y no se sustituye
-       con nada que no sea de Pato. El capítulo respira. */
     title: {
       es: "Europa y un cierre que en realidad es un comienzo",
       en: "Europe, and an Ending That Is Really a Beginning",
@@ -129,6 +127,27 @@ export const CHAPTERS: Chapter[] = [
         "El viaje me llevó también por Europa: Italia, Serbia, Inglaterra, España, y de vuelta a Turquía, esta vez del lado de Estambul, esa ciudad que es, literalmente, la bisagra entre dos continentes, algo que se sentía casi simbólico después de tantos años cruzando fronteras.",
         "The trip took me through Europe too: Italy, Serbia, England, Spain, and back to Turkey, this time to the Istanbul side — that city which is, literally, the hinge between two continents, something that felt almost symbolic after so many years crossing borders.",
       ),
+      /* Italia y España, en el orden en que el párrafo de arriba las nombra.
+         Este capítulo estuvo sin fotografías hasta ahora por una razón que ya
+         caducó: cuando se armó no había una sola obra europea en el archivo, y
+         no se iba a rellenar con nada que no fuera de Pato.
+
+         Las dos son las que el propio autor ya había escrito, sin saberlo, en
+         los relatos de país de `countries.ts`. El de Italia dice «llegué a una
+         cresta justo cuando la luz se estaba yendo… solo en una montaña, sin
+         nadie con quien compartirlo», que es literalmente «Ridgeline at Dusk»;
+         y cae justo antes del párrafo en que conoce a la chica italiana, así
+         que el par se lee como lo que el capítulo cuenta. El de España dice
+         «pueblos de montaña que el tiempo parecía haber olvidado a propósito…
+         no era la España de las postales», y de las nueve obras españolas
+         «Leading the Mule» es la única de la colección Portrait: un hombre
+         mayor llevando una mula por un camino de Asturias.
+
+         Que sea un retrato no es casual. La regla que el propio relato declara
+         dos capítulos antes —«si tenía que elegir entre ver un lugar famoso o
+         pasar la tarde con una familia local, elegía a la familia»— también
+         vale para elegir qué obra ancla un capítulo. */
+      { kind: "photos", slugs: ["Ridgeline-at-Dusk", "Leading-the-Mule"] },
       p(
         "Fue en Italia donde el viaje, sin que yo lo planeara, encontró un lugar donde apoyarse. Conocí a una chica italiana, y lo que empezó como una parada más en la ruta se convirtió en algo que no quise seguir postergando como había hecho, años atrás, con las preguntas que me sacaron del taller mecánico. Hoy vivo con ella en Italia. No fue el final del viaje —de hecho, no siento que el viaje haya terminado nunca—, pero sí fue el momento en que entendí que a veces uno sale a buscar el mundo entero y termina encontrando, en algún punto del camino, un lugar concreto y una persona concreta que le dan sentido a todo lo demás.",
         "It was in Italy that the trip, without my planning it, found somewhere to rest. I met an Italian girl, and what began as one more stop on the route turned into something I did not want to keep putting off the way I had, years earlier, with the questions that got me out of the mechanic's workshop. Today I live with her in Italy. It was not the end of the trip — in fact I do not feel the trip has ever ended — but it was the moment I understood that sometimes you set out to find the whole world and end up finding, somewhere along the way, one specific place and one specific person that give meaning to all the rest.",

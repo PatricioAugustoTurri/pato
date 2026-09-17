@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { VARIANTS_SUBQUERY, catalogVariants, replaceVariants } from "@/lib/photo-variants";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 import type { AdminPhoto } from "@/app/admin/components/types";
 
 type PhotoPayload = {
@@ -65,9 +66,11 @@ export async function POST(request: Request) {
 
     // Los tamaños no se cargan: son los del catálogo, iguales para toda obra.
     const photoId = photoResult.rows[0].id;
-    await replaceVariants(client, photoId, catalogVariants(stock));
+    await replaceVariants(client, photoId, await catalogVariants(client, stock));
 
     await client.query("COMMIT");
+
+    revalidateCatalog();
 
     return NextResponse.json({ id: photoId }, { status: 201 });
   } catch (error) {

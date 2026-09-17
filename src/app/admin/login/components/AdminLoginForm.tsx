@@ -6,6 +6,7 @@ import { getSession, signIn, signOut } from "next-auth/react";
 import { safeCallbackUrl } from "@/lib/callback-url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PasswordField from "@/components/PasswordField";
 
 export default function AdminLoginForm() {
   const [email, setEmail] = useState("");
@@ -65,9 +66,8 @@ export default function AdminLoginForm() {
         </div>
         <div className="auth-field">
           <label htmlFor="password">Password</label>
-          <Input
+          <PasswordField
             id="password"
-            type="password"
             autoComplete="current-password"
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "admin-login-error" : undefined}

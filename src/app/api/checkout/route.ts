@@ -5,6 +5,7 @@ import { pool } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import {
   SHIPPING_COUNTRIES,
+  SHIPPING_CURRENCY,
   isShippingRegion,
   stripeShippingOptions,
   type ShippingRegion,
@@ -48,6 +49,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
   }
 
+  /* Lo que se pide, ya comprobado y con las líneas repetidas sumadas.
+
+     Sumarlas importa: la misma obra y el mismo tamaño podían llegar en dos
+     líneas —dos pestañas abiertas, un carrito viejo— y cada una comprobaba el
+     stock por su cuenta, así que dos líneas de una copia pasaban el control de
+     una sola copia disponible. Juntas, el stock se compara contra lo que de
+     verdad se lleva.
+
+     Y comprobarlas importa igual: la cantidad entraba por `Number(...) || 1`,
+     que aceptaba un -3, un 1,5 y un 1e21. Ninguno llegaba a cobrarse porque
+     Stripe los rechazaba, pero el comprador terminaba leyendo el error de
+     Stripe en pantalla en vez de que el carrito le dijera que estaba mal. */
+  const wanted = new Map<string, { photoId: number; size: string; quantity: number }>();
+
+  for (const item of items) {
+    const photoId = Number(item.photoId);
+    const size = typeof item.size === "string" ? item.size.trim() : "";
+    const quantity = Number(item.quantity);
+
+    if (
+      !Number.isInteger(photoId) ||
+      photoId <= 0 ||
+      !size ||
+      !Number.isInteger(quantity) ||
+      quantity < 1
+    ) {
+      return NextResponse.json(
+        { error: "There is something wrong with your cart. Empty it and try again." },
+        { status: 400 },
+      );
+    }
+
+    const key = `${photoId}|${size}`;
+    const already = wanted.get(key)?.quantity ?? 0;
+    wanted.set(key, { photoId, size, quantity: already + quantity });
+  }
+
   let stripe;
   try {
     stripe = getStripe();
@@ -69,9 +107,7 @@ export async function POST(request: Request) {
     const orderItems: Array<{ photoId: number; size: string; quantity: number; unitAmountCents: number; name: string }> = [];
     let totalCents = 0;
 
-    for (const item of items) {
-      const quantityRequested = Number(item.quantity) || 1;
-
+    for (const item of wanted.values()) {
       const { rows } = await client.query<{
         price: string;
         currency: string;
@@ -90,34 +126,52 @@ export async function POST(request: Request) {
 
       if (!variant) {
         return NextResponse.json(
-          { error: `El tamaño ${item.size} ya no está disponible para esta fotografía.` },
+          { error: `The ${item.size} size is no longer available for this photograph.` },
           { status: 400 },
         );
       }
 
-      if (variant.stock < quantityRequested) {
+      if (variant.stock < item.quantity) {
         return NextResponse.json(
-          { error: `No hay stock suficiente de "${variant.name}" (${item.size}).` },
+          { error: `There is not enough stock of "${variant.name}" (${item.size}).` },
           { status: 400 },
+        );
+      }
+
+      const currency = variant.currency.trim().toLowerCase();
+
+      /* El envío se cobra en euros y así está escrito en `SHIPPING_RATES`. Una
+         variante cargada en otra moneda mezcla dos monedas en la misma sesión,
+         que Stripe rechaza entera: el comprador no vería "esta obra no se puede
+         comprar", vería el checkout caerse. Se corta acá, con nombre y apellido
+         en el log, porque no es un error del que compra sino un dato mal
+         cargado en el panel. */
+      if (currency !== SHIPPING_CURRENCY) {
+        console.error(
+          `[checkout] "${variant.name}" (${item.size}) está cargada en ${currency} y el envío se cobra en ${SHIPPING_CURRENCY}`,
+        );
+        return NextResponse.json(
+          { error: `"${variant.name}" is not on sale right now.` },
+          { status: 503 },
         );
       }
 
       const unitAmount = Math.round(Number(variant.price) * 100);
-      totalCents += unitAmount * quantityRequested;
+      totalCents += unitAmount * item.quantity;
 
       lineItems.push({
         price_data: {
-          currency: variant.currency.trim().toLowerCase(),
+          currency,
           product_data: { name: `${variant.name} (${item.size})` },
           unit_amount: unitAmount,
         },
-        quantity: quantityRequested,
+        quantity: item.quantity,
       });
 
       orderItems.push({
         photoId: item.photoId,
         size: item.size,
-        quantity: quantityRequested,
+        quantity: item.quantity,
         unitAmountCents: unitAmount,
         name: variant.name,
       });
@@ -127,6 +181,11 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      /* El sitio está en inglés y la página de pago es la pantalla siguiente a
+         la nuestra. Sin esto Stripe usa `auto`, que mira el idioma del
+         navegador: el mismo carrito terminaba en español o en italiano según
+         quién comprara. */
+      locale: "en",
       line_items: lineItems,
       /* Solo los países de la zona elegida. Stripe se encarga de que no entre
          una dirección que no corresponda a la tarifa que se está cobrando. */
@@ -151,8 +210,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "We could not start the payment.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    /* El mensaje de adentro se queda adentro. Venía de Stripe o de Postgres y
+       terminaba en la pantalla del comprador: a él no le dice nada que pueda
+       usar, y a veces cuenta cómo está armada la base. Al log, que es donde se
+       lee cuando algo falla de verdad. */
+    console.error("[checkout] no se pudo crear la sesión de pago:", error);
+    return NextResponse.json({ error: "We could not start the payment." }, { status: 500 });
   } finally {
     client.release();
   }

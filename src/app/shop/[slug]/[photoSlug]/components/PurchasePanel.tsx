@@ -60,7 +60,7 @@ export default function PurchasePanel({
   if (variants.length === 0) {
     return (
       <p className="buy-unavailable">
-        This work has no sizes available right now. Write to hola@patoturri.com and
+        This work has no sizes available right now. Write to info@patoturri.com and
         we will let you know when it is back.
       </p>
     );

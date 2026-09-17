@@ -37,25 +37,34 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 - Envío: "Envío en Italia" €5,00 (2-5 días hábiles) y "Envío al resto de la
   Unión Europea" €10,00 (4-10 días hábiles). Stripe recolecta dirección en 27
   países de la UE y teléfono.
-- Admin en /admin (fotografías), /admin/orders, /admin/customers, con login
-  separado en /admin/login.
+- Admin en /admin (fotografías), /admin/collections, /admin/featured (qué obras
+  llenan las dos franjas curadas de la portada), /admin/sizes (lista de precios),
+  /admin/orders y /admin/customers, con login separado en /admin/login.
 
 ## Capabilities and Constraints
 
-- Tamaños y precios uniformes en todo el catálogo: A4 €40,00 · A3 €55,00 ·
-  A2 €70,00, en EUR.
+- Tamaños y precios uniformes en todo el catálogo, en EUR: no hay precio por
+  fotografía. La lista vive en la tabla `catalog_sizes` y se edita desde
+  /admin/sizes; arranca en A4 €40,00 · A3 €55,00 · A2 €70,00. Guardarla propaga
+  el precio a `photo_variants` de toda obra, que es lo que lee el checkout. Las
+  medidas de cada tamaño son un hecho del papel y siguen en `src/lib/sizes.ts`.
 - Roles: `customer` y `admin`. Registro siempre crea `customer`. Los admins se
   crean con `scripts/create-admin.mjs` o se promueven desde /admin/customers.
   El sistema se niega a degradar al último admin.
 - Auth: NextAuth v5 beta, solo Credentials (email + bcrypt). Sin OAuth, sin
   verificación de email, sin recuperación de contraseña.
 - Datos: Postgres con SQL crudo (`pg`), sin ORM. Tablas `categories`, `photos`,
-  `photo_variants`, `orders`, `users` (+ `admin_users` legacy sin uso).
+  `photo_variants`, `catalog_sizes`, `orders`, `users` (+ `admin_users` legacy
+  sin uso).
 - Imágenes del catálogo alojadas en Cloudinary (cuenta `dvmsjdcqi`).
 - Guardas en `src/proxy.ts` (nombre de middleware en Next 16) sobre
   `/admin/*`, `/api/admin/*` y `/api/checkout`.
-- El stock NO se descuenta tras una compra. Ninguna interfaz de admin permite
-  crear o editar `photo_variants` ni `categories`.
+- El stock NO se descuenta tras una compra.
+- El panel crea, renombra y borra colecciones, pero se niega a borrar una que
+  todavía tenga obras: la llave es `ON DELETE SET NULL` y una obra sin colección
+  no tiene ruta, así que desaparecería de la tienda sin que nadie lo pida.
+- El slug de una colección no se edita: es la dirección pública de
+  `/shop/<colección>` y cambiarla rompería los enlaces ya compartidos.
 
 ### Decisiones abiertas (no inventar)
 
@@ -71,8 +80,12 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 
 ## Brand Commitments
 
-- Nombre: **Pato Turri**. Wordmark tipográfico en dos líneas ("Pato" / "Turri"),
-  sin logotipo gráfico: no existe ningún SVG de marca en el repo. "Turri" va en
+- Nombre: **Pato Turri**. Wordmark tipográfico en dos líneas ("Pato" / "Turri").
+  No hay logotipo en la interfaz: la marca en pantalla es siempre el wordmark.
+  El único signo gráfico es el **icono del sitio** —un dibujo a plumín de una
+  cámara telemétrica, elegido por el usuario el 2026-09-12—, que vive solo en
+  la pestaña del navegador y en la pantalla de inicio; el original está en
+  `src/assets/camera-source.png`. "Turri" va en
   Playfair Display itálica y **no cambia**: es el único resto de esa familia en
   el sitio, y vive en su propia variable `--font-wordmark` para sobrevivir a
   cualquier cambio de la cara de títulos.
@@ -82,7 +95,7 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   ("más moderno"). La itálica es requisito, no adorno: tres titulares la usan
   como acento (`contigo.`, `de este mes.`, `Mirar mejor.`), así que cualquier
   reemplazo futuro debe traer itálica dibujada, no sintética.
-- Email de contacto publicado en la UI: hola@patoturri.com
+- Email de contacto publicado en la UI: info@patoturri.com
 - Idioma del sitio: **inglés** (decisión del usuario). La UI en español
   rioplatense actualmente en el código es un remanente a traducir.
 

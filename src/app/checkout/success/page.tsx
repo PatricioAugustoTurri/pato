@@ -39,7 +39,7 @@ function CheckoutSuccessContent() {
         <p>
           The payment went through and the order is recorded — it is in your orders now.
           For anything about it, write to{" "}
-          <a href="mailto:hola@patoturri.com">hola@patoturri.com</a> — the same person who
+          <a href="mailto:info@patoturri.com">info@patoturri.com</a> — the same person who
           took the photographs reads it.
         </p>
         {/* Decir "quedo registrado" sin dar donde verlo era abrir un circuito y
