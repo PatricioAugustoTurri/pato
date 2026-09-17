@@ -63,7 +63,11 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 - Imágenes del catálogo alojadas en Cloudinary (cuenta `dvmsjdcqi`).
 - Guardas en `src/proxy.ts` (nombre de middleware en Next 16) sobre
   `/admin/*`, `/api/admin/*` y `/api/checkout`.
-- El stock NO se descuenta tras una compra.
+- El stock se descuenta cuando Stripe confirma el cobro, en el webhook y no en
+  el checkout: hasta que no hay cobro no hay venta, y una sesión abandonada no
+  puede descontar una copia que nadie pagó. Baja con `GREATEST(stock - n, 0)`,
+  porque el stock no es una reserva y dos compras simultáneas del mismo tamaño
+  no pueden dejar el número en negativo.
 - El panel crea, renombra y borra colecciones, pero se niega a borrar una que
   todavía tenga obras: la llave es `ON DELETE SET NULL` y una obra sin colección
   no tiene ruta, así que desaparecería de la tienda sin que nadie lo pida.
@@ -79,8 +83,6 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 - **Producción e impresión**: la copia actual afirma impresión bajo demanda en
   papeles de algodón. Sin verificar con el usuario. Tratar como NO confirmado:
   no repetirlo en copia nueva hasta que se confirme el laboratorio y el papel.
-- **Estado comercial**: Stripe está en modo test. Sin confirmar si el sitio ya
-  vende de verdad o está pre-lanzamiento.
 
 ## Brand Commitments
 
@@ -109,8 +111,18 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   (Ayutthaya, Popocatépetl, Antigua, Aconcagua, Hanoi, Chapada Diamantina,
   Chiang Mai, Guaraní, Salta, Vietnam…).
 - **4 colecciones con descripciones editoriales largas y propias**, ya escritas.
-- Integración Stripe real (claves de test), webhook funcionando, y pedidos
-  reales en la base (1 `paid`, 4 `pending`).
+- **El sitio vende de verdad.** Stripe pasó a claves LIVE el 2026-09-17: un
+  cobro es dinero real. Test y live son mundos separados en Stripe, así que el
+  webhook tiene que estar dado de alta en el dashboard LIVE apuntando a
+  `/api/webhooks/stripe`, y `STRIPE_WEBHOOK_SECRET` tiene que ser el de ESE
+  endpoint. Con el secreto de test puesto, un comprador paga y no pasa nada:
+  el pedido se queda en `pending`, el stock no baja y no sale ningún mail.
+  `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` está declarada pero ningún código la
+  lee —el checkout redirige a la página alojada de Stripe—, así que no
+  interviene.
+- El checkout no guarda ningún id de objeto de Stripe: precios y tarifas se
+  arman inline (`price_data`, `shipping_rate_data`), que es lo que permitió
+  cambiar de modo sin tocar código.
 - **La colección Portrait está vacía (0 fotos)** aunque su texto editorial ya
   está escrito.
 - **No existe fotografía propia en el repositorio.** Toda la imaginería de la
