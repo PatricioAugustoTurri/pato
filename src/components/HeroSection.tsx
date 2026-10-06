@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getArchiveCounts } from "@/lib/photos";
 import SocialLinks from "@/components/SocialLinks";
+import HeroLive from "@/components/HeroLive";
 
 /* La tapa de la portada es el retrato del autor, no una obra del catálogo. Por
    eso es un archivo del repositorio y no sale de `photos`: ninguna bandera del
@@ -12,6 +13,7 @@ const COVER = "/Pato/_MG_7748.jpg";
    dos encuadres compartan `--cover-y`. La matte la genera Vision, la misma
    segmentación con la que macOS levanta un sujeto de una foto. */
 const FIGURE = "/Pato/_MG_7748-figura.webp";
+const LIVE = "/Pato/_MG_7748-vivo.mp4";
 const COVER_ALT =
   "Pato Turri standing with one arm raised, in front of a lake and a snow-capped mountain";
 
@@ -22,6 +24,11 @@ export default async function HeroSection() {
     <section className="hero-section">
       <div className="hero-media">
         <Image src={COVER} alt={COVER_ALT} fill priority sizes="100vw" quality={90} />
+        {/* La misma toma, viva: el lago, los arboles y la niebla se mueven y la
+            figura queda quieta. Generado con Higgsfield desde este archivo. El
+            `media` es el encuadre de escritorio (`--cover-y: 52%`) en 16:10 o
+            mas ancho, que es para lo que se recorto el video. */}
+        <HeroLive src={LIVE} media="(min-width: 901px) and (min-aspect-ratio: 8/5)" />
       </div>
 
       {/* La figura otra vez, por encima de los velos y del titular: así el texto

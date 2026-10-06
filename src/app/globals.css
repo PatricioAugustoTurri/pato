@@ -299,17 +299,54 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
   body:has(.is-dark-room) .site-nav .nav-links a:hover { color: var(--paper); }
 }
 
+/* --- La tapa como fotografia recien tomada ---------------------------------
+   El video vivo de la portada (ver HeroLive). Mismo encuadre que la foto de
+   abajo, asi que entra y sale fundido sin que se vea el cambio de capa. */
+.hero-live { height: 100%; inset: 0; object-fit: cover; object-position: center var(--cover-y); opacity: 0; position: absolute; transition: opacity 1400ms var(--ease-drift); width: 100%; }
+.hero-live[data-live] { opacity: 1; }
+/* En la portada el video no toca a la figura: la IA le movio un poco el puno y
+   la cara, y eso asomaba por los bordes de la silueta. La mascara es la misma
+   silueta ensanchada y difuminada, al reves: alrededor del cuerpo se ve la foto
+   fija y solo el paisaje se mueve, como en un cinemagraph. Es 2:3 como la tapa,
+   asi que con `cover` y `--cover-y` cae igual que la foto. */
+.home .hero-live { -webkit-mask: url("/Pato/_MG_7748-quieto.png") center var(--cover-y) / cover no-repeat; mask: url("/Pato/_MG_7748-quieto.png") center var(--cover-y) / cover no-repeat; }
+/* Grano de pelicula sobre la fotografia y debajo de los velos. Tambien
+   disimula el salto de nitidez entre la foto y el video, que viene a 768p.
+   Es un PNG de ruido por pixel y no un feTurbulence: el SVG dejaba ver las
+   costuras de la baldosa como lineas finas en los cielos lisos. */
+.hero-media:after { background: url("/grano.png"); content: ''; inset: -60px; mix-blend-mode: overlay; opacity: .11; pointer-events: none; position: absolute; }
+
 @media (prefers-reduced-motion: no-preference) {
-  /* Entrada del hero: la fotografía se asienta y el título sube por líneas.
+  /* Entrada del hero, como una foto que se acaba de sacar: el flash la deja
+     en blanco, se revela hasta su color y se asienta; el titulo entra en foco.
+     Despues la camara respira, muy lento, para que la tapa no quede muerta.
+     La silueta de la portada lleva exactamente las mismas animaciones que la
+     foto: si no, durante la entrada la figura no cae sobre su propio cuerpo.
      Todo parte de un estado visible, así que si algo falla no queda vacío. */
-  .hero-media { animation: hero-settle 2600ms var(--ease-drift) both; }
-  .hero-title { animation: hero-rise 1100ms 80ms var(--ease-drift) both; }
+  .hero-media, .hero-cutout { animation: hero-settle 2600ms var(--ease-drift) both, hero-develop 2400ms cubic-bezier(.2, .7, .3, 1) both, hero-breathe 28s 2600ms ease-in-out infinite alternate; }
+  .hero-media:after { animation: hero-grain 900ms steps(6) infinite; }
+  .hero-title { animation: hero-rise 1100ms 80ms var(--ease-drift) both, hero-focus 1500ms 80ms var(--ease-drift) both; }
   .hero-foot { animation: hero-rise 1100ms 260ms var(--ease-drift) both; }
   .hero-index { animation: hero-rise 1100ms 400ms var(--ease-drift) both; }
   .hero-social a { transition: color var(--dur-base) var(--ease); }
 }
 @keyframes hero-settle { from { transform: scale(1.11); } to { transform: none; } }
+@keyframes hero-develop {
+  0% { filter: brightness(3.2) saturate(0) contrast(.6); }
+  14% { filter: brightness(1.7) saturate(.25) contrast(.8); }
+  100% { filter: none; }
+}
+@keyframes hero-breathe { from { transform: none; } to { transform: translate3d(-1%, -.6%, 0) scale(1.05); } }
+@keyframes hero-grain {
+  0%, 100% { transform: none; }
+  17% { transform: translate(-22px, 14px); }
+  33% { transform: translate(18px, -26px); }
+  50% { transform: translate(-30px, -8px); }
+  67% { transform: translate(26px, 22px); }
+  83% { transform: translate(-8px, 30px); }
+}
 @keyframes hero-rise { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+@keyframes hero-focus { from { filter: blur(14px); } to { filter: none; } }
 /* --- Portada: la sala oscura no se corta en el hero ------------------------
    El hero abre sobre tinta, con la fotografia a sangre bajo un velo y el tipo
    en papel. Debajo, la portada se volvia un folleto crema de tarjetas iguales
