@@ -1,3 +1,4 @@
+import { ViewTransition } from "react";
 import Image from "next/image";
 
 type CategoryHeroProps = {
@@ -11,6 +12,10 @@ type CategoryHeroProps = {
      componentes que se parecen. */
   indexLabel?: string;
   indexValues: string[];
+  /* Solo la sala de una colección: es la pareja del panel del muro de
+     colecciones (`CollectionWall`). La sala de un país no tiene panel del que
+     venir. */
+  transitionName?: string;
 };
 
 export default function CategoryHero({
@@ -19,17 +24,20 @@ export default function CategoryHero({
   obras,
   indexLabel = "Countries",
   indexValues,
+  transitionName,
 }: CategoryHeroProps) {
+  const media = imageUrl && (
+    <div className="hero-media">
+      <Image src={imageUrl} alt="" fill priority sizes="100vw" quality={90} />
+    </div>
+  );
+
   return (
     <section className="hero-section">
       {/* Mismo elemento y mismo <Image> que la portada: así la fotografía se
           asienta con la misma entrada, en vez de aparecer de golpe como hacía
           cuando era un fondo CSS del propio bloque. */}
-      {imageUrl && (
-        <div className="hero-media">
-          <Image src={imageUrl} alt="" fill priority sizes="100vw" quality={90} />
-        </div>
-      )}
+      {media && transitionName ? <ViewTransition name={transitionName}>{media}</ViewTransition> : media}
 
       <div className="hero-inner">
         <h1 className="hero-title">{title}</h1>

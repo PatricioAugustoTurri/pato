@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { CartItem } from "@/hooks/use-cart";
@@ -18,9 +21,35 @@ export default function CartLine({
   const unitPrice = Number(item.attributes?.price ?? item.price);
   const lineTotal = unitPrice * item.quantity;
   const dimensions = sizeDimensions(size);
+  const lineRef = useRef<HTMLElement>(null);
+  const [leaving, setLeaving] = useState(false);
+
+  /* La fila se pliega antes de irse: se apaga y se cierra, y las de abajo
+     suben a ocupar su lugar en vez de saltar. Se fija su alto real en una
+     variable para que el cierre parta de ahi. Con movimiento reducido, o si
+     la fila no esta en el DOM, se va en el acto. */
+  const remove = () => {
+    const line = lineRef.current;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!line || reduced) {
+      onRemove(item.photoId, size);
+      return;
+    }
+
+    line.style.setProperty("--line-h", `${line.offsetHeight}px`);
+    setLeaving(true);
+  };
 
   return (
-    <article className="cart-line">
+    <article
+      className="cart-line"
+      ref={lineRef}
+      data-leaving={leaving || undefined}
+      onAnimationEnd={(event) => {
+        if (leaving && event.target === event.currentTarget) onRemove(item.photoId, size);
+      }}
+    >
       {/* `contain`, no `cover`: la proporcion es parte de lo que se esta
           comprando, y una copia vertical y una horizontal tienen que leerse
           distintas en la misma lista. El resto del sitio tampoco recorta la
@@ -66,7 +95,7 @@ export default function CartLine({
         {/* El filete lo lleva el span, no el boton: en tactil el boton crece a
             44px de alto y un `border-bottom` suyo se despegaria del texto. Se
             agranda el area, no el dibujo. */}
-        <button type="button" className="cart-remove" onClick={() => onRemove(item.photoId, size)}>
+        <button type="button" className="cart-remove" onClick={remove} disabled={leaving}>
           <span className="cart-remove-rule">Remove</span>
           <span className="sr-only"> {item.name}, size {size}</span>
         </button>

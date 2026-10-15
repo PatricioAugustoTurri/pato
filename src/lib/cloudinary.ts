@@ -1,11 +1,10 @@
 /**
  * La cuenta de Cloudinary donde vive el catálogo, en un solo lugar.
  *
- * `next.config.ts` solo autoriza a `next/image` a optimizar imágenes de esta
- * cuenta. Una URL de cualquier otro origen no se muestra rota: hace fallar la
- * página entera de la obra. Por eso el panel valida contra esta misma
- * constante en vez de tener su propia copia, que podría quedar vieja el día
- * que la cuenta cambie.
+ * El loader de imágenes (`src/lib/image-loader.ts`) solo sabe pedirle
+ * tamaños y formatos a esta cuenta: una URL de otro origen se muestra tal cual,
+ * sin optimizar. Por eso el panel valida contra esta misma constante en vez de
+ * tener su propia copia, que podría quedar vieja el día que la cuenta cambie.
  */
 export const CLOUDINARY_CLOUD_NAME = "dvmsjdcqi";
 
@@ -15,9 +14,9 @@ export const CLOUDINARY_HOST = "res.cloudinary.com";
 export const CATALOG_IMAGE_PREFIX = `https://${CLOUDINARY_HOST}/${CLOUDINARY_CLOUD_NAME}/`;
 
 /**
- * ¿Esta URL la puede servir `next/image`?
+ * ¿Esta URL es del catálogo, o sea, se le pueden pedir transformaciones?
  *
- * Comprueba lo mismo que `remotePatterns`: el origen y la cuenta. No comprueba
+ * Comprueba el origen y la cuenta. No comprueba
  * que el archivo exista —eso solo lo sabe Cloudinary— pero ataja el error que
  * de verdad pasa, que es pegar la URL de otra cuenta o de otro sitio.
  */
@@ -25,14 +24,41 @@ export function isCatalogImageUrl(url: string): boolean {
   return url.trim().startsWith(CATALOG_IMAGE_PREFIX);
 }
 
+/**
+ * La firma del autor sobre cada obra: "PT" en Playfair Display itálica, la
+ * misma cara que el "Turri" del wordmark, abajo a la derecha, en papel.
+ * Decisión del usuario (2026-10-15): una firma en la esquina, no un sello
+ * encima de la foto, y solo en el catálogo.
+ *
+ * Va estampada por Cloudinary dentro del archivo, no dibujada con CSS: así la
+ * lleva también la imagen que alguien guarda o arrastra al escritorio. El
+ * tamaño y el margen son relativos al ancho de la imagen (`fl_relative`), así
+ * que la firma mide lo mismo en proporción en una miniatura de 640 que en la
+ * pantalla completa de 3840.
+ *
+ * Por debajo de WATERMARK_MIN_WIDTH no se estampa: en el carrito, los pedidos
+ * o un mail la firma mediría unos pocos píxeles y sería una mancha, y nadie
+ * roba una obra a ese tamaño.
+ */
+const MARK_TEXT = "Playfair%20Display_200_italic:PT";
+/* Dos capas: abajo la misma "PT" en tinta, desenfocada y corrida un pelo, que
+   hace de sombra; encima la firma en papel. Sin la sombra, sobre un cielo o un
+   pavimento claro la firma desaparecía. `e_shadow` no se aplica a una capa de
+   texto en Cloudinary, por eso se arma a mano. */
+const WATERMARK = [
+  `l_text:${MARK_TEXT},co_rgb:25231F,o_45/c_scale,fl_relative,w_0.07/e_blur:300/fl_layer_apply,g_south_east,x_0.033,y_0.032`,
+  `l_text:${MARK_TEXT},co_rgb:F4F1EB,o_70/c_scale,fl_relative,w_0.07/fl_layer_apply,g_south_east,x_0.035,y_0.035`,
+].join("/");
+export const WATERMARK_MIN_WIDTH = 600;
+
 /** Donde empieza, dentro de una URL de Cloudinary, lo que se puede transformar. */
 const UPLOAD_MARKER = "/image/upload/";
 
 /**
  * La misma fotografía, pedida a Cloudinary en el tamaño en que se va a ver.
  *
- * Las obras que se dibujan con `next/image` ya bajan optimizadas; las que son
- * fondo CSS —los cuadros de la portada, los de /destinations, las fichas del
+ * La usan las `next/image` del catálogo, a través del loader, y las obras que
+ * son fondo CSS —los cuadros de la portada, los de /destinations, las fichas del
  * panel— bajaban el original tal como salió de la cámara. Una miniatura de 350
  * píxeles pesaba 3,7 MB, y la portada entera 23 MB de fotografías que nadie ve
  * a ese tamaño.
@@ -51,8 +77,13 @@ const UPLOAD_MARKER = "/image/upload/";
  *
  * Una URL que no sea de esta cuenta vuelve intacta: esto es una optimización,
  * y una optimización no puede ser la razón de que una imagen no aparezca.
+ *
+ * `quality` es el número que pide `next/image` (75, 85, 90). Cloudinary no lo
+ * recibe tal cual: `q_auto` ajusta la compresión a cada foto, y 88 o más pasa
+ * a `q_auto:best`, que es lo que piden los heroes, donde la fotografía ocupa
+ * la pantalla entera y la diferencia se ve.
  */
-export function catalogImage(url: string, width: number): string {
+export function catalogImage(url: string, width: number, quality?: number): string {
   if (!isCatalogImageUrl(url)) {
     return url;
   }
@@ -72,7 +103,10 @@ export function catalogImage(url: string, width: number): string {
     return url;
   }
 
-  return `${head}f_auto,q_auto,w_${width},c_limit/${tail}`;
+  const q = quality !== undefined && quality >= 88 ? "q_auto:best" : "q_auto";
+  const resize = `f_auto,${q},w_${width},c_limit`;
+  const mark = width >= WATERMARK_MIN_WIDTH ? `/${WATERMARK}` : "";
+  return `${head}${resize}${mark}/${tail}`;
 }
 
 /**

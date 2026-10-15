@@ -179,7 +179,12 @@ export default function CategoryRoom({
                             alt={normalizePhotoAlt(photo.images, title)}
                             fill
                             sizes="(max-width: 700px) 100vw, (max-width: 1100px) 60vw, 44vw"
-                            quality={90}
+                            /* 85 y no 90: en el muro cada obra ocupa menos de
+                               media pantalla, y 90 le pedía a Cloudinary su
+                               compresión más generosa (`q_auto:best`) para una
+                               miniatura. La calidad máxima queda para la ficha
+                               de la obra, que es donde se mira de cerca. */
+                            quality={85}
                           />
                         )}
                       </span>

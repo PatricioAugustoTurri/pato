@@ -1,3 +1,5 @@
+import { catalogImage } from "@/lib/cloudinary";
+
 /**
  * Los datos que todo el SEO del sitio repite, en un solo lugar.
  *
@@ -77,7 +79,11 @@ export function pageMetadata({
   const url = absoluteUrl(path);
   /* Una obra manda su propia fotografía; el resto del sitio comparte la
      tarjeta de la marca. Lo que nunca pasa es quedarse sin ninguna. */
-  const cards = images?.length ? images : [DEFAULT_OG_IMAGE];
+  /* Las del catálogo, a 1200 px y no el original: el original pesa de 2 a 4
+     MB, y WhatsApp y otras apps directamente no dibujan la vista previa de
+     una imagen tan pesada. 1200 es el ancho que piden Facebook y X para la
+     tarjeta grande. Una URL que no es de Cloudinary pasa intacta. */
+  const cards = images?.length ? images.map((url) => catalogImage(url, 1200)) : [DEFAULT_OG_IMAGE];
 
   return {
     title,

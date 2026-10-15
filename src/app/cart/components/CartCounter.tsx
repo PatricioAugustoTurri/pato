@@ -2,6 +2,7 @@
 
 import type { RefObject } from "react";
 import Link from "next/link";
+import { useBump } from "@/hooks/use-bump";
 import { formatPrice } from "@/lib/money";
 import { SHIPPING_RATES, shippingRate, type ShippingRegion } from "@/lib/shipping";
 import type { Checkout } from "../use-checkout";
@@ -20,6 +21,8 @@ export default function CartCounter({
   buttonRef: RefObject<HTMLButtonElement | null>;
 }) {
   const shippingAmount = shippingRate(region).amount;
+  const total = subtotal + shippingAmount / 100;
+  const totalBump = useBump(total);
 
   return (
     <div className="cart-counter">
@@ -92,7 +95,11 @@ export default function CartCounter({
           disabled={checkout.disabled}
         >
           <span>{checkout.isRedirecting ? "Redirecting…" : "Checkout"}</span>
-          <b>{formatPrice(subtotal + shippingAmount / 100)}</b>
+          {/* Cambia con cada copia y con la zona de envio: rota en su lugar
+              para que el cambio se vea, igual que el precio en la ficha. */}
+          <b className="figure-roll" key={totalBump} data-bump={totalBump > 0 || undefined}>
+            {formatPrice(total)}
+          </b>
         </button>
 
         {/* Las condiciones tienen que estar a la vista en el momento de

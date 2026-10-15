@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { ViewTransition, type CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { CategoryRow } from "@/lib/collections";
@@ -50,20 +50,25 @@ export default function CollectionWall({ categories }: { categories: CategoryRow
                iguales dirian que las colecciones pesan lo mismo, y no. */
             style={{ "--weight": Math.max(category.obras, 1) } as CSSProperties}
           >
+            {/* El mismo nombre que la tapa de la sala: al entrar a la
+                colección, este panel crece hasta ser su portada en vez de
+                desaparecer y dar paso a otra imagen. */}
             {imageUrl && (
-              <Image
-                className="shop-plate-image"
-                src={imageUrl}
-                alt=""
-                fill
-                sizes="(max-width: 900px) 100vw, 50vw"
-                /* Sin `priority`: la tapa del hero es ahora la imagen
-                   grande del primer viewport, y tres candidatas a LCP
-                   compitiendo la retrasaban. El muro queda a un scroll,
-                   que es dentro del margen con que el navegador dispara
-                   la carga diferida. */
-                quality={85}
-              />
+              <ViewTransition name={`collection-${category.slug}`}>
+                <Image
+                  className="shop-plate-image"
+                  src={imageUrl}
+                  alt=""
+                  fill
+                  sizes="(max-width: 900px) 100vw, 50vw"
+                  /* Sin `priority`: la tapa del hero es ahora la imagen
+                     grande del primer viewport, y tres candidatas a LCP
+                     compitiendo la retrasaban. El muro queda a un scroll,
+                     que es dentro del margen con que el navegador dispara
+                     la carga diferida. */
+                  quality={85}
+                />
+              </ViewTransition>
             )}
 
             <span className="shop-plate-body">

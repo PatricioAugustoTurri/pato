@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useCart, { type CartItem } from "@/hooks/use-cart";
 import { track } from "@/lib/analytics";
+import { useBump } from "@/hooks/use-bump";
 import { formatPrice } from "@/lib/money";
 import { sizeDimensions } from "@/lib/sizes";
 import type { PhotoVariant } from "@/types/PhotoType";
@@ -32,6 +33,8 @@ export default function PurchasePanel({
   const items = useCart((state) => state.items);
   const [selectedId, setSelectedId] = useState(variants[0]?.id);
   const [justAdded, setJustAdded] = useState(false);
+  /* El precio rota en el boton cada vez que se elige otro tamaño. */
+  const priceBump = useBump(selectedId);
   /* En el telefono la obra ocupa la pantalla y el mostrador queda abajo: apenas
      bajas a leer, comprar desaparece y no vuelve. La barra fija aparece cuando
      el boton real sale de vista, y se va cuando vuelve — nunca las dos juntas.
@@ -140,7 +143,13 @@ export default function PurchasePanel({
            fila elegida ya dice. */
       >
         <span>{justAdded ? "Added to cart" : "Add to cart"}</span>
-        {selected && <b>{formatPrice(selected.price)}</b>}
+        {/* Al cambiar de tamaño el precio rota en su lugar: cambiar la cifra
+            de golpe dentro de un boton que no se movio es facil de no ver. */}
+        {selected && (
+          <b className="figure-roll" key={priceBump} data-bump={priceBump > 0 || undefined}>
+            {formatPrice(selected.price)}
+          </b>
+        )}
       </button>
 
       {inCart > 0 && (

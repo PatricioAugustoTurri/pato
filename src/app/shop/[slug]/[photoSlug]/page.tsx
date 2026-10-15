@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { pool } from "@/lib/db";
+import { catalogImage } from "@/lib/cloudinary";
 import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
 import { getImageRatio } from "@/lib/image-shape";
 import { cleanTitle, titleNamesPlace } from "@/lib/place";
@@ -168,7 +169,10 @@ export default async function PhotoDetailPage({
           data={productSchema({
             name: title,
             description: photo.description || imageAlt,
-            image: imageUrl,
+            /* Google pide la imagen grande (1200 px o más) pero no el
+               original de cámara: 2000 de ancho alcanza para su resultado
+               enriquecido y para Google Imágenes. */
+            image: catalogImage(imageUrl, 2000),
             path,
             prices,
           })}

@@ -8,11 +8,6 @@ import HeroLive from "@/components/HeroLive";
    panel la elige, y el índice de abajo no anuncia "En portada" porque lo que se
    ve no es una obra que se pueda comprar. */
 const COVER = "/Pato/_MG_7748.jpg";
-/* La misma toma, recortada a la silueta con alfa. No es otra fotografía: es
-   este archivo, y por eso cae exactamente sobre su propio cuerpo mientras los
-   dos encuadres compartan `--cover-y`. La matte la genera Vision, la misma
-   segmentación con la que macOS levanta un sujeto de una foto. */
-const FIGURE = "/Pato/_MG_7748-figura.webp";
 const LIVE = "/Pato/_MG_7748-vivo.mp4";
 const COVER_ALT =
   "Pato Turri standing with one arm raised, in front of a lake and a snow-capped mountain";
@@ -31,22 +26,13 @@ export default async function HeroSection() {
         <HeroLive src={LIVE} media="(min-width: 901px) and (min-aspect-ratio: 8/5)" />
       </div>
 
-      {/* La figura otra vez, por encima de los velos y del titular: así el texto
-          le pasa por detrás donde se cruzan, y el cuerpo sale del velo en vez de
-          hundirse en él. No lleva texto alternativo porque no es una imagen
-          nueva —la de abajo ya la describe— y no recibe clics. */}
-      <div className="hero-cutout" aria-hidden="true">
-        {/* `unoptimized` a proposito, y no se saca. El optimizador elige formato
-            segun lo que acepta el cliente: al que no anuncia webp le devuelve un
-            JPEG, y un JPEG no tiene alfa, asi que el recorte le llega con el
-            fondo aplanado en negro —la tapa entera negra menos la figura—.
-            Servido tal cual, el navegador que no entiende webp no dibuja nada y
-            la portada queda como estaba, que es la unica falla aceptable de las
-            dos. Son 205 KB fijos y de paso no hay que optimizar nada por pedido
-            en el servidor. */}
-        <Image src={FIGURE} alt="" fill priority unoptimized />
-      </div>
-
+      {/* El retrato y el titular no se cruzan: en apaisado el titular vive
+          arriba a la izquierda, sobre los arboles, y la figura queda libre en
+          el centro; en vertical la fotografia va entera arriba y el titular
+          debajo, como un epigrafe. Antes una silueta recortada se dibujaba
+          encima del titular para que el texto le pasara por detras, y lo que
+          se leia era al autor tapando su propia frase. Se retiro por pedido
+          del autor (2026-10-15). */}
       <div className="hero-inner">
         <h1 className="hero-title">
           Take the world<br /><i>with you.</i>

@@ -7,6 +7,7 @@ import { DM_Sans, Familjen_Grotesk, Playfair_Display, DM_Mono } from "next/font/
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import Providers from "./providers";
+import DevelopImages from "@/components/DevelopImages";
 import { AUTHOR, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { personSchema, webSiteSchema } from "@/lib/structured-data";
 import JsonLd from "@/components/JsonLd";
@@ -124,6 +125,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <JsonLd data={webSiteSchema()} />
         <Providers>
           <Toaster />
+          <DevelopImages />
           <header>
             <NavBar />
           </header>

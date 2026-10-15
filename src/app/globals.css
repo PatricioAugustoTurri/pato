@@ -143,19 +143,7 @@ h1 i, h2 i { color: var(--accent-text); font-weight: 500; }
    asomando por abajo; a 62% la figura manda pero la montana desaparece. A 42%
    la montana sostiene el titular y la cara y el brazo se leen, mientras el
    cuerpo baja hacia el velo, que es donde viven las tarjetas. */
-.hero-media img, .hero-cutout img { object-fit: cover; object-position: center var(--cover-y); }
-
-/* La silueta, encima de los velos y del titular. Es el mismo archivo recortado
-   con alfa, asi que el borde no tiene nada que disimular: cae sobre sus propios
-   pixeles. Lo unico que cambia es que la figura deja de estar debajo del velo.
-   Depende de que las dos capas compartan `--cover-y`, que es justamente por lo
-   que el encuadre es una variable y no un numero escrito dos veces. */
-.hero-cutout { inset: 0; pointer-events: none; position: absolute; z-index: 3; }
-/* Abajo se disuelve: ahi viven las cifras y los enlaces, apoyados en el velo, y
-   un cuerpo iluminado a pantalla completa les pelearia el fondo. Al fundirse
-   vuelve a aparecer la misma figura de la capa de abajo, ya velada, asi que la
-   transicion se lee como luz que cae y no como un corte. */
-.hero-cutout img { -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 82%); mask-image: linear-gradient(to bottom, #000 58%, transparent 82%); }
+.hero-media img { object-fit: cover; object-position: center var(--cover-y); }
 
 /* En escritorio la franja baja a 52%, por pedido del autor (2026-09-16): a 42%
    la figura entra cortada por la cintura y la cara cae dentro del velo de
@@ -320,10 +308,8 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
   /* Entrada del hero, como una foto que se acaba de sacar: el flash la deja
      en blanco, se revela hasta su color y se asienta; el titulo entra en foco.
      Despues la camara respira, muy lento, para que la tapa no quede muerta.
-     La silueta de la portada lleva exactamente las mismas animaciones que la
-     foto: si no, durante la entrada la figura no cae sobre su propio cuerpo.
      Todo parte de un estado visible, así que si algo falla no queda vacío. */
-  .hero-media, .hero-cutout { animation: hero-settle 2600ms var(--ease-drift) both, hero-develop 2400ms cubic-bezier(.2, .7, .3, 1) both, hero-breathe 28s 2600ms ease-in-out infinite alternate; }
+  .hero-media { animation: hero-settle 2600ms var(--ease-drift) both, hero-develop 2400ms cubic-bezier(.2, .7, .3, 1) both, hero-breathe 28s 2600ms ease-in-out infinite alternate; }
   .hero-media:after { animation: hero-grain 900ms steps(6) infinite; }
   .hero-title { animation: hero-rise 1100ms 80ms var(--ease-drift) both, hero-focus 1500ms 80ms var(--ease-drift) both; }
   .hero-foot { animation: hero-rise 1100ms 260ms var(--ease-drift) both; }
@@ -2034,24 +2020,51 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
   .cart-note { padding: clamp(46px, 11vw, 70px) 5vw clamp(56px, 12vw, 80px); }
 }
 
-/* --- El titular de la portada, en pantalla vertical -------------------------
-   `.hero-inner` apila contra el borde de abajo, y en la portada el titular se
-   apoya en esa pila: `.home h1` pone `margin-bottom: 0` y con eso anula el
-   `margin-bottom: auto` con el que `.hero-title` se sube al techo en el resto
-   de los heroes. En apaisado eso se lee bien —la caja nace mas ancha que alta y
-   el bloque cae por la mitad—, pero en vertical las tres piezas se juntan en el
-   ultimo tercio y arriba queda media pantalla de cielo vacio.
+/* --- El titular de la portada y el retrato no se cruzan -------------------
+   La tapa es el autor de cuerpo entero, y el titular no puede pasarle por
+   encima ni por detras: o tapa la frase o tapa la cara. Cada orientacion le da
+   a cada uno su lugar.
 
-   La regla mira la ORIENTACION y no el ancho a proposito: un iPad de 1024 en
-   vertical tiene exactamente el problema de un telefono de 390, y el mismo iPad
-   acostado no lo tiene. Un umbral de ancho habria dejado afuera al primero y
-   metido adentro al segundo.
+   En APAISADO el titular sube a la esquina de arriba a la izquierda, que es
+   donde el resto de los heroes lo ponen y la que los dos velos de
+   `.hero-section:before` ya oscurecen. Ahi solo hay arboles: la figura esta
+   en el centro de la toma y el brazo levantado queda a la derecha de la
+   frase. Los sociales y la ficha siguen contra el borde de abajo. */
+@media (orientation: landscape) {
+  .home .hero-title { font-size: clamp(56px, 8.6vw, 150px); margin-bottom: auto; max-width: 9ch; }
+}
 
-   Sube solo el titular. Los sociales y la ficha se quedan contra el borde, que
-   es su sitio. En `svh`, como el alto del propio hero, para que la barra del
-   navegador del telefono no lo corra al hacer scroll. */
+/* En VERTICAL la fotografia va entera arriba y se funde a tinta, y el titular,
+   los sociales y la ficha van debajo, como el epigrafe de una lamina. La
+   regla mira la orientacion y no el ancho: un iPad de 1024 en vertical tiene
+   el problema de un telefono, y el mismo iPad acostado no.
+
+   La caja de la foto mide 2:3, la proporcion de la toma, asi que en un
+   telefono entra entera, de la montana a los pies; con un tope para que
+   siempre quede lugar para el texto debajo (en una tablet vertical la toma se
+   recorta arriba y abajo alrededor de `--cover-y`). La mascara la funde en el
+   ultimo quinto, asi que no hay borde: la tierra se vuelve tinta. Los velos de
+   abajo y de la izquierda sobran, porque el texto ya no esta sobre la foto;
+   el de arriba se queda para que la navegacion se lea contra el cielo. */
 @media (orientation: portrait) {
-  .home .hero-title { margin-bottom: clamp(26px, 5svh, 64px); }
+  /* El tope de la foto descuenta el texto de abajo, y el texto depende del
+     cuerpo del titular: 150px de sociales, ficha y aire, mas dos lineas de
+     titular con su interlineado. Por eso el cuerpo es una variable y no dos
+     numeros que se puedan separar. */
+  .home .hero-section { --hero-title: clamp(56px, 10.5vw, 150px); }
+  .home .hero-title { font-size: var(--hero-title); }
+  .home .hero-media {
+    bottom: auto;
+    height: min(150vw, calc(100svh - 150px - 1.9 * var(--hero-title)));
+    -webkit-mask-image: linear-gradient(to bottom, #000 76%, transparent 99%);
+    mask-image: linear-gradient(to bottom, #000 76%, transparent 99%);
+  }
+  .home .hero-section:before { background: linear-gradient(rgba(18,15,12,.62), rgba(18,15,12,.1) 16%, transparent 26%); }
+  .home .hero-section:after { content: none; }
+  .home .hero-title { margin-bottom: 4px; }
+}
+@media (orientation: portrait) and (max-width: 700px) {
+  .home .hero-section { --hero-title: clamp(46px, 13vw, 68px); }
 }
 
 @media (max-width: 700px) {
@@ -2078,10 +2091,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
     .hang-plate,
     .shop-plate,
     .work-note,
-    .work-more,
-    .cart-line,
-    .order-line,
-    .site-footer > * {
+    .work-more {
       animation: reveal-in linear both;
       animation-timeline: view();
       animation-range: entry 0% cover 20%;
@@ -2091,6 +2101,64 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 @keyframes reveal-in {
   from { opacity: 0; transform: translateY(26px); }
   to { opacity: 1; transform: none; }
+}
+/* El carrito, la cuenta y el pie ya no entran subiendo (2026-10-15): ahí se
+   viene a hacer algo —revisar un pedido, pagar—, no a recorrer, y la entrada
+   solo demoraba la lectura. Quedó en las salas de obra, donde acompaña el
+   paseo. */
+
+/* --- Revelado al llegar ------------------------------------------------------
+   Cada obra de las salas y de "more from this collection" entra como la tapa
+   de la portada: un instante sobreexpuesta y sin color, y en seguida baja a su
+   tono. Lo dispara `DevelopImages` cuando la imagen termina de cargar, así que
+   el gesto dice algo cierto: esta foto acaba de llegar.
+
+   Sin fotograma `to` a propósito: la animación termina en el filtro que la
+   imagen tenga en reposo (la sala la apaga un poco en pantallas con hover), y
+   así no hay salto al final. Con movimiento reducido no corre: la imagen
+   aparece tal cual. */
+@media (prefers-reduced-motion: no-preference) {
+  .hang-image[data-developed],
+  .work-more-frame img[data-developed] { animation: print-develop var(--dur-slow) var(--ease) backwards; }
+}
+@keyframes print-develop {
+  0% { filter: brightness(2.4) saturate(0) contrast(.7); }
+  22% { filter: brightness(1.4) saturate(.35) contrast(.86); }
+}
+
+/* --- Acuse de recibo ---------------------------------------------------------
+   Tres cifras que cambian mientras se mira y tienen que notarse: la insignia
+   del carrito al agregar una obra, el precio de la ficha al cambiar de tamaño
+   y el total del carrito. `useBump` les cambia la `key` y la entrada corre de
+   nuevo; la primera vez no lleva `data-bump`, así que nada se mueve al
+   cargar. Con movimiento reducido la cifra cambia sin desplazarse. */
+@media (prefers-reduced-motion: no-preference) {
+  .bag-button b[data-bump],
+  .nav-drawer-action b[data-bump] { animation: badge-bump var(--dur-base) var(--ease) both; }
+  .figure-roll[data-bump] { animation: figure-roll var(--dur-base) var(--ease) both; display: inline-block; }
+}
+/* La cifra nueva sube desde abajo mientras el círculo late una vez. */
+@keyframes badge-bump {
+  0% { box-shadow: 0 0 0 0 rgba(216, 137, 91, .55); transform: translateY(5px) scale(.7); }
+  45% { transform: translateY(0) scale(1.16); }
+  100% { box-shadow: 0 0 0 7px rgba(216, 137, 91, 0); transform: none; }
+}
+@keyframes figure-roll {
+  from { clip-path: inset(0 0 100% 0); opacity: 0; transform: translateY(.55em); }
+  to { clip-path: inset(0); opacity: 1; transform: none; }
+}
+
+/* --- Una obra sale del carrito ------------------------------------------------
+   La fila se apaga y se cierra desde su alto real (`--line-h`, lo fija
+   `CartLine`), y las de abajo suben a ocupar su lugar en vez de saltar. Al
+   terminar, `CartLine` la saca del carrito. */
+@media (prefers-reduced-motion: no-preference) {
+  .cart-line[data-leaving] { animation: cart-line-leave var(--dur-base) var(--ease) forwards; overflow: hidden; pointer-events: none; }
+}
+@keyframes cart-line-leave {
+  0% { max-height: var(--line-h); opacity: 1; }
+  45% { opacity: 0; }
+  100% { border-top-color: transparent; max-height: 0; opacity: 0; padding-bottom: 0; padding-top: 0; }
 }
 
 /* --- About ----------------------------------------------------------------

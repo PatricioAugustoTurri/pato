@@ -143,7 +143,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           { name: category.name, path: `/shop/${category.slug}` },
         ])}
       />
-      <CategoryHero imageUrl={imageUrl} title={category.name} obras={photos.length} indexValues={paises} />
+      <CategoryHero
+        imageUrl={imageUrl}
+        title={category.name}
+        obras={photos.length}
+        indexValues={paises}
+        transitionName={`collection-${category.slug}`}
+      />
       <CategoryRoom
         roomName={category.name}
         categorySlug={category.slug}

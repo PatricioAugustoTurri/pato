@@ -88,6 +88,15 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 - Pruebas: `npm test` (vitest) sobre la validación del carrito
   (`src/lib/checkout-cart.ts`) y las tarifas de envío.
 - Imágenes del catálogo alojadas en Cloudinary (cuenta `dvmsjdcqi`).
+- **Entrega de imágenes** (2026-10-15): ninguna pasa por el optimizador de
+  Next. `src/lib/image-loader.ts` (loader propio de `next/image`) le pide a
+  Cloudinary cada foto del catálogo en el ancho justo (`f_auto,q_auto`,
+  `q_auto:best` desde calidad 88) y la sirve su CDN. Los originales de la base
+  no se tocan: son los que se imprimen. Las fotos propias del sitio (portada,
+  tienda, historia) viven en `src/assets/photos/` —ya no en `public/`, donde
+  se podían bajar enteras— y `scripts/optimize-local-photos.mjs` genera sus
+  versiones WebP en `public/Pato/optimized/` con hash en el nombre (caché de un
+  año). Foto propia nueva o reemplazada → correr ese script.
 - Guardas en `src/proxy.ts` (nombre de middleware en Next 16) sobre
   `/admin/*` y `/api/admin/*`. `/api/checkout` ya no está guardada: comprar
   no pide cuenta.
@@ -131,6 +140,13 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   Playfair Display itálica y **no cambia**: es el único resto de esa familia en
   el sitio, y vive en su propia variable `--font-wordmark` para sobrevivir a
   cualquier cambio de la cara de títulos.
+- **Firma "PT" sobre las obras del catálogo** (decisión del usuario,
+  2026-10-15): "PT" en Playfair Display itálica —la cara de "Turri"—, abajo a
+  la derecha, en papel con una sombra difusa en tinta. La estampa Cloudinary
+  dentro del archivo (`WATERMARK` en `src/lib/cloudinary.ts`), así que la lleva
+  también la imagen que alguien guarda. Solo en el catálogo y desde 600 px de
+  ancho: las miniaturas (carrito, pedidos, mails) y las fotos propias del sitio
+  (portada, tienda, historia) van sin firma.
 - Tipografías en uso: **Familjen Grotesk** (títulos, con itálica como acento),
   DM Sans (texto), DM Mono (etiquetas y metadatos). La cara de títulos era
   Playfair Display hasta el 2026-09-10; se reemplazó por decisión del usuario

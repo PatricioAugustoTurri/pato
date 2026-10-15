@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_HOST } from "./src/lib/cloudinary";
 
 const nextConfig: NextConfig = {
   // Empaqueta en `.next/standalone` solo lo que hace falta para correr, con un
@@ -8,36 +7,39 @@ const nextConfig: NextConfig = {
   output: "standalone",
 
   images: {
-    // Todo el catálogo vive en esta cuenta de Cloudinary. Declararla permite
-    // que `next/image` optimice las fotografías en vez de servirlas crudas:
-    // en una tienda de fotografía, el peso de la imagen es el peso del sitio.
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: CLOUDINARY_HOST,
-        pathname: `/${CLOUDINARY_CLOUD_NAME}/**`,
-      },
-    ],
-
-    // Next 16 dejo de aceptar cualquier `quality` y ahora solo sirve las que
-    // esten declaradas aca: sin esta lista, los `quality={90}` de los heroes y
-    // los `quality={85}` del muro se degradaban en silencio a 75. En una
-    // tienda de fotografia esa diferencia es el producto.
-    qualities: [75, 85, 90],
-
-    // Cuanto dura una imagen ya optimizada antes de que haya que volver a
-    // generarla. El valor de fabrica son cuatro horas, y con eso los heroes se
-    // re-comprimian varias veces por dia: cada vez que caducaba, el primero en
-    // entrar esperaba ~2,5 s a que `sharp` rehiciera un WebP de 2,5 MB que ya
-    // estaba bien. Treinta y un dias es tambien el `max-age` que se lleva el
-    // navegador, asi que al que vuelve no le cuesta nada.
+    // Ninguna fotografia pasa por el optimizador de Next. El catalogo lo sirve
+    // Cloudinary desde su CDN, ya en el ancho y el formato que pide cada
+    // pantalla; las fotos propias del sitio estan generadas de antemano por
+    // `scripts/optimize-local-photos.mjs`. El loader decide cual es cual.
     //
-    // La contra, y hay que saberla: no existe forma de invalidar este cache. Un
-    // archivo de `public/Pato/` que se reemplace CON EL MISMO NOMBRE sigue
-    // sirviendose viejo hasta que caduque, porque el cache sobrevive al deploy
-    // en su volumen. Para cambiar una foto, cambiarle el nombre. El catalogo no
-    // corre ese riesgo: sus URLs de Cloudinary llevan version.
-    minimumCacheTTL: 2678400,
+    // Antes el servidor bajaba cada original de Cloudinary (2 a 4 MB) y lo
+    // recomprimia con `sharp`: hasta 3 s de espera para el primero que pedia
+    // cada tamaño, CPU del VPS en cada uno y un cache en disco que habia que
+    // conservar entre deploys. Con un loader propio Next apaga ese
+    // optimizador, asi que `remotePatterns`, `qualities` y `minimumCacheTTL`
+    // ya no aplican y se retiraron.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
+
+    // Los anchos entre los que elige cada `srcset`. Los de fabrica saltan de
+    // 1200 a 1920 y de 2048 a 3840, y en una retina eso hacia pedir casi el
+    // doble de lo que se dibuja: una obra que ocupa 1267 px reales bajaba a
+    // 1920 (627 KB) cuando a 1280 pesa 357. Con Cloudinary sirviendo, cada
+    // ancho extra no le cuesta nada al servidor. Las fotos propias del sitio
+    // estan generadas en menos anchos y el loader redondea hacia arriba.
+    deviceSizes: [640, 750, 828, 1080, 1280, 1440, 1600, 1920, 2560, 2880, 3840],
+  },
+
+  async headers() {
+    return [
+      {
+        // Las versiones optimizadas llevan un hash del original en el nombre:
+        // si la foto cambia, cambia el archivo. Por eso se pueden guardar para
+        // siempre en el navegador, y quien vuelve no las pide de nuevo.
+        source: "/Pato/optimized/:file*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
   },
 };
 
