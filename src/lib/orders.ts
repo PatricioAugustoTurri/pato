@@ -64,6 +64,11 @@ export type CustomerOrder = {
   id: number;
   status: OrderStatus;
   createdAt: Date;
+  /* `pending` y creado hace menos de una hora: el webhook de Stripe puede no
+     haber llegado todavía. Lo decide la consulta, con el reloj de la base,
+     para que toda la lista se mida contra el mismo instante y el componente
+     no tenga que leer el reloj al dibujar. */
+  awaitingConfirmation: boolean;
   lines: OrderLine[];
   prints: number;
   /* Subtotal de las copias, sin envío. Siempre presente. */
@@ -86,6 +91,7 @@ type OrderRow = {
   amountTotalCents: number | null;
   shippingAddress: OrderAddress | null;
   createdAt: Date;
+  awaitingConfirmation: boolean;
 };
 
 type PhotoRow = {
@@ -124,7 +130,9 @@ export async function getOrdersForUser(userId: number): Promise<CustomerOrder[] 
               shipping_amount_cents AS "shippingAmountCents",
               amount_total_cents    AS "amountTotalCents",
               shipping_address      AS "shippingAddress",
-              created_at            AS "createdAt"
+              created_at            AS "createdAt",
+              (status = 'pending' AND created_at > now() - interval '1 hour')
+                                    AS "awaitingConfirmation"
          FROM orders
         WHERE user_id = $1
         ORDER BY created_at DESC, id DESC`,
@@ -223,6 +231,7 @@ function assembleOrder(row: OrderRow, photos: Map<number, PhotoRow>): CustomerOr
     id: row.id,
     status: readStatus(row.status),
     createdAt: row.createdAt,
+    awaitingConfirmation: row.awaitingConfirmation,
     lines,
     prints: lines.reduce((sum, line) => sum + line.quantity, 0),
     itemsCents: row.totalCents,

@@ -99,7 +99,13 @@ export default function CategoryRoom({
 }) {
   const [lead, rest] = splitStatement(description);
   const walls = hang(photos);
-  let plateNumber = 0;
+  /* El número de cartela corre de corrido por todos los muros. Se cuenta
+     antes de dibujar —cuántas obras colgaron los muros anteriores— y no con
+     un contador que se suma durante el render, que React no garantiza
+     recorrer una sola vez ni en orden. */
+  const wallOffsets = walls.map((_, index) =>
+    walls.slice(0, index).reduce((sum, wall) => sum + wall.photos.length, 0),
+  );
 
   return (
     <section className="category-room is-dark-room">
@@ -134,7 +140,7 @@ export default function CategoryRoom({
         <div className="room-hang">
           {walls.map((wall, wallIndex) => (
             <div className="hang-wall" key={wallIndex} data-solo={wall.solo ? "" : undefined}>
-              {wall.photos.map((photo) => {
+              {wall.photos.map((photo, photoIndex) => {
                 const imageUrl = normalizePhotoImage(photo.images);
                 const title = cleanTitle(photo.name);
                 /* La cartela nombra el eje que NO es el de la sala. En una
@@ -147,7 +153,7 @@ export default function CategoryRoom({
                     : titleNamesPlace(title, photo.pais)
                       ? ""
                       : photo.pais;
-                plateNumber += 1;
+                const plateNumber = wallOffsets[wallIndex] + photoIndex + 1;
 
                 return (
                   <Link
