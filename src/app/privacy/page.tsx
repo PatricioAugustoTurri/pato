@@ -9,7 +9,8 @@ export const metadata = pageMetadata({
 });
 
 /* Esta página describe lo que el código hace de verdad, comprobado contra él:
-   no hay analítica, no hay rastreadores, las tipografías se auto-alojan y el
+   la única analítica es Umami en el servidor propio, sin cookies ni IPs; no
+   hay rastreadores, las tipografías se auto-alojan y el
    carrito no sale del navegador hasta el checkout. Cada afirmación de acá se
    puede verificar leyendo el repositorio, que es la única forma honesta de
    escribir una página así. */
@@ -37,8 +38,15 @@ export default function PrivacyPage() {
       <section className="doc-section">
         <h2>What this site never does</h2>
         <p>
-          There is no analytics, no tracking pixel, no advertising cookie and no third
-          party watching you browse. Nobody is profiled and nothing is sold to anyone.
+          There is no tracking pixel, no advertising cookie and no third party watching
+          you browse. Nobody is profiled and nothing is sold to anyone.
+        </p>
+        <p>
+          Visits are counted with Umami, which runs on this shop&apos;s own server — not
+          Google&apos;s, not anyone else&apos;s. It sets no cookie and does not store your
+          IP address: it records which pages were opened, from which country and kind of
+          device, and three moments of a purchase (a print added to the cart, checkout
+          started, payment completed). None of it can be traced back to you.
         </p>
         <p>
           The typefaces are served from this site, not requested from Google, so simply
@@ -53,7 +61,9 @@ export default function PrivacyPage() {
         <p>
           <strong>If you open an account:</strong> your name, your email and your password,
           which is stored scrambled so that it cannot be read back — not by me either. This
-          is what lets you sign in and check out.
+          is what lets you sign in and see your orders. An account is not needed to buy. If
+          you ask to reset your password, a single-use link valid for one hour is sent to
+          that email.
         </p>
         <p>
           <strong>If you order a print:</strong> what you ordered and what it cost, plus
@@ -115,7 +125,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <p className="doc-updated">Last updated 11 September 2026</p>
+      <p className="doc-updated">Last updated 15 October 2026</p>
 
       <p className="doc-close">
         <Link className="text-link" href="/shop">

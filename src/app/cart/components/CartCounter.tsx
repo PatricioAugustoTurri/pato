@@ -1,6 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
+import Link from "next/link";
 import { formatPrice } from "@/lib/money";
 import { SHIPPING_RATES, shippingRate, type ShippingRegion } from "@/lib/shipping";
 import type { Checkout } from "../use-checkout";
@@ -94,7 +95,12 @@ export default function CartCounter({
           <b>{formatPrice(subtotal + shippingAmount / 100)}</b>
         </button>
 
-        {checkout.needsSignIn && <p className="cart-signin">You will sign in first.</p>}
+        {/* Las condiciones tienen que estar a la vista en el momento de
+            comprar. No hace falta cuenta: el boton va directo al pago. */}
+        <p className="cart-terms">
+          No account needed. Paying means you accept the{" "}
+          <Link href="/terms">Terms of Sale</Link>.
+        </p>
       </section>
     </div>
   );

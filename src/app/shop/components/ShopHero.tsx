@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { ArchiveTotals } from "@/app/shop/page";
+import type { ArchiveTotals } from "@/lib/collections";
 
 /* Mismo mecanismo que la portada, el about y cada coleccion: `.hero-section`
    con la fotografia a sangre bajo los dos velos, el titulo apoyado encima y la

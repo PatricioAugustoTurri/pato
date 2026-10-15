@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
+import { SELLER } from "@/lib/seller";
 
 type SubscribeState = "idle" | "sending" | "done" | "error";
 
@@ -94,8 +95,14 @@ export default function Footer() {
 			</div>
 
 			<div className="footer-bottom">
-				<p className="copyright">© 2026 Pato Turri</p>
-				<div className="footer-legal"><Link href="/privacy">Privacy</Link></div>
+				{/* Quién vende y en qué condición fiscal, a la vista en cada página:
+				    es lo primero que busca quien duda antes de pagar a una tienda
+				    que no conoce. Sale de `@/lib/seller`, igual que /terms. */}
+				<p className="copyright">© 2026 Pato Turri · {SELLER.footerLine}</p>
+				<div className="footer-legal">
+					<Link href="/terms">Terms of sale</Link>
+					<Link href="/privacy">Privacy</Link>
+				</div>
 			</div>
 		</footer>
 	);

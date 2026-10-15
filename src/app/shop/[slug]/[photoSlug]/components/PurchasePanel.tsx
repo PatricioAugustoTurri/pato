@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useCart, { type CartItem } from "@/hooks/use-cart";
+import { track } from "@/lib/analytics";
 import { formatPrice } from "@/lib/money";
 import { sizeDimensions } from "@/lib/sizes";
 import type { PhotoVariant } from "@/types/PhotoType";
@@ -94,6 +95,7 @@ export default function PurchasePanel({
     };
 
     addItem(cartItem);
+    track("add_to_cart", { work: photoName, size: selected.size });
     setJustAdded(true);
   };
 

@@ -377,6 +377,21 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
    no lleva padding lateral porque los muros sangran hasta el borde. */
 .home-roll-head { border-bottom: 1px solid rgba(244,241,235,.22); margin: 0 5vw clamp(40px, 5vw, 72px); padding-bottom: 20px; }
 .home-roll-head h1, .home-roll-head h2 { font-size: clamp(36px, 5vw, 84px); letter-spacing: -.036em; line-height: .9; max-width: 17ch; text-wrap: balance; }
+/* --- Portada · las colecciones --------------------------------------------- */
+/* La primera puerta de la portada es el mismo muro de /shop. Sangra como el
+   archivo por país, así que tampoco lleva padding lateral; el encabezado suma
+   la salida a la tienda entera en el extremo opuesto del filete. El muro toma
+   una altura propia porque acá no hay una sala que lo estire. */
+.home-collections { padding-left: 0; padding-right: 0; }
+.home-collections-head { align-items: end; display: flex; gap: 24px; justify-content: space-between; }
+.home-collections-head .text-link { flex: none; }
+.home-collections .shop-room-wall { height: clamp(460px, 70svh, 760px); }
+@media (max-width: 900px) {
+  .home-collections .shop-room-wall { height: auto; }
+}
+@media (max-width: 700px) {
+  .home-collections-head { align-items: start; flex-direction: column; gap: 14px; }
+}
 .home-chapter { position: relative; --mast: clamp(64px, 10.6vw, 152px); }
 .home-chapter + .home-chapter { margin-top: clamp(72px, 9vw, 132px); }
 /* Alineado por arriba, no por la base: el relato tiene que quedar por encima
@@ -598,7 +613,7 @@ body:has(.is-dark-room) .site-nav .wordmark em { color: var(--cream-300); }
      suspensivos seria perder justamente lo que el rotulo esta ahi para decir. */
   .home-plate-name { font-size: 15.5px; }
   .home-plate-go { bottom: 19px; right: 7vw; }
-  .home-roll { padding-left: 0; padding-right: 0; }
+  .home-roll, .home-collections { padding-left: 0; padding-right: 0; }
   .home-chapter + .home-chapter { margin-top: clamp(52px, 11vw, 76px); }
   .home-chapter-head { padding: 0 7vw; }
   .home-chapter-note { font-size: 15px; line-height: 1.72; }
@@ -1258,7 +1273,9 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 
 /* `--error` sobre crema, no `--accent`: el rojo de marca mide 2,44:1 aca. */
 .cart-error { color: var(--error); font-size: 12.5px; line-height: 1.6; margin: clamp(20px, 2.2vw, 28px) 0 0; }
-.cart-signin { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; margin: 12px 0 0; }
+.cart-terms { color: var(--text-muted); font-size: 12px; line-height: 1.6; margin: 12px 0 0; }
+.cart-terms a { color: var(--ink); white-space: nowrap; text-decoration: underline; text-decoration-color: var(--line-soft); text-underline-offset: 3px; }
+.cart-terms a:hover { color: var(--accent-text); text-decoration-color: currentColor; }
 
 /* Carrito vacio y las dos vueltas de Stripe: una sola columna de tinta. */
 .cart-room.is-empty { display: flex; }
@@ -1455,6 +1472,24 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .auth-reveal:focus-visible { outline: 2px solid var(--ink); outline-offset: -3px; }
 .auth-hint { color: var(--text-muted); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
 .auth-error { color: var(--error); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; }
+/* "Forgot your password?" bajo el campo: la misma voz mono que la nota del
+   mínimo, pero subrayada porque es una salida, no una aclaración. */
+.auth-forgot { align-self: flex-start; color: var(--ink-soft); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .02em; text-decoration: underline; text-decoration-color: var(--line-soft); text-underline-offset: 3px; }
+.auth-forgot:hover { color: var(--accent-text); text-decoration-color: currentColor; }
+.auth-forgot:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+/* El mostrador cuando el trámite ya está hecho: un título en la escala de una
+   obra en el mostrador, la prosa a medida de nota y la salida. Sin icono de
+   éxito ni caja: el cambio de contenido es el aviso. */
+.auth-done h2 { color: var(--ink); font-size: clamp(30px, 2.8vw, 40px); letter-spacing: -.028em; line-height: 1; margin: 0; text-wrap: balance; }
+.auth-done h2 i { color: var(--accent-text); }
+.auth-done > p:not(.auth-switch) { color: var(--ink-soft); font-size: 15px; line-height: 1.7; margin: 16px 0 0; max-width: 38ch; }
+.auth-done b { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.auth-done .auth-submit-link { margin-top: 26px; }
+.auth-submit-link { align-items: center; display: flex; text-decoration: none; }
+.auth-submit-link:hover { background: var(--accent-text); }
+.auth-submit-link:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.auth-again { background: none; border: 0; border-bottom: 1px solid var(--accent-text); color: var(--ink); cursor: pointer; font: inherit; padding: 0; }
+.auth-again:focus-visible, .auth-switch a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .auth-submit { background: var(--ink); border: 0; border-radius: 0; color: var(--paper); font-size: 13px; height: 46px; justify-content: center; margin-top: 4px; width: 100%; }
 .auth-submit:hover:not(:disabled) { background: var(--accent-text); }
 .auth-submit:disabled { cursor: progress; opacity: .55; }

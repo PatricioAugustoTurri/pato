@@ -29,6 +29,16 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 ## Operating Context
 
 - Navegación: home → /shop → categoría → foto → carrito → Stripe Checkout.
+  **El catálogo se navega por colección** (decisión del usuario, 2026-10-15):
+  la portada abre con el mismo muro de colecciones que /shop
+  (`HomeCollections` → `CollectionWall`), y el archivo por país baja a franja
+  secundaria. Las colecciones sin obras no se ofrecen (`getCollections`).
+- **Comprar no pide cuenta** (2026-10-15). `/api/checkout` acepta compras sin
+  sesión: Stripe pide email y dirección. Con sesión, el pedido se cuelga de
+  `user_id` y aparece en /account; sin ella queda sin dueño y la confirmación
+  por mail es la constancia. Los pedidos sin cuenta NO se asocian por email a
+  una cuenta: no hay verificación de email, así que cualquiera podría
+  registrarse con un email ajeno y ver esos pedidos.
 - Carrito en zustand con persist a localStorage (`cart-storage`), deduplicado
   por (photoId, size).
 - Checkout re-tarifa en el servidor desde `photo_variants`; el precio del
@@ -37,7 +47,8 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   confirmación al comprador (en inglés) y el aviso de venta a
   `CONTACT_TO_EMAIL` (en castellano, con obras, tamaños y dirección de envío).
   Los dos salen después de responderle a Stripe y ninguno puede hacer fallar un
-  cobro ya procesado.
+  cobro ya procesado. La página de Stripe muestra, sobre el botón de pagar, que
+  pagar acepta las condiciones de /terms (`custom_text.submit`).
 - Envío: "Envío en Italia" €5,00 (2-5 días hábiles) y "Envío al resto de la
   Unión Europea" €10,00 (4-10 días hábiles). Stripe recolecta dirección en 27
   países de la UE y teléfono.
@@ -56,13 +67,30 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   crean con `scripts/create-admin.mjs` o se promueven desde /admin/customers.
   El sistema se niega a degradar al último admin.
 - Auth: NextAuth v5 beta, solo Credentials (email + bcrypt). Sin OAuth, sin
-  verificación de email, sin recuperación de contraseña.
+  verificación de email. **Recuperación de contraseña** (2026-10-15):
+  /forgot-password → mail por Resend con enlace de un solo uso y una hora de
+  vida → /reset-password. Tabla `password_resets` (solo el SHA-256 del token);
+  migración `scripts/migrate-password-resets.mjs`. El enlace se arma con
+  `NEXT_PUBLIC_SITE_URL`, nunca con el `Host` del pedido.
 - Datos: Postgres con SQL crudo (`pg`), sin ORM. Tablas `categories`, `photos`,
-  `photo_variants`, `catalog_sizes`, `orders`, `users` (+ `admin_users` legacy
-  sin uso).
+  `photo_variants`, `catalog_sizes`, `orders`, `users`, `password_resets`
+  (+ `admin_users` legacy sin uso).
+- **Analítica: Umami** en el mismo servidor (servicio `umami` del
+  docker-compose, base `umami` en el mismo Postgres), sin cookies ni IPs, así
+  que no hay banner. Se carga solo si están `NEXT_PUBLIC_UMAMI_SRC` y
+  `NEXT_PUBLIC_UMAMI_WEBSITE_ID` (son de build: van como ARG en el
+  Dockerfile). Eventos: `add_to_cart`, `checkout_start`, `purchase`
+  (`src/lib/analytics.ts`). El panel /admin no se cuenta.
+- **Situación fiscal** (decisión del usuario, 2026-10-15): vende como persona
+  física, de forma ocasional, **sin Partita IVA**; no se cobra IVA. Vive en
+  `src/lib/seller.ts`, que leen /terms y el pie. Si abre P.IVA hay que mostrar
+  el número en el pie y revisar precios e IVA.
+- Pruebas: `npm test` (vitest) sobre la validación del carrito
+  (`src/lib/checkout-cart.ts`) y las tarifas de envío.
 - Imágenes del catálogo alojadas en Cloudinary (cuenta `dvmsjdcqi`).
 - Guardas en `src/proxy.ts` (nombre de middleware en Next 16) sobre
-  `/admin/*`, `/api/admin/*` y `/api/checkout`.
+  `/admin/*` y `/api/admin/*`. `/api/checkout` ya no está guardada: comprar
+  no pide cuenta.
 - **Máximo 10 copias de una misma obra en el mismo tamaño**, por decisión del
   usuario (2026-09-17): es lo que está dispuesto a imprimir de una sentada para
   un pedido, no una restricción de existencias. Vive en `src/lib/cart-limits.ts`
@@ -87,10 +115,6 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 
 ### Decisiones abiertas (no inventar)
 
-- **Taxonomía de navegación**: sin decidir si el catálogo se organiza por
-  colección (History/City/Landscape/Portrait, que es lo que hay en la base) o
-  por destino (lo que promete la home actual). Ningún trabajo futuro debe
-  asumir una de las dos.
 - **Producción e impresión**: la impresión bajo demanda SÍ está confirmada por
   el usuario (2026-09-17). Lo que sigue sin confirmar es el **papel y el
   laboratorio**: la copia actual afirma papeles de algodón y eso no está
@@ -135,14 +159,16 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
 - El checkout no guarda ningún id de objeto de Stripe: precios y tarifas se
   arman inline (`price_data`, `shipping_rate_data`), que es lo que permitió
   cambiar de modo sin tocar código.
-- **La colección Portrait está vacía (0 fotos)** aunque su texto editorial ya
-  está escrito.
+- Las cuatro colecciones tienen obra (la de Portrait estaba vacía; ya no).
 - **No existe fotografía propia en el repositorio.** Toda la imaginería de la
   home y del about es stock remoto de Unsplash hardcodeado en `globals.css`.
   Los "destinos" Portugal / Islandia / Marruecos y los productos "Lagos de
   sal" / "Tierra roja" / "La ultima luz" son inventados: no existen en la base
   y no deben tratarse como catálogo real.
 - Sin testimonios, sin prensa, sin métricas de ventas. No fabricar ninguno.
+- Páginas legales: /terms (condiciones de venta, 2026-10-15), /privacy,
+  /shipping, /returns. Las condiciones enlazan a envío y devoluciones en vez
+  de repetirlas, para que no haya dos versiones de la misma regla.
 
 ## Product Principles
 

@@ -455,6 +455,23 @@ ALTER TABLE ONLY public.photos
     ADD CONSTRAINT photos_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE SET NULL;
 
 
+
+--
+-- Name: password_resets; Type: TABLE; Schema: public; Owner: -
+-- (agregada a mano: la crea tambien scripts/migrate-password-resets.mjs)
+--
+
+CREATE TABLE public.password_resets (
+    id serial PRIMARY KEY,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    token_hash text NOT NULL UNIQUE,
+    expires_at timestamp with time zone NOT NULL,
+    used_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+CREATE INDEX password_resets_user_id_idx ON public.password_resets USING btree (user_id);
+
 --
 -- PostgreSQL database dump complete
 --

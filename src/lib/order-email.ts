@@ -62,22 +62,22 @@ export type OrderAlert = OrderBase & {
    mismo criterio de DESIGN.md —tinta y papel, filete de un píxel, cero radio—,
    porque el recibo es la última pantalla de la compra y tiene que parecerse a
    las anteriores. */
-const INK = "#25231f";
-const PAPER = "#f4f1eb";
-const MUTED = "#6f675d";
-const LINE = "#d9d3c9";
-const ACCENT = "#a85527";
+export const INK = "#25231f";
+export const PAPER = "#f4f1eb";
+export const MUTED = "#6f675d";
+export const LINE = "#d9d3c9";
+export const ACCENT = "#a85527";
 
 /* Las tipografías son de sistema a propósito: una fuente web en un mail se
    descarga en pocos clientes y en el resto cae en una sustitución que no
    elegimos. Mejor una pila que se ve bien en todos. */
-const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
-const MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
+export const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+export const MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
 
 /** Los céntimos que cobra Stripe, en la misma forma que muestra el sitio. */
 const euros = (cents: number) => formatPrice(cents / 100);
 
-const escape = (value: string) =>
+export const escape = (value: string) =>
   value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -109,7 +109,7 @@ function addressLines(address: ShippingAddress | null): string[] {
  * La cáscara del mail: ancho fijo, fondo papel, y una regla de oro de los
  * clientes de correo —tablas y estilos pegados, nada de flex ni clases—.
  */
-function shell(inner: string): string {
+export function shell(inner: string): string {
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};margin:0;padding:24px 12px">
   <tr>
@@ -124,7 +124,7 @@ function shell(inner: string): string {
 
 /** El wordmark, en texto. Una imagen de logo la bloquean la mitad de los
     clientes y el mail abriría con un hueco. */
-function masthead(): string {
+export function masthead(): string {
   return `
   <tr><td style="padding:0 0 22px">
     <span style="font-size:17px;font-weight:600;letter-spacing:-.01em">Pato&nbsp;Turri</span>

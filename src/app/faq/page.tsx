@@ -81,10 +81,10 @@ export default async function FaqPage() {
       <section className="doc-section">
         <h2>Do I need an account to order?</h2>
         <p>
-          Yes. Checkout asks you to sign in first, because an order has to belong to
-          someone — that is how it ends up in{" "}
+          No. You can pay without one: the payment page asks for your email and the
+          address the print goes to, and the confirmation lands in that inbox. If you are
+          signed in when you order, it also stays in{" "}
           <Link href="/account">your orders</Link>, with what you chose and where it went.
-          Creating the account is one field more than signing in.
         </p>
       </section>
 

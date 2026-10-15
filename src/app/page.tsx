@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import CollectionSection from "@/components/CollectionSection";
 import DestinationsSection from "@/components/DestinationsSection";
 import HeroSection from "@/components/HeroSection";
+import HomeCollections from "@/components/HomeCollections";
 import StorySection from "@/components/StorySection";
 import { pageMetadata } from "@/lib/seo";
 
@@ -15,8 +16,8 @@ export const metadata: Metadata = pageMetadata({
   path: "/",
 });
 
-/* La portada lee el catálogo a través de `DestinationsSection` y
-   `CollectionSection`, pero lo lee por `pg` y no por `fetch`, así que Next no
+/* La portada lee el catálogo a través de `HomeCollections`,
+   `DestinationsSection` y `CollectionSection`, pero lo lee por `pg` y no por `fetch`, así que Next no
    ve ninguna lectura que pueda caducar: prerrenderiza la página al compilar y
    la sirve congelada hasta el próximo deploy. Marcar una foto como preferida
    en el panel movía la base y no movía la portada.
@@ -31,8 +32,12 @@ export default function Home() {
   return (
     <div className="home" id="inicio">
       <HeroSection />
-      <DestinationsSection />
+      {/* El catálogo se navega por colección: esa es la primera puerta. La
+          selección del mes la sigue, y el archivo por país queda como franja
+          secundaria, para quien quiere recorrer por lugar. */}
+      <HomeCollections />
       <CollectionSection />
+      <DestinationsSection />
       <StorySection />
     </div>
   );

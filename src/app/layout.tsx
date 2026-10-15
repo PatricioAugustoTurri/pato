@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
@@ -31,6 +32,13 @@ const playfairDisplay = Playfair_Display({
   style: ["italic"],
   variable: "--font-wordmark",
 });
+/* Umami, la analítica del sitio, servida desde el mismo servidor. Se carga
+   solo si están las dos variables: en local y en cualquier entorno sin
+   configurar no sale ningún pedido. El porqué de los eventos está en
+   `@/lib/analytics`. */
+const UMAMI_SRC = process.env.NEXT_PUBLIC_UMAMI_SRC;
+const UMAMI_WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+
 const dmMono = DM_Mono({
   subsets: ["latin"],
   weight: ["400"],
@@ -126,6 +134,26 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Footer />
           </footer>
         </Providers>
+        {UMAMI_SRC && UMAMI_WEBSITE_ID && (
+          <>
+            {/* El panel de admin no es tráfico de la tienda: contarlo mezclaría
+                las visitas del autor con las de quien compra. Umami llama a
+                esta función antes de mandar cada dato, y un valor falso lo
+                descarta. */}
+            <Script id="umami-before-send" strategy="afterInteractive">
+              {`window.umamiBeforeSend=function(t,p){return p&&typeof p.url==="string"&&p.url.indexOf("/admin")===0?false:p}`}
+            </Script>
+            <Script
+              src={UMAMI_SRC}
+              data-website-id={UMAMI_WEBSITE_ID}
+              data-before-send="umamiBeforeSend"
+              /* Solo el dominio de producción: un `next dev` o un preview no
+                 ensucian los números de la tienda. */
+              data-domains={new URL(SITE_URL).hostname}
+              strategy="afterInteractive"
+            />
+          </>
+        )}
       </body>
     </html>
   );

@@ -67,6 +67,11 @@ export default function LoginForm() {
             onChange={(event) => setPassword(event.target.value)}
             required
           />
+          {/* Bajo el campo y no al pie: es donde se mira cuando la contraseña
+              acaba de fallar. */}
+          <Link className="auth-forgot" href="/forgot-password">
+            Forgot your password?
+          </Link>
         </div>
         {/* `role="alert"` y no un span suelto: el error aparece después de
             enviar, cuando el foco sigue en el botón, así que un lector de

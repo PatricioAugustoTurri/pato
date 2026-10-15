@@ -33,6 +33,7 @@ const STATIC_ROUTES: Array<{
   { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
   { path: "/shipping", priority: 0.4, changeFrequency: "yearly" },
   { path: "/returns", priority: 0.4, changeFrequency: "yearly" },
+  { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
 ];
 

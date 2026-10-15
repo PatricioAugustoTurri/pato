@@ -27,7 +27,7 @@ export default async function RegisterPage() {
             Create an <i>account.</i>
           </>
         }
-        lead="One field more than signing in, and checkout stops asking."
+        lead="Not needed to buy. It keeps your orders in one place."
         photo={photo}
       />
       <div className="auth-counter">

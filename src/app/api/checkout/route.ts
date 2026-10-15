@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { pool } from "@/lib/db";
-import { MAX_PER_LINE } from "@/lib/cart-limits";
+import { parseCheckoutItems } from "@/lib/checkout-cart";
 import { auth } from "@/lib/auth";
 import {
   SHIPPING_COUNTRIES,
@@ -12,28 +12,27 @@ import {
   type ShippingRegion,
 } from "@/lib/shipping";
 
-type CheckoutRequestItem = {
-  photoId: number;
-  size: string;
-  quantity: number;
-};
-
 export async function POST(request: Request) {
+  /* Comprar no pide cuenta. Antes la ruta rechazaba a quien no hubiera
+     iniciado sesión, y el carrito lo mandaba a registrarse justo después de
+     decidir: el peor momento para pedirle un formulario a alguien, y el lugar
+     donde se pierde un regalo. Stripe ya pide el email y la dirección, que es
+     todo lo que el pedido necesita para llegar.
+
+     Si hay sesión, el pedido se cuelga de la cuenta —así aparece en
+     /account— y Stripe abre con el email ya escrito. Si no, el pedido queda
+     sin dueño y la confirmación por mail es la constancia. */
   const authSession = await auth();
+  const sessionUserId = Number(authSession?.user?.id);
+  const userId = Number.isInteger(sessionUserId) && sessionUserId > 0 ? sessionUserId : null;
+  const userEmail = userId ? (authSession?.user?.email ?? null) : null;
 
-  if (!authSession?.user?.id) {
-    return NextResponse.json({ error: "You need to sign in to buy." }, { status: 401 });
-  }
-
-  const userId = Number(authSession.user.id);
-  const userEmail = authSession.user.email ?? null;
-
-  let items: CheckoutRequestItem[];
+  let rawItems: unknown;
   let region: ShippingRegion;
 
   try {
-    const body = (await request.json()) as { items?: CheckoutRequestItem[]; region?: unknown };
-    items = Array.isArray(body.items) ? body.items : [];
+    const body = (await request.json()) as { items?: unknown; region?: unknown };
+    rawItems = body.items;
 
     /* La zona se comprueba acá, como el precio: el navegador propone y el
        servidor decide. Un valor inventado no cae a la tarifa más barata, se
@@ -46,59 +45,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "The request body is not valid JSON." }, { status: 400 });
   }
 
-  if (items.length === 0) {
-    return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
-  }
+  const cart = parseCheckoutItems(rawItems);
 
-  /* Lo que se pide, ya comprobado y con las líneas repetidas sumadas.
-
-     Sumarlas importa: la misma obra y el mismo tamaño podían llegar en dos
-     líneas —dos pestañas abiertas, un carrito viejo— y Stripe las cobraba como
-     dos renglones idénticos. Juntas, el comprador ve "3 copias" y no la misma
-     obra escrita tres veces.
-
-     Y comprobarlas importa igual: la cantidad entraba por `Number(...) || 1`,
-     que aceptaba un -3, un 1,5 y un 1e21. Ninguno llegaba a cobrarse porque
-     Stripe los rechazaba, pero el comprador terminaba leyendo el error de
-     Stripe en pantalla en vez de que el carrito le dijera que estaba mal. */
-  const wanted = new Map<string, { photoId: number; size: string; quantity: number }>();
-
-  for (const item of items) {
-    const photoId = Number(item.photoId);
-    const size = typeof item.size === "string" ? item.size.trim() : "";
-    const quantity = Number(item.quantity);
-
-    if (
-      !Number.isInteger(photoId) ||
-      photoId <= 0 ||
-      !size ||
-      !Number.isInteger(quantity) ||
-      quantity < 1
-    ) {
-      return NextResponse.json(
-        { error: "There is something wrong with your cart. Empty it and try again." },
-        { status: 400 },
-      );
-    }
-
-    const key = `${photoId}|${size}`;
-    const already = wanted.get(key)?.quantity ?? 0;
-    wanted.set(key, { photoId, size, quantity: already + quantity });
-  }
-
-  /* El tope se comprueba DESPUES de sumar las lineas repetidas, que es la unica
-     forma de que valga: dos lineas de seis copias de la misma obra y el mismo
-     tamano pasan cualquier control que las mire por separado.
-
-     Y se comprueba acá aunque el carrito ya lo impida, porque el carrito corre
-     en el navegador: esto no es una segunda opinion, es la unica que cuenta. */
-  for (const item of wanted.values()) {
-    if (item.quantity > MAX_PER_LINE) {
-      return NextResponse.json(
-        { error: `The maximum is ${MAX_PER_LINE} copies of the same size. Lower the quantity and try again.` },
-        { status: 400 },
-      );
-    }
+  if (!cart.ok) {
+    return NextResponse.json({ error: cart.error }, { status: 400 });
   }
 
   let stripe;
@@ -122,7 +72,7 @@ export async function POST(request: Request) {
     const orderItems: Array<{ photoId: number; size: string; quantity: number; unitAmountCents: number; name: string }> = [];
     let totalCents = 0;
 
-    for (const item of wanted.values()) {
+    for (const item of cart.lines) {
       const { rows } = await client.query<{
         price: string;
         currency: string;
@@ -203,6 +153,19 @@ export async function POST(request: Request) {
       },
       phone_number_collection: {
         enabled: true,
+      },
+      /* Con sesión, el email de la cuenta llega escrito: es el mismo al que va
+         la confirmación y el que liga el pedido a /account. */
+      ...(userEmail ? { customer_email: userEmail } : {}),
+      /* Lo último que se lee antes de pagar. Las condiciones de venta tienen
+         que estar a la vista en el momento de comprar, no solo en el pie de
+         página. La dirección va escrita y no como enlace: los tipos de Stripe no
+         prometen que este campo dibuje vínculos, y una dirección legible sirve
+         igual en los dos casos. */
+      custom_text: {
+        submit: {
+          message: `By paying you accept the Terms of Sale at ${new URL(origin).host}/terms, including the 14-day right to return.`,
+        },
       },
       shipping_options: stripeShippingOptions(region),
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
