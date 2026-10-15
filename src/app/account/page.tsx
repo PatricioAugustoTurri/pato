@@ -51,7 +51,7 @@ export default async function AccountPage() {
           <SignOutButton />
 
           <p className="order-note">
-            Anything about an order goes to <a href="mailto:hola@patoturri.com">hola@patoturri.com</a>.
+            Anything about an order goes to <a href="mailto:info@patoturri.com">info@patoturri.com</a>.
           </p>
         </section>
       </div>
@@ -153,7 +153,7 @@ function LedgerUnreadable() {
       </h2>
       <p>
         Nothing is lost — this is a problem on our side. Try again in a moment, or write to{" "}
-        <a href="mailto:hola@patoturri.com">hola@patoturri.com</a>.
+        <a href="mailto:info@patoturri.com">info@patoturri.com</a>.
       </p>
     </div>
   );

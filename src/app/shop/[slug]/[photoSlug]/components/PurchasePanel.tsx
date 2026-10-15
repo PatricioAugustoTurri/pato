@@ -3,14 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useCart, { type CartItem } from "@/hooks/use-cart";
+import { track } from "@/lib/analytics";
+import { useBump } from "@/hooks/use-bump";
 import { formatPrice } from "@/lib/money";
 import { sizeDimensions } from "@/lib/sizes";
 import type { PhotoVariant } from "@/types/PhotoType";
 
 /* Las medidas ISO viven en `@/lib/sizes` porque el carrito dice lo mismo. Este
    panel no dice nada sobre gramaje ni tipo de papel: NO estan confirmados con
-   el autor. Tampoco muestra el stock: la base lo guarda pero ninguna compra lo
-   descuenta, de modo que "quedan 3" seria una escasez inventada. */
+   el autor. Y no dice existencias porque no las hay: cada copia se imprime
+   cuando alguien la compra, asi que "quedan 3" seria una escasez inventada. */
 
 export default function PurchasePanel({
   photoId,
@@ -31,6 +33,8 @@ export default function PurchasePanel({
   const items = useCart((state) => state.items);
   const [selectedId, setSelectedId] = useState(variants[0]?.id);
   const [justAdded, setJustAdded] = useState(false);
+  /* El precio rota en el boton cada vez que se elige otro tamaño. */
+  const priceBump = useBump(selectedId);
   /* En el telefono la obra ocupa la pantalla y el mostrador queda abajo: apenas
      bajas a leer, comprar desaparece y no vuelve. La barra fija aparece cuando
      el boton real sale de vista, y se va cuando vuelve — nunca las dos juntas.
@@ -60,21 +64,26 @@ export default function PurchasePanel({
   if (variants.length === 0) {
     return (
       <p className="buy-unavailable">
-        This work has no sizes available right now. Write to hola@patoturri.com and
+        This work has no sizes available right now. Write to info@patoturri.com and
         we will let you know when it is back.
       </p>
     );
   }
 
   const selected = variants.find((variant) => variant.id === selectedId);
-  const soldOut = !selected || selected.stock <= 0;
+  /* No hay "agotado" en esta tienda: cada copia se imprime cuando alguien la
+     compra, así que ningún número puede impedir una venta. Lo único que deja
+     el botón sin trabajo es que no haya un tamaño elegido, que con la lista ya
+     dibujada solo pasa si la obra no tiene ninguno —y de eso se ocupa el
+     `variants.length === 0` de arriba. */
+  const noSize = !selected;
   /* Cuantas copias de ESTA obra ya hay en el carrito, en cualquier tamano. */
   const inCart = items
     .filter((item) => item.photoId === photoId)
     .reduce((sum, item) => sum + item.quantity, 0);
 
   const handleAdd = () => {
-    if (!selected || soldOut) return;
+    if (!selected) return;
 
     const cartItem: CartItem = {
       photoId,
@@ -89,6 +98,7 @@ export default function PurchasePanel({
     };
 
     addItem(cartItem);
+    track("add_to_cart", { work: photoName, size: selected.size });
     setJustAdded(true);
   };
 
@@ -98,29 +108,24 @@ export default function PurchasePanel({
         <legend>Choose a size</legend>
 
         {variants.map((variant) => {
-          const unavailable = variant.stock <= 0;
           return (
             <label
               className="buy-size"
               key={variant.id}
               data-selected={selectedId === variant.id ? "" : undefined}
-              data-unavailable={unavailable ? "" : undefined}
             >
               <input
                 type="radio"
                 name="photo-size"
                 value={variant.id}
                 checked={selectedId === variant.id}
-                disabled={unavailable}
                 onChange={() => {
                   setSelectedId(variant.id);
                   setJustAdded(false);
                 }}
               />
               <span className="buy-size-name">{variant.size}</span>
-              <span className="buy-size-note">
-                {unavailable ? "Sold out" : sizeDimensions(variant.size)}
-              </span>
+              <span className="buy-size-note">{sizeDimensions(variant.size)}</span>
               <span className="buy-size-price">{formatPrice(variant.price)}</span>
             </label>
           );
@@ -132,13 +137,19 @@ export default function PurchasePanel({
         className="buy-add"
         ref={addRef}
         onClick={handleAdd}
-        disabled={soldOut}
+        disabled={noSize}
         /* El precio viaja DENTRO del boton: la decision y su costo se leen en
            el mismo golpe de vista, sin una cifra suelta repitiendo lo que la
            fila elegida ya dice. */
       >
-        <span>{justAdded ? "Added to cart" : soldOut ? "Sold out" : "Add to cart"}</span>
-        {!soldOut && selected && <b>{formatPrice(selected.price)}</b>}
+        <span>{justAdded ? "Added to cart" : "Add to cart"}</span>
+        {/* Al cambiar de tamaño el precio rota en su lugar: cambiar la cifra
+            de golpe dentro de un boton que no se movio es facil de no ver. */}
+        {selected && (
+          <b className="figure-roll" key={priceBump} data-bump={priceBump > 0 || undefined}>
+            {formatPrice(selected.price)}
+          </b>
+        )}
       </button>
 
       {inCart > 0 && (
@@ -168,8 +179,8 @@ export default function PurchasePanel({
           <b>{selected?.size}</b>
           <span>{selected ? formatPrice(selected.price) : ""}</span>
         </span>
-        <button type="button" onClick={handleAdd} disabled={soldOut} tabIndex={addOffScreen ? 0 : -1}>
-          {justAdded ? "Added" : soldOut ? "Sold out" : "Add to cart"}
+        <button type="button" onClick={handleAdd} disabled={noSize} tabIndex={addOffScreen ? 0 : -1}>
+          {justAdded ? "Added" : "Add to cart"}
         </button>
       </div>
     </div>

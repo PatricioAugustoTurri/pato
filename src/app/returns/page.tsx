@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Returns and exchanges",
-  description: "Fourteen days to change your mind, and what to do if a print arrives damaged.",
-};
+export const metadata = pageMetadata({
+  title: "Returns and Exchanges",
+  description:
+    "Fourteen days to change your mind, and what to do if a print arrives damaged.",
+  path: "/returns",
+});
 
 export default function ReturnsPage() {
   return (
@@ -24,7 +27,7 @@ export default function ReturnsPage() {
           distance, and it applies here.
         </p>
         <p>
-          Write to <a href="mailto:hola@patoturri.com">hola@patoturri.com</a> first so we
+          Write to <a href="mailto:info@patoturri.com">info@patoturri.com</a> first so we
           agree on where it goes. Send it back the way it reached you — flat, protected,
           in the same condition — because a print that arrives creased cannot be sold to
           anyone else.

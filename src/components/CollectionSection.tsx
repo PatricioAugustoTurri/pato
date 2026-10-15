@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { catalogImage } from "@/lib/cloudinary";
 import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
 import { getOfferPhotos, type PreferredPhoto } from "@/lib/photos";
 
-function Pick({ photo }: { photo: PreferredPhoto }) {
+/* La obra que abre la selección se dibuja a 740 px y las otras dos a 521, así
+   que no pueden pedir el mismo archivo: el ancho viaja con la obra. Van al
+   doble de lo que miden, que es lo que dibuja una pantalla retina. */
+function Pick({ photo, width }: { photo: PreferredPhoto; width: number }) {
   const imageUrl = normalizePhotoImage(photo.images);
 
   return (
@@ -10,7 +14,7 @@ function Pick({ photo }: { photo: PreferredPhoto }) {
       <span className="home-pick-frame">
         <span
           className="home-pick-image"
-          style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+          style={imageUrl ? { backgroundImage: `url(${catalogImage(imageUrl, width)})` } : undefined}
           role="img"
           aria-label={normalizePhotoAlt(photo.images, photo.name)}
         />
@@ -44,12 +48,12 @@ export default async function CollectionSection() {
 
       <div className="home-picks" data-count={photos.length}>
         <div className="home-pick-lead">
-          <Pick photo={lead} />
+          <Pick photo={lead} width={1500} />
         </div>
         {rest.length > 0 && (
           <div className="home-pick-rest">
             {rest.map((photo) => (
-              <Pick key={photo.id} photo={photo} />
+              <Pick key={photo.id} photo={photo} width={1100} />
             ))}
           </div>
         )}

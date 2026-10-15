@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { catalogVariants, replaceVariants } from "@/lib/photo-variants";
+import { revalidateCatalog } from "@/lib/revalidate-catalog";
 
 type PhotoPayload = {
   categoryId?: number | null;
@@ -11,7 +12,6 @@ type PhotoPayload = {
   preferidos?: boolean;
   pais?: string | null;
   images?: unknown;
-  stock?: number;
 };
 
 export async function PUT(
@@ -33,10 +33,9 @@ export async function PUT(
   const description = payload.description?.trim() || null;
   const categoryId = payload.categoryId || null;
   const pais = payload.pais?.trim() || null;
-  const stock = payload.stock ?? 0;
   const images = payload.images ?? [];
 
-  if (!Number.isInteger(photoId) || !name || !slug || !Array.isArray(images) || !Number.isInteger(stock) || stock < 0) {
+  if (!Number.isInteger(photoId) || !name || !slug || !Array.isArray(images)) {
     return NextResponse.json({ error: "Los datos de la fotografía no son válidos." }, { status: 400 });
   }
 
@@ -49,10 +48,10 @@ export async function PUT(
     const result = await client.query(
       `UPDATE photos
        SET category_id = $1, name = $2, slug = $3, description = $4,
-           oferta = $5, preferidos = $6, pais = $7, images = $8::jsonb, stock = $9, updated_at = now()
-       WHERE id = $10
+           oferta = $5, preferidos = $6, pais = $7, images = $8::jsonb, updated_at = now()
+       WHERE id = $9
        RETURNING id`,
-      [categoryId, name, slug, description, Boolean(payload.oferta), Boolean(payload.preferidos), pais, JSON.stringify(images), stock, photoId],
+      [categoryId, name, slug, description, Boolean(payload.oferta), Boolean(payload.preferidos), pais, JSON.stringify(images), photoId],
     );
 
     if (result.rowCount === 0) {
@@ -60,9 +59,10 @@ export async function PUT(
       return NextResponse.json({ error: "Fotografía no encontrada." }, { status: 404 });
     }
 
-    // El stock de la obra vale para sus tres tamaños.
-    await replaceVariants(client, photoId, catalogVariants(stock));
+    await replaceVariants(client, photoId, await catalogVariants(client));
     await client.query("COMMIT");
+
+    revalidateCatalog();
 
     return NextResponse.json({ id: result.rows[0].id });
   } catch (error) {
@@ -77,6 +77,74 @@ export async function PUT(
     );
   } finally {
     client?.release();
+  }
+}
+
+type FlagsPayload = {
+  preferidos?: boolean;
+  oferta?: boolean;
+};
+
+/**
+ * Enciende o apaga una bandera de portada de una obra, y nada más.
+ *
+ * El PUT de arriba pide la obra entera: nombre, slug, país, imagen. Es
+ * lo correcto para el formulario, y es justo lo que no sirve para una pantalla
+ * donde se marcan diez obras seguidas —cada tilde tendría que mandar de vuelta
+ * todo el registro, y un campo que llegue vacío por error pisaría el dato
+ * bueno. Acá viaja solo lo que se tocó.
+ *
+ * Las dos banderas deciden qué se ve en la portada: `preferidos` hace entrar al
+ * país de la obra en «My best memories» —basta una obra marcada para que el
+ * país aparezca— y `oferta` la pone en «This month's selection».
+ */
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const photoId = Number(id);
+
+  if (!Number.isInteger(photoId)) {
+    return NextResponse.json({ error: "El id de la fotografía no es válido." }, { status: 400 });
+  }
+
+  let payload: FlagsPayload;
+  try {
+    payload = (await request.json()) as FlagsPayload;
+  } catch {
+    return NextResponse.json({ error: "El cuerpo de la solicitud no es un JSON válido." }, { status: 400 });
+  }
+
+  const preferidos = typeof payload.preferidos === "boolean" ? payload.preferidos : null;
+  const oferta = typeof payload.oferta === "boolean" ? payload.oferta : null;
+
+  if (preferidos === null && oferta === null) {
+    return NextResponse.json({ error: "No se mandó ninguna bandera." }, { status: 400 });
+  }
+
+  try {
+    /* COALESCE con el nulo: la bandera que no vino se queda como está, en vez
+       de apagarse por no haber sido nombrada. */
+    const result = await pool.query<{ id: number; preferidos: boolean; oferta: boolean }>(
+      `UPDATE photos
+       SET preferidos = COALESCE($1, preferidos),
+           oferta = COALESCE($2, oferta),
+           updated_at = now()
+       WHERE id = $3
+       RETURNING id, preferidos, oferta`,
+      [preferidos, oferta, photoId],
+    );
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: "Fotografía no encontrada." }, { status: 404 });
+    }
+
+    revalidateCatalog();
+
+    return NextResponse.json(result.rows[0]);
+  } catch {
+    return NextResponse.json({ error: "No se pudo cambiar la marca." }, { status: 500 });
   }
 }
 
@@ -97,6 +165,8 @@ export async function DELETE(
     if (result.rowCount === 0) {
       return NextResponse.json({ error: "Fotografía no encontrada." }, { status: 404 });
     }
+
+    revalidateCatalog();
 
     return NextResponse.json({ id: photoId });
   } catch {

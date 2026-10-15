@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { formatPrice } from "@/lib/money";
 import { SHIPPING_RATES } from "@/lib/shipping";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Pato Turri | Shipping and delivery",
-  description: "Where the prints ship, what it costs, and how long it takes.",
-};
+export const metadata = pageMetadata({
+  title: "Shipping and Delivery",
+  description:
+    "Prints ship across Italy (€5, 2-5 working days) and the rest of the European Union (€10, 4-10 working days).",
+  path: "/shipping",
+});
 
 /* Las tarifas y los plazos salen de `SHIPPING_RATES`, que es de donde el
    checkout arma sus `shipping_options`: la página no puede anunciar un número
@@ -67,7 +70,7 @@ export default function ShippingPage() {
           <Link href="/account">your account</Link>: what you chose, what it cost, and the
           address it goes to. There is no automatic tracking email yet, so for anything
           about a parcel in transit, write to{" "}
-          <a href="mailto:hola@patoturri.com">hola@patoturri.com</a> — the same person who
+          <a href="mailto:info@patoturri.com">info@patoturri.com</a> — the same person who
           took the photographs reads it.
         </p>
       </section>

@@ -29,7 +29,7 @@ export async function GET(
   }
 
   const { rows: variants } = await pool.query<PhotoVariant>(
-    `SELECT id, size, price, stock
+    `SELECT id, size, price
      FROM photo_variants
      WHERE photo_id = $1
      ORDER BY price ASC`,

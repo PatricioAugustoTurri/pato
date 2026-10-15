@@ -12,6 +12,7 @@ import PhotoDetailsSection from "./components/PhotoDetailsSection";
 import PhotosList from "./components/PhotosList";
 import PhotosGridSkeleton from "./components/PhotosGridSkeleton";
 import type { AdminCategory, AdminPhoto, PhotoFormValues } from "./components/types";
+import { normalizePhotoAlt, normalizePhotoImage } from "@/lib/photo-image";
 
 const createDefaultValues = (): PhotoFormValues => ({
   categoryId: "",
@@ -21,8 +22,8 @@ const createDefaultValues = (): PhotoFormValues => ({
   oferta: false,
   preferidos: false,
   pais: "",
-  stock: "0",
-  images: "[]",
+  imageUrl: "",
+  imageAlt: "",
 });
 
 export default function AdminPage() {
@@ -111,8 +112,8 @@ export default function AdminPage() {
       oferta: photo.oferta,
       preferidos: photo.preferidos,
       pais: photo.pais ?? "",
-      stock: photo.stock.toString(),
-      images: JSON.stringify(photo.images, null, 2),
+      imageUrl: normalizePhotoImage(photo.images),
+      imageAlt: normalizePhotoAlt(photo.images, ""),
     });
     setFeedback(null);
     setShowForm(true);
@@ -121,13 +122,12 @@ export default function AdminPage() {
   const onSubmit = async (values: PhotoFormValues) => {
     setFeedback(null);
 
-    let images: unknown;
-    try {
-      images = JSON.parse(values.images || "[]");
-    } catch {
-      setFeedback({ type: "error", message: "El campo de imágenes debe contener un JSON válido." });
-      return;
-    }
+    /* La base guarda un array porque así nació la columna; el sitio lee
+       siempre el primero. El panel arma esa forma acá en vez de pedirle al
+       autor que la escriba a mano. */
+    const url = values.imageUrl.trim();
+    const alt = values.imageAlt.trim();
+    const images = url ? [alt ? { url, alt } : { url }] : [];
 
     try {
       const payload = {
@@ -138,7 +138,6 @@ export default function AdminPage() {
         oferta: values.oferta,
         preferidos: values.preferidos,
         pais: values.pais,
-        stock: Number(values.stock),
         images,
       };
       const { data } = editingPhoto

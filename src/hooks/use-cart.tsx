@@ -1,6 +1,7 @@
 import { X } from "lucide-react"
 import { toast } from "sonner"
 import { create } from "zustand"
+import { MAX_PER_LINE } from "@/lib/cart-limits"
 import { persist, createJSONStorage } from "zustand/middleware"
 
 export type CartItem = {
@@ -40,6 +41,12 @@ export const useCart = create(persist<CartStore>((set, get) => ({
         )
 
         if (existingItem) {
+            /* En el tope no se suma en silencio: el boton dijo "Add to cart" y
+               el carrito se quedaria igual sin explicar por que. */
+            if (existingItem.quantity >= MAX_PER_LINE) {
+                return toast(`${MAX_PER_LINE} copies is the maximum for one size`)
+            }
+
             set({
                 items: currentItems.map(item =>
                     item.photoId === data.photoId && item.size === data.size
@@ -86,7 +93,10 @@ export const useCart = create(persist<CartStore>((set, get) => ({
     /* Sin toast: esto se dispara en cada click del stepper y un aviso por click
        seria ruido. El carrito lo anuncia por una live region. */
     setQuantity: (photoId: number, size: string, quantity: number) => {
-        const next = Math.max(1, Math.floor(quantity))
+        /* Entre 1 y el tope. Un carrito viejo en `localStorage` puede traer un
+           numero de antes de que existiera el limite, y esta pinza lo corrige
+           en cuanto alguien toca el stepper. */
+        const next = Math.min(MAX_PER_LINE, Math.max(1, Math.floor(quantity)))
         if (!Number.isFinite(next)) return
 
         set({

@@ -1,5 +1,6 @@
 import { Images, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { catalogImage } from "@/lib/cloudinary";
 import type { AdminPhoto } from "./types";
 
 type PhotosListProps = {
@@ -49,7 +50,7 @@ export default function PhotosList({ photos, onSelect, onCreate, onDelete }: Pho
                 >
                   <div
                     className="admin-photo-card-image"
-                    style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+                    style={imageUrl ? { backgroundImage: `url(${catalogImage(imageUrl, 600)})` } : undefined}
                   />
                   <span className="admin-photo-card-content">
                     <strong>{photo.name}</strong>

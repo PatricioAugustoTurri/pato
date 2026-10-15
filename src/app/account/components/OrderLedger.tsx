@@ -8,11 +8,6 @@ import { orderDate, orderNumber, statusLabel } from "./status";
    caja alrededor de cada pedido sería el mismo marco que el sitio le saca a las
    fotografías. */
 export default function OrderLedger({ orders }: { orders: CustomerOrder[] }) {
-  /* Una sola lectura del reloj para toda la lista: si cada fila llamara a
-     `Date.now()` por su cuenta, dos pedidos creados en el mismo segundo podrían
-     caer a distinto lado de la ventana de confirmación. */
-  const now = Date.now();
-
   return (
     <div className="order-ledger">
       {orders.map((order) => (
@@ -23,7 +18,7 @@ export default function OrderLedger({ orders }: { orders: CustomerOrder[] }) {
             </h2>
             <span className="order-date">{orderDate(order.createdAt)}</span>
             <span className="order-status" data-status={order.status}>
-              {statusLabel(order, now)}
+              {statusLabel(order)}
             </span>
           </div>
 

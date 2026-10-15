@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import ContactSuccess from "./ContactSuccess";
 
-const CONTACT_EMAIL = "hola@patoturri.com";
+const CONTACT_EMAIL = "info@patoturri.com";
 
 type ContactFormValues = {
   name: string;

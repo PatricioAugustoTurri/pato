@@ -1,0 +1,87 @@
+# Para probar la imagen de produccion completa en tu Mac antes de tocar el VPS,
+# y como referencia de como queda armado en Coolify.
+#
+#   docker compose up --build
+#   -> http://localhost:3000
+#
+# En Coolify conviene crear el Postgres como recurso aparte (te da backups
+# programados desde el panel) y desplegar la app apuntando al Dockerfile.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pato
+      POSTGRES_PASSWORD: pato_local
+      POSTGRES_DB: FOTOS
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      # Postgres corre esto solo la primera vez, con la base vacia: crea las
+      # seis tablas sin que tengas que acordarte de hacerlo a mano.
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      # La base de Umami, aparte de la de la tienda en el mismo servidor. Igual
+      # que el schema, corre solo con el volumen vacio; en una base que ya
+      # existe hay que crearla a mano una vez: `createdb -U pato umami`.
+      - ./scripts/umami-db.sql:/docker-entrypoint-initdb.d/02-umami.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pato -d FOTOS"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      args:
+        # El build prerenderiza paginas que consultan la base, asi que necesita
+        # llegar a ella tambien en esta etapa, no solo al arrancar.
+        DATABASE_URL: postgresql://pato:pato_local@db:5432/FOTOS
+        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+        # Vacias en local a proposito: el layout no carga Umami sin las dos.
+        # En produccion: NEXT_PUBLIC_UMAMI_SRC=https://<umami>/script.js y el
+        # id que muestra Umami al dar de alta el sitio.
+        NEXT_PUBLIC_UMAMI_SRC: ${NEXT_PUBLIC_UMAMI_SRC:-}
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://pato:pato_local@db:5432/FOTOS
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: "true"
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      CONTACT_TO_EMAIL: ${CONTACT_TO_EMAIL}
+      CONTACT_FROM_EMAIL: ${CONTACT_FROM_EMAIL}
+      RESEND_AUDIENCE_ID: ${RESEND_AUDIENCE_ID}
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    volumes:
+      # El cache de ISR. Sin volumen, cada reinicio vuelve a generar todo
+      # contra la base.
+      - next_cache:/app/.next/cache
+
+  # La analitica. Sin cookies y sin guardar IPs: cuenta visitas, paginas y los
+  # tres eventos de la tienda (ver `src/lib/analytics.ts`). Usa el mismo
+  # Postgres, en su propia base, asi que no suma un servidor que pagar.
+  # Usuario inicial: admin / umami — cambiarlo en el primer ingreso.
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-v2.19.0
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://pato:pato_local@db:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET:-cambiar-en-produccion}
+
+volumes:
+  db_data:
+  next_cache:

@@ -5,8 +5,11 @@ import AuthFormSkeleton from "@/components/AuthFormSkeleton";
 import LoginForm from "./components/LoginForm";
 
 export const metadata = {
-  title: "Sign in · Pato Turri",
-  description: "Sign in to your Pato Turri account to check out.",
+  title: "Sign in",
+  description: "Sign in to your Pato Turri account to see your orders.",
+  /* `follow` sin `index`: la página no entra al índice, pero los enlaces que
+     salen de ella hacia el catálogo sí se siguen. */
+  robots: { index: false, follow: true },
 };
 
 /* Página de servidor por dos razones: es la única que puede leer si Google
@@ -25,11 +28,11 @@ export default async function LoginPage() {
             Sign <i>in.</i>
           </>
         }
-        lead="Checkout asks for this first. An order has to belong to someone."
+        lead="Every print you order while signed in stays here, with where it went."
         photo={photo}
       />
       <div className="auth-counter">
-        <Suspense fallback={<AuthFormSkeleton fields={2} switchLink />}>
+        <Suspense fallback={<AuthFormSkeleton fields={2} hint switchLink />}>
           <LoginForm />
         </Suspense>
       </div>

@@ -8,6 +8,7 @@ import { signIn } from "next-auth/react";
 import { safeCallbackUrl } from "@/lib/callback-url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PasswordField from "@/components/PasswordField";
 
 export default function RegisterForm() {
   const [name, setName] = useState("");
@@ -70,9 +71,8 @@ export default function RegisterForm() {
         </div>
         <div className="auth-field">
           <label htmlFor="password">Password</label>
-          <Input
+          <PasswordField
             id="password"
-            type="password"
             autoComplete="new-password"
             minLength={8}
             aria-describedby="register-password-hint"

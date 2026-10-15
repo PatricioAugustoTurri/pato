@@ -1,6 +1,6 @@
 import { SHIPPING_RATES } from "@/lib/shipping";
 
-const EMAIL = "hola@patoturri.com";
+const EMAIL = "info@patoturri.com";
 
 export default function ContactIntro() {
   return (

@@ -5,8 +5,9 @@ import AuthFormSkeleton from "@/components/AuthFormSkeleton";
 import RegisterForm from "./components/RegisterForm";
 
 export const metadata = {
-  title: "Create an account · Pato Turri",
+  title: "Create an account",
   description: "Create a Pato Turri account to order prints.",
+  robots: { index: false, follow: true },
 };
 
 /* La puerta gemela de /login, con la misma pared y el mismo mostrador. Pide
@@ -26,7 +27,7 @@ export default async function RegisterPage() {
             Create an <i>account.</i>
           </>
         }
-        lead="One field more than signing in, and checkout stops asking."
+        lead="Not needed to buy. It keeps your orders in one place."
         photo={photo}
       />
       <div className="auth-counter">

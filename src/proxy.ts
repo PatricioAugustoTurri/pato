@@ -8,13 +8,6 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  if (pathname === "/api/checkout") {
-    if (!req.auth) {
-      return NextResponse.json({ error: "You need to sign in to buy." }, { status: 401 });
-    }
-    return NextResponse.next();
-  }
-
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     if (!req.auth) {
       if (pathname.startsWith("/api/admin")) {
@@ -36,5 +29,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/checkout"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };

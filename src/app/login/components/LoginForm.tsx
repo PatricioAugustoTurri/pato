@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import { safeCallbackUrl } from "@/lib/callback-url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PasswordField from "@/components/PasswordField";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -57,9 +58,8 @@ export default function LoginForm() {
         </div>
         <div className="auth-field">
           <label htmlFor="password">Password</label>
-          <Input
+          <PasswordField
             id="password"
-            type="password"
             autoComplete="current-password"
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "login-error" : undefined}
@@ -67,6 +67,11 @@ export default function LoginForm() {
             onChange={(event) => setPassword(event.target.value)}
             required
           />
+          {/* Bajo el campo y no al pie: es donde se mira cuando la contraseña
+              acaba de fallar. */}
+          <Link className="auth-forgot" href="/forgot-password">
+            Forgot your password?
+          </Link>
         </div>
         {/* `role="alert"` y no un span suelto: el error aparece después de
             enviar, cuando el foco sigue en el botón, así que un lector de

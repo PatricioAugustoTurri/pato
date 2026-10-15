@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { track } from "@/lib/analytics";
 import type { CartItem } from "@/hooks/use-cart";
 import type { ShippingRegion } from "@/lib/shipping";
 
@@ -17,18 +16,19 @@ export type Checkout = ReturnType<typeof useCheckout>;
 export function useCheckout(items: CartItem[], region: ShippingRegion) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { status } = useSession();
-  const router = useRouter();
 
   const start = async () => {
     setError(null);
-
-    if (status !== "authenticated") {
-      router.push("/login?callbackUrl=%2Fcart");
-      return;
-    }
-
     setIsRedirecting(true);
+
+    /* Comprar no pide cuenta: el boton va directo a Stripe. El evento sale
+       antes del pedido porque, si el checkout falla, igual se quiere saber
+       cuanta gente llego a intentarlo. */
+    track("checkout_start", {
+      region,
+      works: items.length,
+      prints: items.reduce((sum, item) => sum + item.quantity, 0),
+    });
 
     try {
       const { data } = await axios.post<{ url?: string; error?: string }>("/api/checkout", {
@@ -58,11 +58,6 @@ export function useCheckout(items: CartItem[], region: ShippingRegion) {
     start,
     error,
     isRedirecting,
-    /* El redirect a /login era una sorpresa: se hacia click en pagar y la
-       pantalla cambiaba a un formulario sin aviso. Con esto el boton lo dice
-       antes. `loading` no cuenta como cerrado: mientras la sesion se resuelve
-       no se promete ni una cosa ni la otra. */
-    needsSignIn: status === "unauthenticated",
     disabled: isRedirecting || items.length === 0,
   };
 }

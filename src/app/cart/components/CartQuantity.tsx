@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
+import { MAX_PER_LINE } from "@/lib/cart-limits";
 
 /* El `−` NO borra. Se deshabilita en 1 y `Remove` vive aparte, del otro lado de
    la linea: una accion destructiva pegada a la de restar se dispara sola. */
@@ -37,10 +38,18 @@ export default function CartQuantity({
           se puede hacer. El valor se anuncia por la live region de la lista. */}
       <span className="cart-qty-value">{quantity}</span>
 
+      {/* Se apaga en el tope, igual que el `−` se apaga en 1: el limite se ve
+          antes de chocarse con el, en vez de avisarlo con un mensaje despues
+          de un click que no hizo nada. */}
       <button
         type="button"
         onClick={() => onChange(quantity + 1)}
-        aria-label={`Increase quantity, ${what}`}
+        disabled={quantity >= MAX_PER_LINE}
+        aria-label={
+          quantity >= MAX_PER_LINE
+            ? `Maximum ${MAX_PER_LINE} copies, ${what}`
+            : `Increase quantity, ${what}`
+        }
       >
         <Plus size={13} strokeWidth={1.5} aria-hidden="true" />
       </button>

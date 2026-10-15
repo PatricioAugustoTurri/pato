@@ -88,7 +88,14 @@ ronda de re-tirada 1, registro bolder. Seed key `2bccabe2`.
   abra como abren el resto de las páginas, y la ficha de cifras del hero es lo
   que avisa que hay archivo abajo. Si alguna vez se mide que la entrada a las
   colecciones cae, ese es el primer lugar a mirar.
-- La banda de Portrait mide 840px en móvil, casi una pantalla. Se resolvió con
-  `position: sticky` en el bloque de texto, pero eso obligó a que el panel deje
-  de recortar (`overflow: visible`). Si alguna vez se agrega un efecto que
+- ~~La banda de Portrait mide 840px en móvil, casi una pantalla.~~ **Resuelta
+  el 2026-09-14**, a pedido del usuario: la altura lleva techo,
+  `min(calc(var(--weight) * 40px), max(420px, 72svh))`. Portrait ya no llena el
+  viewport, así que siempre asoma el filo de la banda siguiente y se lee como
+  una de cuatro colecciones en vez de como una página. La proporción cede —de
+  4,2× sobre Landscape a ~1,9×— y no se pierde; la cifra exacta la cantan igual
+  el nombre y su `21 works`. El piso de 420px evita que en horizontal el techo
+  baje del alto de Landscape y las dos bandas mayores queden iguales.
+  Sigue en pie lo otro: el bloque de texto es `position: sticky` y por eso el
+  panel no recorta (`overflow: visible`). Si alguna vez se agrega un efecto que
   necesite recorte en móvil, ese es el conflicto a mirar primero.

@@ -4,7 +4,8 @@ import AuthFormSkeleton from "@/components/AuthFormSkeleton";
 import AdminLoginForm from "./components/AdminLoginForm";
 
 export const metadata = {
-  title: "Admin · Pato Turri",
+  title: "Admin",
+  robots: { index: false, follow: false },
 };
 
 /* La misma sala que /login, con la pared en tinta plena y sin obra: una puerta

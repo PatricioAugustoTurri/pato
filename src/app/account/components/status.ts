@@ -10,16 +10,14 @@ const LABELS: Record<OrderStatus, string> = {
   delivered: "Delivered",
 };
 
-/* Una hora. Un pedido recién creado sigue en `pending` hasta que llega el
-   webhook de Stripe, y eso tarda un instante: sin esta ventana, quien vuelve
-   del pago y entra acá enseguida leería "Not paid" justo después de que la
-   pantalla anterior le dijera que el pago entró. Bajo la ventana, "awaiting
-   confirmation" es cierto tanto si el pago está entrando como si se abandonó
-   hace un minuto. */
-const CONFIRMATION_WINDOW_MS = 60 * 60 * 1000;
-
-export function statusLabel(order: CustomerOrder, now: number): string {
-  if (order.status === "pending" && now - order.createdAt.getTime() < CONFIRMATION_WINDOW_MS) {
+/* Un pedido recién creado sigue en `pending` hasta que llega el webhook de
+   Stripe, y eso tarda un instante: sin esta excepción, quien vuelve del pago y
+   entra acá enseguida leería "Not paid" justo después de que la pantalla
+   anterior le dijera que el pago entró. Durante la primera hora —la ventana la
+   aplica `getOrdersForUser`— "awaiting confirmation" es cierto tanto si el
+   pago está entrando como si se abandonó hace un minuto. */
+export function statusLabel(order: CustomerOrder): string {
+  if (order.awaitingConfirmation) {
     return "Awaiting confirmation";
   }
   return LABELS[order.status];
