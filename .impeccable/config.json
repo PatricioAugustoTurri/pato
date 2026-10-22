@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/components/HeroCover.tsx"
+        ],
+        "createdAt": "2026-10-22T20:28:44.590Z",
+        "reason": "agent triage: <img> receives src/srcSet via spread from next/image getImageProps (art direction)"
+      }
+    ]
+  }
+}
