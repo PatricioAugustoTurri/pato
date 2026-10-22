@@ -33,6 +33,7 @@ const MANIFEST = path.join(ROOT, "src/lib/local-photos.json");
 /* La dirección que usa el componente → el archivo original. */
 const PHOTOS = {
   "/Pato/_MG_7748.jpg": "_MG_7748.jpg", // portada (HeroSection)
+  "/Pato/_MG_7748-fondo.jpg": "_MG_7748-fondo.jpg", // la portada sin la figura, en telefono y tablet (HeroSection)
   "/Pato/_MG_7669.jpg": "_MG_7669.jpg", // tapa de la tienda (ShopHero)
   "/Pato/R0000300.jpg": "R0000300.jpg", // franja de la historia en la portada (StorySection)
   "/Pato/R0000371.jpg": "R0000371.jpg", // tapa de la historia (StoryReader)

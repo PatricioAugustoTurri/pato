@@ -2033,6 +2033,14 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 @media (orientation: landscape) {
   .home .hero-title { font-size: clamp(56px, 8.6vw, 150px); margin-bottom: auto; max-width: 9ch; }
 }
+/* Una tablet o un telefono acostados muestran la toma sin la figura (ver
+   HeroCover), y sin figura los 52% de escritorio dejaban una franja de arboles
+   sin montana. A 30% el monte vuelve a entrar entero por arriba y el lago
+   cierra abajo. Despues de la regla de 901px, que tiene la misma
+   especificidad. */
+@media (orientation: landscape) and (pointer: coarse) {
+  .home .hero-section { --cover-y: 30%; }
+}
 
 /* En VERTICAL la fotografia va entera arriba y se funde a tinta, y el titular,
    los sociales y la ficha van debajo, como el epigrafe de una lamina. La
@@ -2040,7 +2048,8 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
    el problema de un telefono, y el mismo iPad acostado no.
 
    La caja de la foto mide 2:3, la proporcion de la toma, asi que en un
-   telefono entra entera, de la montana a los pies; con un tope para que
+   telefono entra entera, de la montana a la orilla (aca va la toma sin la
+   figura: ver HeroSection); con un tope para que
    siempre quede lugar para el texto debajo (en una tablet vertical la toma se
    recorta arriba y abajo alrededor de `--cover-y`). La mascara la funde en el
    ultimo quinto, asi que no hay borde: la tierra se vuelve tinta. Los velos de
