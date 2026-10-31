@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import useCart from "@/hooks/use-cart";
 import { useBump } from "@/hooks/use-bump";
 import { Skeleton } from "@/components/ui/skeleton";
+import { JOURNEY, JOURNEY_LABEL } from "@/lib/journey";
 
 /* El mismo corte que usa el CSS para pasar de barra a drawer. */
 const MOBILE_QUERY = "(max-width: 700px)";
@@ -107,10 +108,19 @@ function NavBar() {
 
     return (
         <nav className={`site-nav ${menuOpen ? "is-menu-open" : ""}`} aria-label="Main navigation">
-            <Link className="wordmark" href="/" aria-label="Back to home">
-                <span>Pato</span>
-                <em>Turri</em>
-            </Link>
+            {JOURNEY ? (
+                /* `/` es Rumbo Oeste, otra app: va un <a> y no <Link> (ver lib/journey.ts). */
+                // eslint-disable-next-line @next/next/no-html-link-for-pages
+                <a className="wordmark" href="/" aria-label={`Pato Turri: ${JOURNEY_LABEL.toLowerCase()}`}>
+                    <span>Pato</span>
+                    <em>Turri</em>
+                </a>
+            ) : (
+                <Link className="wordmark" href="/" aria-label="Back to home">
+                    <span>Pato</span>
+                    <em>Turri</em>
+                </Link>
+            )}
 
             {/* Todo lo que no es el panel cierra el panel. */}
             <div
@@ -138,7 +148,13 @@ function NavBar() {
                     </Button>
                 </div>
 
-                <Link href="/" onClick={closeMenu}>Home</Link>
+                {JOURNEY ? (
+                    /* `/` es Rumbo Oeste, otra app: va un <a> y no <Link> (ver lib/journey.ts). */
+                    // eslint-disable-next-line @next/next/no-html-link-for-pages
+                    <a className="nav-journey" href="/">{JOURNEY_LABEL}</a>
+                ) : (
+                    <Link href="/" onClick={closeMenu}>Home</Link>
+                )}
                 <Link href="/shop" onClick={closeMenu}>Shop</Link>
                 <Link href="/about" onClick={closeMenu}>About</Link>
                 <Link href="/contact" onClick={closeMenu}>Contact</Link>

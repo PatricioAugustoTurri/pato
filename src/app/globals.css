@@ -2284,3 +2284,8 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 @media (max-width: 900px) {
 
 }
+
+/* El enlace al viaje (Rumbo Oeste): el punto es su sol, la misma marca que lleva
+   la barra del viaje. Es lo unico de aquel mundo que entra a la tienda. */
+.nav-journey { align-items: center; display: inline-flex; gap: 7px; }
+.nav-journey::before { background: #ff8a66; border-radius: 50%; content: ""; flex: none; height: 7px; width: 7px; }

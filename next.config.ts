@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   // lleva los 601 MB de `node_modules`; con esto, una fraccion.
   output: "standalone",
 
+  /* El cliente necesita saber si la portada es Rumbo Oeste para que la barra diga
+     "The journey" en vez de "Home". Se hornea en el build, igual que las rewrites. */
+  env: {
+    NEXT_PUBLIC_RUMBO_OESTE: process.env.RUMBO_OESTE_ORIGIN ? "1" : "",
+  },
+
   images: {
     // Ninguna fotografia pasa por el optimizador de Next. El catalogo lo sirve
     // Cloudinary desde su CDN, ya en el ancho y el formato que pide cada
@@ -28,6 +34,34 @@ const nextConfig: NextConfig = {
     // ancho extra no le cuesta nada al servidor. Las fotos propias del sitio
     // estan generadas en menos anchos y el loader redondea hacia arriba.
     deviceSizes: [640, 750, 828, 1080, 1280, 1440, 1600, 1920, 2560, 2880, 3840],
+  },
+
+  /* Rumbo Oeste, el sitio del viaje en bici (repo `rumbo-oeste`, Astro estatico),
+     es la portada de patoturri.com. Corre como otra app en Coolify y Next le pasa
+     estas direcciones; todo lo demas (/shop, /about, /cart, /admin…) sigue aca.
+
+     `beforeFiles` porque `/` tiene que ganarle a la home de Next. Mismo dominio a
+     proposito: el viaje lee el carrito (`cart-storage`) y la transicion al shop no
+     sale del sitio.
+
+     Sin RUMBO_OESTE_ORIGIN no se agrega nada y la tienda queda como estaba. Tiene
+     que estar en el BUILD (en Coolify, "Build Variable"): las rewrites se hornean
+     al compilar. */
+  async rewrites() {
+    const rumbo = process.env.RUMBO_OESTE_ORIGIN?.replace(/\/$/, "");
+    if (!rumbo) return [];
+    return {
+      beforeFiles: [
+        { source: "/", destination: `${rumbo}/` },
+        { source: "/en", destination: `${rumbo}/en` },
+        { source: "/bitacora/:slug", destination: `${rumbo}/bitacora/:slug` },
+        { source: "/en/bitacora/:slug", destination: `${rumbo}/en/bitacora/:slug` },
+        { source: "/_rumbo/:path*", destination: `${rumbo}/_rumbo/:path*` },
+        { source: "/rumbo-oeste.svg", destination: `${rumbo}/rumbo-oeste.svg` },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
   },
 
   async headers() {
