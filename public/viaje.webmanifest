@@ -1,0 +1,49 @@
+{
+  "name": "El viaje · Rumbo Oeste",
+  "short_name": "El viaje",
+  "description": "El diario de viaje de Rumbo Oeste, para escribir desde la ruta.",
+  "start_url": "/admin/viaje",
+  "scope": "/admin/viaje",
+  "display": "standalone",
+  "background_color": "#eeebe4",
+  "theme_color": "#eeebe4",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/viaje-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/viaje-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "/admin/viaje",
+  "share_target": {
+    "action": "/admin/viaje/compartir",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "titulo",
+      "text": "texto",
+      "files": [
+        {
+          "name": "archivos",
+          "accept": [
+            "image/*",
+            "video/*",
+            ".fit",
+            ".gpx",
+            "application/gpx+xml",
+            "application/vnd.ant.fit",
+            "application/octet-stream"
+          ]
+        }
+      ]
+    }
+  }
+}

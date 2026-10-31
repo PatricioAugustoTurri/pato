@@ -56,6 +56,9 @@ const nextConfig: NextConfig = {
         { source: "/en", destination: `${rumbo}/en` },
         { source: "/bitacora/:slug", destination: `${rumbo}/bitacora/:slug` },
         { source: "/en/bitacora/:slug", destination: `${rumbo}/en/bitacora/:slug` },
+        // El diario de cada país: /ruta/kirguistan y /ruta/kirguistan/dia-23.
+        { source: "/ruta/:path*", destination: `${rumbo}/ruta/:path*` },
+        { source: "/en/ruta/:path*", destination: `${rumbo}/en/ruta/:path*` },
         { source: "/_rumbo/:path*", destination: `${rumbo}/_rumbo/:path*` },
         { source: "/rumbo-oeste.svg", destination: `${rumbo}/rumbo-oeste.svg` },
       ],

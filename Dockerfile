@@ -49,6 +49,10 @@ ENV DATABASE_URL=$DATABASE_URL \
     RUMBO_OESTE_ORIGIN=$RUMBO_OESTE_ORIGIN \
     NEXT_TELEMETRY_DISABLED=1
 
+# Las tablas del diario de viaje (/admin/viaje), en cada deploy. Es idempotente: crea lo
+# que falte y siembra los países de la ruta solo si la tabla está vacía. Va acá porque el
+# build ya llega a la base (DATABASE_URL), y así nadie tiene que acordarse de correrla.
+RUN node scripts/migrate-viaje.mjs scripts/viaje-semilla.json
 RUN npm run build
 
 
