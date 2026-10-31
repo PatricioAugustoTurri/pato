@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   // lleva los 601 MB de `node_modules`; con esto, una fraccion.
   output: "standalone",
 
+  /* El cliente necesita saber si la portada es Rumbo Oeste para que la barra diga
+     "The journey" en vez de "Home". Se hornea en el build, igual que las rewrites. */
+  env: {
+    NEXT_PUBLIC_RUMBO_OESTE: process.env.RUMBO_OESTE_ORIGIN ? "1" : "",
+  },
+
   images: {
     // Ninguna fotografia pasa por el optimizador de Next. El catalogo lo sirve
     // Cloudinary desde su CDN, ya en el ancho y el formato que pide cada

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import { SELLER } from "@/lib/seller";
+import { JOURNEY, JOURNEY_LABEL } from "@/lib/journey";
 
 type SubscribeState = "idle" | "sending" | "done" | "error";
 
@@ -40,7 +41,13 @@ export default function Footer() {
 
 			<div className="footer-column">
 				<p className="footer-label">Explore</p>
-				<Link href="/">Home</Link>
+				{JOURNEY ? (
+					/* `/` es Rumbo Oeste, otra app: va un <a> y no <Link> (ver lib/journey.ts). */
+					// eslint-disable-next-line @next/next/no-html-link-for-pages
+					<a className="nav-journey" href="/">{JOURNEY_LABEL}</a>
+				) : (
+					<Link href="/">Home</Link>
+				)}
 				<Link href="/shop">Shop</Link>
 				<Link href="/destinations">Destinations</Link>
 				<Link href="/about">About</Link>
