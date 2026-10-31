@@ -30,6 +30,34 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1280, 1440, 1600, 1920, 2560, 2880, 3840],
   },
 
+  /* Rumbo Oeste, el sitio del viaje en bici (repo `rumbo-oeste`, Astro estatico),
+     es la portada de patoturri.com. Corre como otra app en Coolify y Next le pasa
+     estas direcciones; todo lo demas (/shop, /about, /cart, /admin…) sigue aca.
+
+     `beforeFiles` porque `/` tiene que ganarle a la home de Next. Mismo dominio a
+     proposito: el viaje lee el carrito (`cart-storage`) y la transicion al shop no
+     sale del sitio.
+
+     Sin RUMBO_OESTE_ORIGIN no se agrega nada y la tienda queda como estaba. Tiene
+     que estar en el BUILD (en Coolify, "Build Variable"): las rewrites se hornean
+     al compilar. */
+  async rewrites() {
+    const rumbo = process.env.RUMBO_OESTE_ORIGIN?.replace(/\/$/, "");
+    if (!rumbo) return [];
+    return {
+      beforeFiles: [
+        { source: "/", destination: `${rumbo}/` },
+        { source: "/en", destination: `${rumbo}/en` },
+        { source: "/bitacora/:slug", destination: `${rumbo}/bitacora/:slug` },
+        { source: "/en/bitacora/:slug", destination: `${rumbo}/en/bitacora/:slug` },
+        { source: "/_rumbo/:path*", destination: `${rumbo}/_rumbo/:path*` },
+        { source: "/rumbo-oeste.svg", destination: `${rumbo}/rumbo-oeste.svg` },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
+
   async headers() {
     return [
       {
