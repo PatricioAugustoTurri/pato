@@ -1,0 +1,656 @@
+{
+  "generado": "2026-10-31T16:47:49.558Z",
+  "paises": [
+    {
+      "slug": "japon",
+      "es": "Japón",
+      "en": "Japan",
+      "local": "日本",
+      "localLang": "ja",
+      "estado": "por_llegar",
+      "cruce": {
+        "es": "Ferry por el estrecho de Corea · Fukuoka → Busan",
+        "en": "Ferry across the Korea Strait · Fukuoka → Busan"
+      },
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "nosappu",
+          "es": "Cabo Nosappu",
+          "en": "Cape Nosappu",
+          "local": "納沙布岬",
+          "lat": 43.385,
+          "lon": 145.817
+        },
+        {
+          "slug": "sapporo",
+          "es": "Sapporo",
+          "en": null,
+          "local": "札幌",
+          "lat": 43.062,
+          "lon": 141.354
+        },
+        {
+          "slug": "hakodate",
+          "es": "Hakodate",
+          "en": null,
+          "local": "函館",
+          "lat": 41.769,
+          "lon": 140.729
+        },
+        {
+          "slug": "tokio",
+          "es": "Tokio",
+          "en": "Tokyo",
+          "local": "東京",
+          "lat": 35.682,
+          "lon": 139.692
+        },
+        {
+          "slug": "kioto",
+          "es": "Kioto",
+          "en": "Kyoto",
+          "local": "京都",
+          "lat": 35.011,
+          "lon": 135.768
+        },
+        {
+          "slug": "hiroshima",
+          "es": "Hiroshima",
+          "en": null,
+          "local": "広島",
+          "lat": 34.385,
+          "lon": 132.455
+        },
+        {
+          "slug": "fukuoka",
+          "es": "Fukuoka",
+          "en": null,
+          "local": "福岡",
+          "lat": 33.59,
+          "lon": 130.402
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "corea",
+      "es": "Corea del Sur",
+      "en": "South Korea",
+      "local": "대한민국",
+      "localLang": "ko",
+      "estado": "por_llegar",
+      "cruce": {
+        "es": "Ferry por el mar Amarillo · Incheon → Tianjin",
+        "en": "Ferry across the Yellow Sea · Incheon → Tianjin"
+      },
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "busan",
+          "es": "Busan",
+          "en": null,
+          "local": "부산",
+          "lat": 35.18,
+          "lon": 129.076
+        },
+        {
+          "slug": "seul",
+          "es": "Seúl",
+          "en": "Seoul",
+          "local": "서울",
+          "lat": 37.566,
+          "lon": 126.978
+        },
+        {
+          "slug": "incheon",
+          "es": "Incheon",
+          "en": null,
+          "local": "인천",
+          "lat": 37.456,
+          "lon": 126.705
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "china",
+      "es": "China",
+      "en": null,
+      "local": "中国",
+      "localLang": "zh",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "tianjin",
+          "es": "Tianjin",
+          "en": null,
+          "local": "天津",
+          "lat": 39.084,
+          "lon": 117.201
+        },
+        {
+          "slug": "pekin",
+          "es": "Pekín",
+          "en": "Beijing",
+          "local": "北京",
+          "lat": 39.904,
+          "lon": 116.407
+        },
+        {
+          "slug": "xian",
+          "es": "Xi’an",
+          "en": null,
+          "local": "西安",
+          "lat": 34.341,
+          "lon": 108.94
+        },
+        {
+          "slug": "lanzhou",
+          "es": "Lanzhou",
+          "en": null,
+          "local": "兰州",
+          "lat": 36.061,
+          "lon": 103.834
+        },
+        {
+          "slug": "dunhuang",
+          "es": "Dunhuang",
+          "en": null,
+          "local": "敦煌",
+          "lat": 40.142,
+          "lon": 94.662
+        },
+        {
+          "slug": "urumqi",
+          "es": "Ürümqi",
+          "en": null,
+          "local": "乌鲁木齐",
+          "lat": 43.825,
+          "lon": 87.617
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "kazajistan",
+      "es": "Kazajistán",
+      "en": "Kazakhstan",
+      "local": "Қазақстан",
+      "localLang": "kk",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "almaty",
+          "es": "Almaty",
+          "en": null,
+          "local": "Алматы",
+          "lat": 43.238,
+          "lon": 76.946
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "kirguistan",
+      "es": "Kirguistán",
+      "en": "Kyrgyzstan",
+      "local": "Кыргызстан",
+      "localLang": "ky",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "bishkek",
+          "es": "Bishkek",
+          "en": null,
+          "local": "Бишкек",
+          "lat": 42.875,
+          "lon": 74.604
+        },
+        {
+          "slug": "osh",
+          "es": "Osh",
+          "en": null,
+          "local": "Ош",
+          "lat": 40.513,
+          "lon": 72.816
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "uzbekistan",
+      "es": "Uzbekistán",
+      "en": "Uzbekistan",
+      "local": "Oʻzbekiston",
+      "localLang": "uz",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "taskent",
+          "es": "Taskent",
+          "en": "Tashkent",
+          "local": "Toshkent",
+          "lat": 41.311,
+          "lon": 69.24
+        },
+        {
+          "slug": "samarcanda",
+          "es": "Samarcanda",
+          "en": "Samarkand",
+          "local": "Samarqand",
+          "lat": 39.654,
+          "lon": 66.976
+        },
+        {
+          "slug": "bujara",
+          "es": "Bujará",
+          "en": "Bukhara",
+          "local": "Buxoro",
+          "lat": 39.768,
+          "lon": 64.421
+        },
+        {
+          "slug": "nukus",
+          "es": "Nukus",
+          "en": null,
+          "local": "Nukus",
+          "lat": 42.461,
+          "lon": 59.617
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "kazajistan-oeste",
+      "es": "Kazajistán, otra vez",
+      "en": "Kazakhstan, again",
+      "local": "Қазақстан",
+      "localLang": "kk",
+      "estado": "por_llegar",
+      "cruce": {
+        "es": "Ferry por el mar Caspio · Aktau → Bakú",
+        "en": "Ferry across the Caspian Sea · Aktau → Baku"
+      },
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "beyneu",
+          "es": "Beyneu",
+          "en": null,
+          "local": "Бейнеу",
+          "lat": 45.316,
+          "lon": 55.2
+        },
+        {
+          "slug": "aktau",
+          "es": "Aktau",
+          "en": null,
+          "local": "Ақтау",
+          "lat": 43.651,
+          "lon": 51.198
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "azerbaiyan",
+      "es": "Azerbaiyán",
+      "en": "Azerbaijan",
+      "local": "Azərbaycan",
+      "localLang": "az",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "baku",
+          "es": "Bakú",
+          "en": "Baku",
+          "local": "Bakı",
+          "lat": 40.409,
+          "lon": 49.867
+        },
+        {
+          "slug": "sheki",
+          "es": "Sheki",
+          "en": null,
+          "local": "Şəki",
+          "lat": 41.192,
+          "lon": 47.17
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "georgia",
+      "es": "Georgia",
+      "en": null,
+      "local": "საქართველო",
+      "localLang": "ka",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "tiflis",
+          "es": "Tiflis",
+          "en": "Tbilisi",
+          "local": "თბილისი",
+          "lat": 41.716,
+          "lon": 44.783
+        },
+        {
+          "slug": "batumi",
+          "es": "Batumi",
+          "en": null,
+          "local": "ბათუმი",
+          "lat": 41.642,
+          "lon": 41.634
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "turquia",
+      "es": "Turquía",
+      "en": "Türkiye",
+      "local": "Türkiye",
+      "localLang": "tr",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "trabzon",
+          "es": "Trebisonda",
+          "en": "Trabzon",
+          "local": "Trabzon",
+          "lat": 41.003,
+          "lon": 39.717
+        },
+        {
+          "slug": "samsun",
+          "es": "Samsun",
+          "en": null,
+          "local": "Samsun",
+          "lat": 41.287,
+          "lon": 36.33
+        },
+        {
+          "slug": "estambul",
+          "es": "Estambul",
+          "en": "Istanbul",
+          "local": "İstanbul",
+          "lat": 41.008,
+          "lon": 28.978
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "grecia",
+      "es": "Grecia",
+      "en": "Greece",
+      "local": "Ελλάδα",
+      "localLang": "el",
+      "estado": "por_llegar",
+      "cruce": {
+        "es": "Ferry por el mar Jónico · Igumenitsa → Bari",
+        "en": "Ferry across the Ionian Sea · Igoumenitsa → Bari"
+      },
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "tesalonica",
+          "es": "Tesalónica",
+          "en": "Thessaloniki",
+          "local": "Θεσσαλονίκη",
+          "lat": 40.64,
+          "lon": 22.944
+        },
+        {
+          "slug": "igoumenitsa",
+          "es": "Igumenitsa",
+          "en": "Igoumenitsa",
+          "local": "Ηγουμενίτσα",
+          "lat": 39.503,
+          "lon": 20.265
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "italia",
+      "es": "Italia",
+      "en": "Italy",
+      "local": "Italia",
+      "localLang": "it",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "bari",
+          "es": "Bari",
+          "en": null,
+          "local": null,
+          "lat": 41.117,
+          "lon": 16.871
+        },
+        {
+          "slug": "roma",
+          "es": "Roma",
+          "en": "Rome",
+          "local": "Roma",
+          "lat": 41.903,
+          "lon": 12.496
+        },
+        {
+          "slug": "florencia",
+          "es": "Florencia",
+          "en": "Florence",
+          "local": "Firenze",
+          "lat": 43.77,
+          "lon": 11.256
+        },
+        {
+          "slug": "genova",
+          "es": "Génova",
+          "en": "Genoa",
+          "local": "Genova",
+          "lat": 44.405,
+          "lon": 8.946
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "francia",
+      "es": "Francia",
+      "en": "France",
+      "local": "France",
+      "localLang": "fr",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "niza",
+          "es": "Niza",
+          "en": "Nice",
+          "local": "Nice",
+          "lat": 43.71,
+          "lon": 7.262
+        },
+        {
+          "slug": "marsella",
+          "es": "Marsella",
+          "en": "Marseille",
+          "local": "Marseille",
+          "lat": 43.296,
+          "lon": 5.37
+        },
+        {
+          "slug": "montpellier",
+          "es": "Montpellier",
+          "en": null,
+          "local": null,
+          "lat": 43.611,
+          "lon": 3.877
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "espana",
+      "es": "España",
+      "en": "Spain",
+      "local": "España",
+      "localLang": "es",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "barcelona",
+          "es": "Barcelona",
+          "en": null,
+          "local": null,
+          "lat": 41.385,
+          "lon": 2.173
+        },
+        {
+          "slug": "zaragoza",
+          "es": "Zaragoza",
+          "en": null,
+          "local": null,
+          "lat": 41.649,
+          "lon": -0.889
+        },
+        {
+          "slug": "madrid",
+          "es": "Madrid",
+          "en": null,
+          "local": null,
+          "lat": 40.417,
+          "lon": -3.704
+        },
+        {
+          "slug": "caceres",
+          "es": "Cáceres",
+          "en": null,
+          "local": null,
+          "lat": 39.475,
+          "lon": -6.372
+        }
+      ],
+      "dias": []
+    },
+    {
+      "slug": "portugal",
+      "es": "Portugal",
+      "en": null,
+      "local": "Portugal",
+      "localLang": "pt",
+      "estado": "por_llegar",
+      "cruce": null,
+      "resumen": {
+        "es": null,
+        "en": null
+      },
+      "portada": null,
+      "paradas": [
+        {
+          "slug": "evora",
+          "es": "Évora",
+          "en": null,
+          "local": null,
+          "lat": 38.571,
+          "lon": -7.909
+        },
+        {
+          "slug": "lisboa",
+          "es": "Lisboa",
+          "en": "Lisbon",
+          "local": "Lisboa",
+          "lat": 38.722,
+          "lon": -9.139
+        },
+        {
+          "slug": "roca",
+          "es": "Cabo da Roca",
+          "en": "Cabo da Roca",
+          "local": null,
+          "lat": 38.781,
+          "lon": -9.5
+        }
+      ],
+      "dias": []
+    }
+  ]
+}

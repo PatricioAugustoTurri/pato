@@ -40,13 +40,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 `/admin/viaje` es el panel del diario de viaje que se publica en el sitio de Rumbo Oeste
 (otra app de Coolify, que lo lee al compilarse desde `/api/viaje`).
 
-Una vez, contra la base de producción:
+Las tablas `viaje_*` se crean solas en cada deploy (el Dockerfile corre
+`scripts/migrate-viaje.mjs` antes del build) y la primera vez se siembran con los países de
+`scripts/viaje-semilla.json`. En tu compu, una vez:
 
 ```bash
-node --env-file=.env.local scripts/migrate-viaje.mjs "../Vlog Pato/src/data/viaje.json"
+node --env-file=.env.local scripts/migrate-viaje.mjs scripts/viaje-semilla.json
 ```
-
-Crea las tablas `viaje_*` y siembra los países de la ruta tentativa (solo si están vacías).
 
 Variables (en Coolify, en la app de la tienda):
 
