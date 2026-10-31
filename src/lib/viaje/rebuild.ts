@@ -43,19 +43,43 @@ async function deploy() {
     return;
   }
   try {
-    const response = await fetch(`${c.url}/api/v1/deploy?uuid=${encodeURIComponent(c.uuid)}&force=false`, {
-      headers: { Authorization: `Bearer ${c.token}` },
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!response.ok) throw new Error(`Coolify contestó ${response.status}`);
+    // Coolify 4.5 pide POST (con los datos en la dirección); las versiones anteriores, GET.
+    const pedir = (method: "POST" | "GET") =>
+      fetch(`${c.url}/api/v1/deploy?uuid=${encodeURIComponent(c.uuid)}&force=false`, {
+        method,
+        headers: { Authorization: `Bearer ${c.token}` },
+        signal: AbortSignal.timeout(20_000),
+      });
+    let response = await pedir("POST");
+    if (response.status === 405) response = await pedir("GET");
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(
+        `Coolify no aceptó el token (${response.status}). En Coolify → Keys & Tokens, el token tiene que tener el permiso «deploy».`,
+      );
+    }
+    if (!response.ok) throw new Error(`Coolify contestó ${response.status}.`);
     estado.ultimo = new Date().toISOString();
     estado.error = null;
   } catch (error) {
-    estado.error = error instanceof Error ? error.message : "No se pudo pedir el deploy.";
+    estado.error =
+      error instanceof TypeError
+        ? "No se pudo conectar con Coolify. Revisá COOLIFY_API_URL."
+        : error instanceof Error
+          ? error.message
+          : "No se pudo pedir el deploy.";
     console.error("[viaje] no se pudo rehacer el sitio del viaje:", estado.error);
   } finally {
     estado.pendiente = false;
   }
+}
+
+/** "Actualizar el sitio ahora": sin esperar, y contesta cómo salió. */
+export async function rehacerAhora(): Promise<EstadoSitio> {
+  if (!config()) return estadoSitio();
+  if (estado.timer) clearTimeout(estado.timer);
+  estado.pendiente = true;
+  await deploy();
+  return estadoSitio();
 }
 
 export function rehacerSitio(): EstadoSitio {
