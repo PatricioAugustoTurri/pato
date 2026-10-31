@@ -1,7 +1,6 @@
 "use client";
 
 import { Film } from "lucide-react";
-import { cieloA } from "@/lib/viaje/cielo";
 import { formatoFecha, formatoKm } from "../lib/geo";
 import { miniatura } from "../lib/media";
 import type { LocalMedio } from "../lib/store";
@@ -58,7 +57,6 @@ function Mini({ medio }: { medio: Medio }) {
 
 export default function DiaFila({ dia, conPais }: { dia: DiaVista; conPais?: string }) {
   const estado = estadoDia(dia);
-  const cielo = cieloA(dia.hora);
   const ruta = [dia.desde, dia.hasta].filter(Boolean).join(" → ");
   const datos = [
     formatoFecha(dia.fecha),
@@ -70,7 +68,6 @@ export default function DiaFila({ dia, conPais }: { dia: DiaVista; conPais?: str
   return (
     <a className="vj-dia" href={`#/dia/${dia.clientId}`}>
       <span className="vj-dia-num">
-        <span className="vj-cielo" style={cielo ? { background: cielo } : undefined} aria-hidden="true" />
         Día {dia.numero}
       </span>
       <span className="vj-dia-cuerpo">

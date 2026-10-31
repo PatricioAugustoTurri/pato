@@ -129,10 +129,8 @@ export function aplicar(
   }
 
   const conFecha = ordenados.map((m) => m.leido).filter((l) => l.fecha);
-  if (sinFotosAntes && !dia.hora && !recorrido && conFecha[0]) {
-    next.hora = conFecha[0].hora;
-    completado.push("la hora");
-  }
+  // La hora no se muestra en ningún lado; se guarda para pedir el clima de ese momento.
+  if (sinFotosAntes && !dia.hora && !recorrido && conFecha[0]) next.hora = conFecha[0].hora;
   const conGps = ordenados.map((m) => m.leido).filter((l) => l.lat !== null);
   if (next.lat === null && conGps.length) {
     next.lat = conGps[conGps.length - 1].lat;
