@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 /* El orden es el del trabajo, no el alfabético: primero se carga la obra,
    después se la agrupa en una colección, después se decide qué sale en la
    portada y cuánto cuesta. Pedidos y clientes al final, que es lo que se mira
-   cuando ya está todo publicado. */
+   cuando ya está todo publicado. El viaje es otra cosa —el diario de Rumbo
+   Oeste, no la tienda— y va último. */
 const LINKS = [
   { href: "/admin", label: "Fotografías" },
   { href: "/admin/collections", label: "Colecciones" },
@@ -14,6 +15,7 @@ const LINKS = [
   { href: "/admin/sizes", label: "Precios" },
   { href: "/admin/orders", label: "Pedidos" },
   { href: "/admin/customers", label: "Clientes" },
+  { href: "/admin/viaje", label: "El viaje" },
 ];
 
 export default function AdminNav() {
