@@ -246,6 +246,13 @@ export default function ViajeAdminPage() {
     };
   }, [ruta.v, datos, procesarLote]);
 
+  /* Mientras Coolify recibe el pedido, se vuelve a preguntar: si falló, el panel lo dice. */
+  useEffect(() => {
+    if (!datos?.sitio.pendiente) return;
+    const id = window.setTimeout(() => void cargar(), 30_000);
+    return () => window.clearTimeout(id);
+  }, [datos?.sitio.pendiente, cargar]);
+
   const actualizarSitio = (sitio: EstadoSitio) => setDatos((prev) => (prev ? { ...prev, sitio } : prev));
 
   const pendientes = locales.filter((l) => l.pendiente && !l.error);
@@ -266,6 +273,11 @@ export default function ViajeAdminPage() {
           dias={dias}
           sitio={datos?.sitio}
           sube={datos?.sube ?? true}
+          onActualizar={async () => {
+            const response = await fetch("/api/admin/viaje/sitio", { method: "POST" }).catch(() => null);
+            const body = response ? await response.json().catch(() => null) : null;
+            if (body?.sitio) actualizarSitio(body.sitio);
+          }}
         />
       </header>
 
@@ -355,6 +367,7 @@ function Estado({
   dias,
   sitio,
   sube,
+  onActualizar,
 }: {
   online: boolean;
   pendientes: number;
@@ -363,7 +376,9 @@ function Estado({
   dias: DiaVista[];
   sitio?: EstadoSitio;
   sube: boolean;
+  onActualizar: () => Promise<void>;
 }) {
+  const [actualizando, setActualizando] = useState(false);
   const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`;
   let icono = <Check aria-hidden="true" />;
   let texto: string;
@@ -386,6 +401,10 @@ function Estado({
     texto = `${plural(pendientes, "día", "días")} por subir.`;
   } else if (sitio?.pendiente) {
     texto = "Todo subido. El sitio se actualiza en unos minutos.";
+  } else if (sitio?.error) {
+    icono = <AlertTriangle aria-hidden="true" />;
+    tono = "error";
+    texto = `Todo subido, pero el sitio no se pudo actualizar: ${sitio.error}`;
   } else if (sitio && !sitio.configurado) {
     texto = "Todo subido. El sitio del viaje no se actualiza solo todavía: falta configurar Coolify.";
     tono = "atencion";
@@ -399,6 +418,20 @@ function Estado({
         {icono}
         {texto}
       </p>
+      {online && sitio?.error && !sitio.pendiente && (
+        <button
+          type="button"
+          className="vj-boton chico vj-reintentar"
+          disabled={actualizando}
+          onClick={async () => {
+            setActualizando(true);
+            await onActualizar();
+            setActualizando(false);
+          }}
+        >
+          {actualizando ? "Pidiendo…" : "Actualizar el sitio ahora"}
+        </button>
+      )}
       {errores > 0 && (
         <p className="vj-estado error">
           <AlertTriangle aria-hidden="true" />

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import "./viaje.css";
 
@@ -10,6 +11,6 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#eeebe4" };
 
-export default function ViajeLayout({ children }: LayoutProps<"/admin/viaje">) {
+export default function ViajeLayout({ children }: { children: ReactNode }) {
   return children;
 }

@@ -944,3 +944,5 @@
   transform-origin: left;
   transition: transform 200ms linear;
 }
+
+.vj-reintentar { justify-self: start; }
