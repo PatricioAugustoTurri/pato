@@ -19,7 +19,6 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { cieloA, momentoDelDia } from "@/lib/viaje/cielo";
 import type { AdminDia, AdminPais, EstadoSitio } from "@/lib/viaje/types";
 import { formatoFecha, masCercano, numeroDeDia } from "../lib/geo";
 import { climaEnPalabras } from "@/lib/viaje/clima";
@@ -149,8 +148,6 @@ export default function DiaEditor({
   const pais = paises.find((p) => p.id === dia?.paisId);
   const clima = dia?.clima ?? servidor?.clima ?? null;
   const numero = dia ? numeroDeDia(dia.fecha, [...fechas, dia.fecha]) : 0;
-  const cielo = cieloA(dia?.hora ?? null);
-  const momento = momentoDelDia(dia?.hora ?? null);
 
   /* ¿De dónde son las fotos? La parada más cercana al último GPS. */
   const sugerencia = useMemo(() => {
@@ -316,9 +313,7 @@ export default function DiaEditor({
 
       <header className="vj-editor-cabeza">
         <p className="vj-dato">
-          <span className="vj-cielo" style={cielo ? { background: cielo } : undefined} aria-hidden="true" />
           {formatoFecha(dia.fecha, true)}
-          {dia.hora ? ` · ${dia.hora}` : ""}
         </p>
         <h2>Día {numero}</h2>
         {dia.error && (
@@ -515,15 +510,6 @@ export default function DiaEditor({
             {climaEnPalabras(clima)}
           </p>
         )}
-        <div className="vj-hora">
-          <label className="vj-campo">
-            <span className="vj-etiqueta">Hora</span>
-            <input type="time" value={dia.hora ?? ""} onChange={(e) => cambiar({ hora: e.target.value || null })} />
-          </label>
-          <div className="vj-cielo-grande" style={cielo ? { background: cielo } : undefined}>
-            <span>{cielo ? `En el sitio, este día se ve con el cielo ${momento}.` : "Con una hora, el día se ve en el sitio con el color del cielo de ese momento."}</span>
-          </div>
-        </div>
       </section>
 
       {/* ——— Inglés ——— */}
@@ -648,7 +634,6 @@ function MedioTile({
   const ratio = medio.ancho && medio.alto ? `${medio.ancho} / ${medio.alto}` : "4 / 5";
   const datos = [
     medio.tipo === "video" && medio.duracion ? `${Math.round(medio.duracion)} s` : null,
-    medio.hora,
     medio.camara,
   ].filter(Boolean);
 
