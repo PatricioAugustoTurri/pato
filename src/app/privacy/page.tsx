@@ -71,12 +71,12 @@ export default function PrivacyPage() {
           Without those the parcel has nowhere to go.
         </p>
         <p>
-          <strong>If you write through the contact form:</strong> your name, email, subject
-          and message, which arrive in my inbox as an email. Nothing is stored on the site.
+          <strong>If you write to me:</strong> whatever you put in the email, which stays in
+          my inbox. Nothing is stored on the site.
         </p>
         <p>
-          <strong>If you sign up for the travel letter:</strong> your email address, and
-          nothing else.
+          <strong>If you signed up for the travel letter:</strong> your email address, and
+          nothing else. The travel letter no longer takes new sign-ups.
         </p>
       </section>
 
@@ -84,8 +84,8 @@ export default function PrivacyPage() {
         <h2>Who else sees it</h2>
         <p>
           <strong>Stripe</strong> handles the payment and collects the shipping address.{" "}
-          <strong>Resend</strong> delivers the contact emails and holds the travel-letter
-          list. <strong>Cloudinary</strong> serves the photographs themselves and receives
+          <strong>Resend</strong> delivers the emails the shop sends and holds the travel-letter
+          list of those who signed up before it closed. <strong>Cloudinary</strong> serves the photographs themselves and receives
           no personal data. The database that holds accounts and orders is operated for
           this shop alone and is not shared with anyone.
         </p>
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <p className="doc-updated">Last updated 15 October 2026</p>
+      <p className="doc-updated">Last updated 1 November 2026</p>
 
       <p className="doc-close">
         <Link className="text-link" href="/shop">

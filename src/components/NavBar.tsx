@@ -156,8 +156,6 @@ function NavBar() {
                     <Link href="/" onClick={closeMenu}>Home</Link>
                 )}
                 <Link href="/shop" onClick={closeMenu}>Shop</Link>
-                <Link href="/about" onClick={closeMenu}>About</Link>
-                <Link href="/contact" onClick={closeMenu}>Contact</Link>
 
                 {/* En la barra estas dos acciones quedan reducidas a iconos sin
                     nombre; acá recuperan su etiqueta. */}

@@ -1,21 +1,25 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { MAX_PER_LINE } from "@/lib/cart-limits";
+import { formatPrice } from "@/lib/money";
+import { SHIPPING_RATES } from "@/lib/shipping";
 import { SELLER } from "@/lib/seller";
 
 export const metadata = pageMetadata({
   title: "Terms of Sale",
   description:
-    "Who sells the prints, what you are buying, how payment and delivery work, and your right to change your mind.",
+    "Who sells the prints, what you are buying, how payment works, shipping rates and times across the EU, and your 14 days to return a print.",
   path: "/terms",
 });
 
-/* Las condiciones dicen lo que la tienda ya hace, comprobado contra el código
-   y contra las otras páginas de ayuda: el contrato nace cuando Stripe confirma
-   el cobro, el tope de copias es el de `cart-limits`, los plazos de envío y la
-   devolución viven en /shipping y /returns y acá solo se enlazan, para que no
-   haya dos versiones de la misma regla. Lo que no está confirmado —papel,
-   laboratorio— no se menciona. */
+/* Las condiciones dicen lo que la tienda ya hace, comprobado contra el código:
+   el contrato nace cuando Stripe confirma el cobro, el tope de copias es el de
+   `cart-limits` y las tarifas y plazos salen de `SHIPPING_RATES`, que es de
+   donde el checkout arma sus opciones de envío. Desde 2026-11-01 los envíos y
+   las devoluciones viven acá, con el mismo texto que tenían /shipping y
+   /returns: la tienda quedó solo como tienda y esto es lo que la ley pide
+   mostrar antes de pagar. Lo que no está confirmado —papel, laboratorio— no se
+   menciona. */
 export default function TermsPage() {
   return (
     <main className="doc-page is-dark-room">
@@ -70,21 +74,74 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className="doc-section">
+      <section className="doc-section" id="delivery">
         <h2>Delivery</h2>
         <p>
-          Prints ship from Italy to Italy and the rest of the European Union. Rates and
-          times are on <Link href="/shipping">shipping and delivery</Link>. The print is
-          yours to look after from the moment it is delivered to the address you gave.
+          Every print ships from Italy to anywhere in the European Union. There are two
+          rates, and you pick one on Stripe&apos;s checkout page after entering the address
+          the parcel goes to.
+        </p>
+        <dl className="doc-rates">
+          {SHIPPING_RATES.map(({ region, name, amount, minDays, maxDays }) => (
+            <div key={region}>
+              <dt>{name}</dt>
+              <dd>
+                {formatPrice(amount / 100)} <span>· {minDays}–{maxDays} working days</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p>
+          Those days are the courier&apos;s transit time, counted from the moment the
+          parcel leaves. Before that, a print is prepared and dispatched within 2 to 5
+          working days of the payment going through; a large order, or one placed over a
+          holiday, can sit at the longer end of that.
+        </p>
+        <p>
+          Checkout accepts addresses in the 27 countries of the European Union, and asks
+          for a phone number because couriers ask for one. Outside the EU there is no
+          shipping option yet — if you are elsewhere and want a print, write and we will
+          see what can be done.
+        </p>
+        <p>
+          Your orders live in <Link href="/account">your account</Link>, if you have one.
+          There is no automatic tracking email yet, so for anything about a parcel in
+          transit, write to <a href={`mailto:${SELLER.email}`}>{SELLER.email}</a>. The
+          print is yours to look after from the moment it is delivered to the address you
+          gave.
         </p>
       </section>
 
-      <section className="doc-section">
+      <section className="doc-section" id="returns">
         <h2>Changing your mind</h2>
         <p>
-          You have 14 days from the day the print arrives to return it, for any reason.
-          How to do it, who pays postage, and what happens if a print arrives damaged are
-          on <Link href="/returns">returns and exchanges</Link>.
+          You can return a print within 14 days of receiving it, for any reason, without
+          explaining yourself. That is the right EU law gives you on anything bought at a
+          distance, and it applies here.
+        </p>
+        <p>
+          Write to <a href={`mailto:${SELLER.email}`}>{SELLER.email}</a> first so we agree
+          on where it goes. Send it back the way it reached you — flat, protected, in the
+          same condition — because a print that arrives creased cannot be sold to anyone
+          else.
+        </p>
+        <p>
+          The print is refunded in full to the card it was paid with. Return postage is
+          yours: choose the courier you trust, and keep the receipt until the refund lands.
+        </p>
+        <p>
+          There is no separate exchange: a swap is a return and a new order. Send the print
+          back within the fourteen days and order the size you want — the two things do
+          not have to wait for each other.
+        </p>
+      </section>
+
+      <section className="doc-section" id="damaged">
+        <h2>If it arrives damaged</h2>
+        <p>
+          That is not a return, and you should not pay to send it back. Write with a
+          photograph of the print and of the packaging it came in, and we sort it out
+          between us.
         </p>
       </section>
 
@@ -105,11 +162,11 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <p className="doc-updated">Last updated 15 October 2026</p>
+      <p className="doc-updated">Last updated 1 November 2026</p>
 
       <p className="doc-close">
-        <Link className="text-link" href="/returns">
-          Returns and exchanges <span aria-hidden="true">↗</span>
+        <Link className="text-link" href="/shop">
+          Back to the shop <span aria-hidden="true">↗</span>
         </Link>
       </p>
     </main>

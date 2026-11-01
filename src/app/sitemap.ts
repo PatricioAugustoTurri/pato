@@ -28,11 +28,6 @@ const STATIC_ROUTES: Array<{
   { path: "/", priority: 1, changeFrequency: "weekly" },
   { path: "/shop", priority: 0.9, changeFrequency: "weekly" },
   { path: "/destinations", priority: 0.8, changeFrequency: "weekly" },
-  { path: "/about", priority: 0.7, changeFrequency: "monthly" },
-  { path: "/contact", priority: 0.5, changeFrequency: "yearly" },
-  { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
-  { path: "/shipping", priority: 0.4, changeFrequency: "yearly" },
-  { path: "/returns", priority: 0.4, changeFrequency: "yearly" },
   { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
 ];

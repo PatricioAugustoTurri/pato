@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
 
   /* Rumbo Oeste, el sitio del viaje en bici (repo `rumbo-oeste`, Astro estatico),
      es la portada de patoturri.com. Corre como otra app en Coolify y Next le pasa
-     estas direcciones; todo lo demas (/shop, /about, /cart, /admin…) sigue aca.
+     estas direcciones; todo lo demas (/shop, /cart, /admin…) sigue aca.
 
      `beforeFiles` porque `/` tiene que ganarle a la home de Next. Mismo dominio a
      proposito: el viaje lee el carrito (`cart-storage`) y la transicion al shop no
@@ -59,12 +59,32 @@ const nextConfig: NextConfig = {
         // El diario de cada país: /ruta/kirguistan y /ruta/kirguistan/dia-23.
         { source: "/ruta/:path*", destination: `${rumbo}/ruta/:path*` },
         { source: "/en/ruta/:path*", destination: `${rumbo}/en/ruta/:path*` },
+        // La historia de Pato (antes /about, ver redirects).
+        { source: "/historia", destination: `${rumbo}/historia` },
+        { source: "/en/historia", destination: `${rumbo}/en/historia` },
         { source: "/_rumbo/:path*", destination: `${rumbo}/_rumbo/:path*` },
         { source: "/rumbo-oeste.svg", destination: `${rumbo}/rumbo-oeste.svg` },
       ],
       afterFiles: [],
       fallback: [],
     };
+  },
+
+  /* La tienda quedó solo como tienda (2026-11-01): About, Contact, FAQ, Shipping y
+     Returns se fueron. Sus direcciones pueden estar enlazadas desde redes o
+     buscadores, así que mandan a donde vive ahora lo que contaban: la historia y
+     el contacto en Rumbo Oeste, los envíos y las devoluciones en /terms. Sin
+     Rumbo Oeste (RUMBO_OESTE_ORIGIN vacío) no hay /historia ni portada del viaje,
+     y esas dos caen en la tienda. */
+  async redirects() {
+    const rumbo = Boolean(process.env.RUMBO_OESTE_ORIGIN);
+    return [
+      { source: "/about", destination: rumbo ? "/historia" : "/shop", permanent: true },
+      { source: "/contact", destination: rumbo ? "/#apoyar" : "/terms", permanent: true },
+      { source: "/faq", destination: "/terms", permanent: true },
+      { source: "/shipping", destination: "/terms#delivery", permanent: true },
+      { source: "/returns", destination: "/terms#returns", permanent: true },
+    ];
   },
 
   async headers() {

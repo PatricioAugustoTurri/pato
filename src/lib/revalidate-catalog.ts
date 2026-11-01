@@ -23,8 +23,4 @@ export function revalidateCatalog(): void {
   revalidatePath("/");
   revalidatePath("/shop");
   revalidatePath("/destinations");
-  /* `/faq` publica la lista de precios, que ahora sale de `catalog_sizes` y se
-     edita desde el panel. Sin este aviso, subir el A3 dejaba el precio viejo
-     contestando la pregunta «¿cuánto cuesta?» durante una hora. */
-  revalidatePath("/faq");
 }

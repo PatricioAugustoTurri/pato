@@ -3,7 +3,6 @@ import CollectionSection from "@/components/CollectionSection";
 import DestinationsSection from "@/components/DestinationsSection";
 import HeroSection from "@/components/HeroSection";
 import HomeCollections from "@/components/HomeCollections";
-import StorySection from "@/components/StorySection";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -38,7 +37,6 @@ export default function Home() {
       <HomeCollections />
       <CollectionSection />
       <DestinationsSection />
-      <StorySection />
     </div>
   );
 }

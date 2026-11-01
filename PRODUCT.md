@@ -182,9 +182,15 @@ Landscape, Portrait). No es un marketplace ni un catálogo licenciado.
   sal" / "Tierra roja" / "La ultima luz" son inventados: no existen en la base
   y no deben tratarse como catálogo real.
 - Sin testimonios, sin prensa, sin métricas de ventas. No fabricar ninguno.
-- Páginas legales: /terms (condiciones de venta, 2026-10-15), /privacy,
-  /shipping, /returns. Las condiciones enlazan a envío y devoluciones en vez
-  de repetirlas, para que no haya dos versiones de la misma regla.
+- Páginas legales: /terms (condiciones de venta, con envíos y devoluciones
+  adentro desde 2026-11-01) y /privacy. El email del vendedor va en el pie de
+  cada página.
+- **La tienda es solo la tienda (2026-11-01, decisión del usuario).** Se sacaron
+  About, Contact, FAQ, /shipping, /returns y la Travel letter (formulario del pie
+  y /api/subscribe; la lista ya guardada en Resend no se tocó). Lo que contaban
+  se va a incorporar en Rumbo Oeste: la historia ya vive en /historia. Las
+  direcciones viejas redirigen (308) desde `next.config.ts`. Destinations sigue,
+  enlazado solo desde el pie.
 
 ## Product Principles
 

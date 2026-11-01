@@ -1,33 +1,13 @@
-"use client";
-
-import { useState, type FormEvent } from "react";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import { SELLER } from "@/lib/seller";
 import { JOURNEY, JOURNEY_LABEL } from "@/lib/journey";
 
-type SubscribeState = "idle" | "sending" | "done" | "error";
-
+/* La tienda es solo la tienda (2026-11-01): la historia, el contacto y lo que
+   cuenta el viaje viven en Rumbo Oeste. Acá queda lo que sirve para comprar:
+   el catálogo, los destinos, y las condiciones y la privacidad, que es donde
+   están los envíos y las devoluciones. */
 export default function Footer() {
-	const [email, setEmail] = useState("");
-	const [state, setState] = useState<SubscribeState>("idle");
-
-	const subscribe = async (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		setState("sending");
-
-		try {
-			await axios.post("/api/subscribe", { email });
-			setState("done");
-			setEmail("");
-		} catch {
-			setState("error");
-		}
-	};
-
 	return (
 		<footer className="site-footer" id="contacto">
 			<div className="footer-brand">
@@ -50,55 +30,6 @@ export default function Footer() {
 				)}
 				<Link href="/shop">Shop</Link>
 				<Link href="/destinations">Destinations</Link>
-				<Link href="/about">About</Link>
-			</div>
-
-			<div className="footer-column">
-				<p className="footer-label">Help</p>
-				<Link href="/contact">Contact</Link>
-				<Link href="/shipping">Shipping and delivery</Link>
-				<Link href="/returns">Returns and exchanges</Link>
-				<Link href="/faq">Frequently asked questions</Link>
-			</div>
-
-			<div className="footer-newsletter">
-				<p className="footer-label">Travel letter</p>
-				<p>Stories, new destinations and one photograph in your inbox.</p>
-				{/* Al darse de alta, el formulario deja de estar: seguir mostrando un
-				    campo vacio invita a escribir dos veces la misma direccion. */}
-				{state === "done" ? (
-					<p className="footer-note" role="status">You are on the list.</p>
-				) : (
-					<>
-						<form onSubmit={subscribe}>
-							<label className="sr-only" htmlFor="email">Your email</label>
-							<Input
-								className="footer-email-input"
-								id="email"
-								type="email"
-								placeholder="Your email"
-								required
-								value={email}
-								onChange={(event) => setEmail(event.target.value)}
-							/>
-							<Button
-								className="footer-submit"
-								size="icon"
-								variant="ghost"
-								type="submit"
-								disabled={state === "sending"}
-								aria-label="Subscribe to the travel letter"
-							>
-								↗
-							</Button>
-						</form>
-						{state === "error" && (
-							<p className="footer-note is-error" role="alert">
-								That did not go through. Try again in a moment.
-							</p>
-						)}
-					</>
-				)}
 			</div>
 
 			<div className="footer-bottom">
@@ -109,6 +40,10 @@ export default function Footer() {
 				<div className="footer-legal">
 					<Link href="/terms">Terms of sale</Link>
 					<Link href="/privacy">Privacy</Link>
+					{/* Sin página de contacto, la dirección queda a la vista en cada
+					    página: quien compra a distancia tiene que poder escribirle al
+					    vendedor. */}
+					<a href={`mailto:${SELLER.email}`}>{SELLER.email}</a>
 				</div>
 			</div>
 		</footer>
