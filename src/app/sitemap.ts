@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { pool } from "@/lib/db";
 import { absoluteUrl } from "@/lib/seo";
 import { getCountryIndex } from "@/lib/photos";
+import { readViajePublico } from "@/lib/viaje/db";
 
 /**
  * El mapa que Google usa para descubrir el catálogo.
@@ -80,8 +81,51 @@ async function getCountryRoutes(): Promise<CatalogRow[]> {
   }));
 }
 
+/**
+ * Las páginas de Rumbo Oeste, el sitio del viaje que vive en este mismo dominio
+ * (ver las rewrites en next.config.ts). Google no las encuentra si el mapa no
+ * las nombra: la portada es de Rumbo, pero el mapa es de la tienda.
+ *
+ * Fijas: la historia y la página para marcas, en los dos idiomas, y la portada
+ * en inglés. Del diario: cada país con días publicados y cada día, con la misma
+ * dirección que les da Rumbo (`dia-23`, o `dia-23-2` si ese día hay dos).
+ */
+const RUMBO_ROUTES = ["/en", "/historia", "/en/historia", "/marcas", "/en/marcas"];
+
+/* Las fijas no traen fecha: cambian cuando se sube Rumbo y el mapa no lo sabe. */
+type RumboRow = { path: string; updatedAt?: Date };
+
+async function getRumboRoutes(): Promise<RumboRow[]> {
+  if (!process.env.RUMBO_OESTE_ORIGIN) return [];
+  const fijas: RumboRow[] = RUMBO_ROUTES.map((path) => ({ path }));
+  try {
+    const viaje = await readViajePublico();
+    const dias = viaje.paises
+      .flatMap((p) => p.dias.map((dia) => ({ pais: p.slug, dia })))
+      .sort((a, b) => a.dia.numero - b.dia.numero || (a.dia.hora ?? "").localeCompare(b.dia.hora ?? ""));
+    const vistos = new Map<number, number>();
+    const rutas: RumboRow[] = [];
+    for (const { pais, dia } of dias) {
+      const n = (vistos.get(dia.numero) ?? 0) + 1;
+      vistos.set(dia.numero, n);
+      const slug = n === 1 ? `dia-${dia.numero}` : `dia-${dia.numero}-${n}`;
+      const fecha = new Date(`${dia.fecha}T00:00:00Z`);
+      rutas.push({ path: `/ruta/${pais}/${slug}`, updatedAt: fecha }, { path: `/en/ruta/${pais}/${slug}`, updatedAt: fecha });
+    }
+    const paises = viaje.paises
+      .filter((p) => p.dias.length > 0)
+      .flatMap((p) => {
+        const fecha = new Date(`${p.dias[p.dias.length - 1].fecha}T00:00:00Z`);
+        return [{ path: `/ruta/${p.slug}`, updatedAt: fecha }, { path: `/en/ruta/${p.slug}`, updatedAt: fecha }];
+      });
+    return [...fijas, ...paises, ...rutas];
+  } catch {
+    return fijas;
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [catalog, countries] = await Promise.all([getCatalogRoutes(), getCountryRoutes()]);
+  const [catalog, countries, rumbo] = await Promise.all([getCatalogRoutes(), getCountryRoutes(), getRumboRoutes()]);
 
   return [
     /* Sin `lastModified` a propósito. Era `new Date()`, o sea la hora en que el
@@ -110,6 +154,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    ...rumbo.map(({ path, updatedAt }) => ({
+      url: absoluteUrl(path),
+      ...(updatedAt ? { lastModified: updatedAt } : {}),
+      changeFrequency: "weekly" as const,
+      priority: path.includes("/dia-") ? 0.6 : 0.8,
     })),
   ];
 }

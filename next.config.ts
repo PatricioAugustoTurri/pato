@@ -62,6 +62,9 @@ const nextConfig: NextConfig = {
         // La historia de Pato (antes /about, ver redirects).
         { source: "/historia", destination: `${rumbo}/historia` },
         { source: "/en/historia", destination: `${rumbo}/en/historia` },
+        // Para marcas: qué hace Pato con una marca y cómo escribirle.
+        { source: "/marcas", destination: `${rumbo}/marcas` },
+        { source: "/en/marcas", destination: `${rumbo}/en/marcas` },
         { source: "/_rumbo/:path*", destination: `${rumbo}/_rumbo/:path*` },
         { source: "/rumbo-oeste.svg", destination: `${rumbo}/rumbo-oeste.svg` },
       ],
