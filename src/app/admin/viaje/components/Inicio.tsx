@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef } from "react";
-import { Images, Plus } from "lucide-react";
+import { Download, Images, Plus } from "lucide-react";
 import { ESTADOS_PAIS, type AdminPais } from "@/lib/viaje/types";
 import { formatoKm } from "../lib/geo";
+import { instalar, useInstalar } from "../lib/instalar";
 import DiaFila from "./DiaFila";
 import type { DiaVista } from "./types";
 
@@ -23,6 +24,7 @@ export default function Inicio({
   onLote: (files: File[]) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
+  const comoApp = useInstalar();
   const enCurso = paises.find((p) => p.estado === "en_curso");
   const ultimos = dias.slice(0, 3);
   const totalKm = dias.filter((d) => d.publicado).reduce((s, d) => s + (d.km ?? 0), 0);
@@ -56,6 +58,20 @@ export default function Inicio({
             ? "Todavía no hay días. El primero que escribas es el día 1."
             : `${dias.length} ${dias.length === 1 ? "día" : "días"}${totalKm ? ` · ${formatoKm(totalKm)} km publicados` : ""}`}
         </p>
+        {comoApp === "se-puede" && (
+          <p className="vj-sugerencia">
+            <span>Instalalo y queda con su ícono, como una app. Abre sin señal.</span>
+            <button type="button" className="vj-boton" onClick={() => void instalar()}>
+              <Download aria-hidden="true" />
+              Instalar
+            </button>
+          </p>
+        )}
+        {comoApp === "a-mano" && (
+          <p className="vj-nota">
+            Para tenerlo como app, con su ícono y sin señal: en Chrome, menú ⋮ → Agregar a la pantalla principal.
+          </p>
+        )}
       </section>
 
       {ultimos.length > 0 && (

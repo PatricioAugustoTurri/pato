@@ -66,6 +66,29 @@ async function recibirCompartidos(request) {
   return Response.redirect("/admin/viaje#/compartido", 303);
 }
 
+/* ——— La primera visita ———
+   La página y sus archivos llegaron antes de que este service worker atendiera, así que no
+   quedaron guardados. El panel manda la lista (ver lib/instalar.ts) y se guardan acá: con una
+   sola visita con señal, el panel ya abre en la ruta. */
+async function guardarTodo(urls) {
+  const cache = await caches.open(CACHE);
+  const pagina = await conTiempo(fetch(PAGINA, { credentials: "same-origin" }), 15000).catch(() => null);
+  if (pagina && pagina.ok && !pagina.redirected) await cache.put(PAGINA, pagina);
+  for (const u of urls) {
+    const url = new URL(u, self.location.origin);
+    if (url.origin !== self.location.origin || !url.pathname.startsWith("/_next/static/")) continue;
+    if (await cache.match(url.href)) continue;
+    const response = await fetch(url.href).catch(() => null);
+    if (response && response.ok) await cache.put(url.href, response);
+  }
+}
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.tipo === "guardar" && Array.isArray(event.data.urls)) {
+    event.waitUntil(guardarTodo(event.data.urls));
+  }
+});
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method === "POST" && new URL(request.url).pathname === "/admin/viaje/compartir") {

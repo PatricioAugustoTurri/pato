@@ -462,6 +462,9 @@ export default function DiaEditor({
       {/* ——— Datos del día ——— */}
       <section className="vj-bloque">
         <h3 className="vj-etiqueta fuerte">Datos del día</h3>
+        {fechas.includes(dia.fecha) && (
+          <p className="vj-nota">Ya hay otro día con esta fecha. Al subir se juntan en uno: el texto y las fotos se suman.</p>
+        )}
         <div className="vj-campos dos">
           <label className="vj-campo">
             <span className="vj-etiqueta">País</span>

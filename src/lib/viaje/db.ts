@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { PoolClient } from "pg";
 import { pool } from "@/lib/db";
 import { slugify } from "@/lib/viaje/slug";
+import { unirDia } from "@/lib/viaje/unir";
 import type {
   AdminDia,
   AdminMedio,
@@ -215,7 +216,7 @@ export async function readDia(id: number): Promise<AdminDia | null> {
 
 /* ——— Días ——— */
 
-export type DiaGuardado = { dia: AdminDia; antes: { publicado: boolean } | null };
+export type DiaGuardado = { dia: AdminDia; antes: { publicado: boolean } | null; unido: boolean };
 
 /**
  * Crea o actualiza un día por su `clientId`, con sus fotos y videos.
@@ -225,18 +226,42 @@ export type DiaGuardado = { dia: AdminDia; antes: { publicado: boolean } | null 
  * medios que ya no vienen se borran de la base; los archivos quedan en
  * Cloudinary, que es más barato que perder una foto por un toque de más.
  *
+ * Una fecha es un solo día: si llega un día nuevo con una fecha que ya tiene
+ * día, se suma a ese. Y si llega un cambio hecho sobre una versión vieja (el
+ * día se cambió en otro lado mientras tanto), se junta en vez de reemplazar.
+ * Ver unir.ts. El día que vuelve puede tener otro `clientId` que el mandado.
+ *
  * El inglés solo se escribe desde acá si el autor lo revisó a mano. Si no, lo
  * que manda el teléfono puede ser una copia vieja, anterior a la traducción
  * automática, y la pisaría.
  */
-export async function upsertDia(payload: DiaPayload): Promise<DiaGuardado> {
+export async function upsertDia(entrante: DiaPayload): Promise<DiaGuardado> {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const { rows: previo } = await client.query<{ id: number; publicado: boolean }>(
-      "SELECT id, publicado FROM viaje_dias WHERE client_id = $1 FOR UPDATE",
-      [payload.clientId],
+    // Dos días nuevos con la misma fecha al mismo tiempo (la compu y el teléfono reciben señal
+    // juntos) no deben crear dos: se atienden de a uno por fecha.
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('viaje_dias:' || $1))", [entrante.fecha]);
+    type Previo = { id: number; publicado: boolean; actualizado: Date };
+    let { rows: previo } = await client.query<Previo>(
+      "SELECT id, publicado, actualizado FROM viaje_dias WHERE client_id = $1 FOR UPDATE",
+      [entrante.clientId],
     );
+    let payload = entrante;
+    let unido = false;
+    if (!previo[0]) {
+      ({ rows: previo } = await client.query<Previo>(
+        "SELECT id, publicado, actualizado FROM viaje_dias WHERE fecha = $1 ORDER BY id LIMIT 1 FOR UPDATE",
+        [entrante.fecha],
+      ));
+      if (previo[0]) {
+        payload = unirDia((await readDia(previo[0].id))!, entrante, "fecha");
+        unido = true;
+      }
+    } else if (entrante.base && previo[0].actualizado.getTime() > Date.parse(entrante.base)) {
+      payload = unirDia((await readDia(previo[0].id))!, entrante, "edicion");
+      unido = true;
+    }
     const revisado = payload.enEstado === "revisado";
     const values = [
       payload.clientId,
@@ -285,7 +310,7 @@ export async function upsertDia(payload: DiaPayload): Promise<DiaGuardado> {
     await guardarMedios(client, id, payload, revisado);
     await client.query("COMMIT");
     const dia = await readDia(id);
-    return { dia: dia!, antes: previo[0] ? { publicado: previo[0].publicado } : null };
+    return { dia: dia!, antes: previo[0] ? { publicado: previo[0].publicado } : null, unido };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
