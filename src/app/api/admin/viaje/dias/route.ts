@@ -10,7 +10,8 @@ import { parseDia } from "@/lib/viaje/validate";
  * Es PUT y no POST porque repetirlo da lo mismo: el teléfono reintenta cuando
  * vuelve la señal sin saber si el intento anterior llegó, y no se duplica nada.
  * Si el día está publicado, se traduce (cuando hace falta) antes de contestar
- * y se pide rehacer el sitio.
+ * y se pide rehacer el sitio. `unido` avisa que se juntó con otro día (misma
+ * fecha, o cambiado en otro lado): el `clientId` que vuelve manda.
  */
 export async function PUT(request: Request) {
   let body: unknown;
@@ -24,9 +25,9 @@ export async function PUT(request: Request) {
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
   try {
-    const { dia, antes } = await upsertDia(parsed.value);
+    const { dia, antes, unido } = await upsertDia(parsed.value);
     const resultado = await despuesDeGuardar(dia, antes);
-    return NextResponse.json({ ...resultado, sitio: estadoSitio() });
+    return NextResponse.json({ ...resultado, unido, sitio: estadoSitio() });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message.includes("viaje_dias_pais_id_fkey")) {

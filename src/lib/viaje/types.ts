@@ -117,6 +117,8 @@ export type AdminViaje = {
 /** Lo que manda el teléfono para crear o actualizar un día. */
 export type DiaPayload = Omit<AdminDia, "id" | "numero" | "enEstado" | "enViejo" | "actualizado" | "clima"> & {
   enEstado?: EstadoIngles;
+  /** El `actualizado` del servidor sobre el que se editó. Si allá cambió después, se junta en vez de pisar. */
+  base?: string | null;
 };
 
 export type PaisPayload = Omit<AdminPais, "id" | "orden" | "slug"> & { slug?: string };

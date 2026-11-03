@@ -6,14 +6,15 @@ import AdminNav from "../components/AdminNav";
 import type { AdminDia, AdminViaje, EstadoSitio } from "@/lib/viaje/types";
 import { store, pedirPersistencia, type LocalDia } from "./lib/store";
 import { escuchar, sincronizar, type Avance } from "./lib/sync";
-import { hoy, numeroDeDia } from "./lib/geo";
+import { formatoFecha, hoy, numeroDeDia } from "./lib/geo";
 import Inicio from "./components/Inicio";
 import PaisVista from "./components/PaisVista";
 import PaisForm from "./components/PaisForm";
 import DiaEditor from "./components/DiaEditor";
 import Lote, { type EstadoLote } from "./components/Lote";
 import type { DiaVista } from "./components/types";
-import { prepararTodos, repartir } from "./lib/aplicar";
+import { diaNuevo, prepararTodos, repartir } from "./lib/aplicar";
+import { guardarParaSinSenal } from "./lib/instalar";
 import { ir } from "./lib/nav";
 
 /**
@@ -115,7 +116,10 @@ export default function ViajeAdminPage() {
     })();
 
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
-      navigator.serviceWorker.register("/viaje-sw.js", { scope: "/admin/viaje" }).catch(() => {});
+      navigator.serviceWorker
+        .register("/viaje-sw.js", { scope: "/admin/viaje" })
+        .then(() => guardarParaSinSenal())
+        .catch(() => {});
     }
 
     const onOnline = () => {
@@ -139,11 +143,24 @@ export default function ViajeAdminPage() {
           void recargarLocales();
           setDatos((prev) => {
             if (!prev) return prev;
-            const otros = prev.dias.filter((d) => d.clientId !== e.dia.clientId);
+            const otros = prev.dias.filter((d) => d.clientId !== e.dia.clientId && d.clientId !== e.antes);
             const next = { ...prev, sitio: e.sitio, dias: [e.dia, ...otros].sort(ordenDias) };
             void store.guardarViaje(next);
             return next;
           });
+          if (e.unido) {
+            setAviso({
+              tipo: "ok",
+              texto:
+                e.antes !== e.dia.clientId
+                  ? `Ya había un día con fecha ${formatoFecha(e.dia.fecha, true)}, escrito en otro lado: quedaron juntos en uno. Revisalo por si algo se repite.`
+                  : `El día ${formatoFecha(e.dia.fecha, true)} también se había cambiado en otro lado: quedaron juntos los dos cambios. Revisalo por si algo se repite.`,
+            });
+          }
+          // Si se juntó con otro, el día que estaba abierto pasó a llamarse como el que quedó.
+          if (e.antes !== e.dia.clientId && window.location.hash === `#/dia/${e.antes}`) {
+            window.location.replace(`#/dia/${e.dia.clientId}`);
+          }
           if (e.avisoTraduccion) setAviso({ tipo: "error", texto: `Se guardó, pero no se pudo traducir: ${e.avisoTraduccion}` });
           // Los números de día dependen del primero: se piden de nuevo.
           void cargar();
@@ -177,37 +194,21 @@ export default function ViajeAdminPage() {
     return lista.map((d) => ({ ...d, numero: numeroDeDia(d.fecha, fechas) })).sort(ordenDias);
   }, [datos, locales]);
 
+  /* Una fecha es un solo día: si hoy ya tiene día (en el teléfono o en el servidor), se abre ese. */
   const nuevoDia = useCallback(
     async (paisId?: number) => {
       const paises = datosRef.current?.paises ?? [];
       const enCurso = paises.find((p) => p.estado === "en_curso");
       const pais = paisId ?? enCurso?.id ?? paises[0]?.id;
       if (!pais) return;
-      const dia: LocalDia = {
-        clientId: crypto.randomUUID(),
-        id: null,
-        paisId: pais,
-        fecha: hoy(),
-        hora: null,
-        desde: null,
-        hasta: null,
-        km: null,
-        desnivel: null,
-        lat: null,
-        lon: null,
-        latInicio: null,
-        lonInicio: null,
-        tituloEs: "",
-        textoEs: "",
-        tituloEn: null,
-        textoEn: null,
-        enEstado: "sin",
-        publicado: false,
-        medios: [],
-        pendiente: false,
-        error: null,
-        editado: new Date().toISOString(),
-      };
+      const fecha = hoy();
+      const yaEsta =
+        (await store.dias()).find((d) => d.fecha === fecha) ?? datosRef.current?.dias.find((d) => d.fecha === fecha);
+      if (yaEsta) {
+        ir(`#/dia/${yaEsta.clientId}`);
+        return;
+      }
+      const dia = diaNuevo(pais, fecha);
       await store.guardar(dia);
       await recargarLocales();
       ir(`#/dia/${dia.clientId}`);

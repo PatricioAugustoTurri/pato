@@ -20,6 +20,7 @@ export const deServidor = (d: AdminDia): LocalDia => ({
   pendiente: false,
   error: null,
   editado: d.actualizado,
+  base: d.actualizado,
 });
 
 export function diaNuevo(paisId: number, fecha = hoy()): LocalDia {
@@ -47,6 +48,7 @@ export function diaNuevo(paisId: number, fecha = hoy()): LocalDia {
     pendiente: false,
     error: null,
     editado: new Date().toISOString(),
+    base: null,
   };
 }
 

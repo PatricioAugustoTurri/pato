@@ -101,6 +101,7 @@ export function parseDia(body: unknown): Result<DiaPayload> {
       enEstado,
       publicado,
       medios,
+      base: typeof b.base === "string" && !Number.isNaN(Date.parse(b.base)) ? b.base : null,
     },
   };
 }

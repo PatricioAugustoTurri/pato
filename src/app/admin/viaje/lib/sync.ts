@@ -18,7 +18,8 @@ export type Avance = { clientId: string; actual: number; total: number } | null;
 
 type Evento =
   | { tipo: "cambio" }
-  | { tipo: "guardado"; dia: AdminDia; sitio: EstadoSitio; avisoTraduccion: string | null }
+  /* `antes` es el clientId que se mandó; si `unido`, el día se juntó con otro y `dia.clientId` es el que quedó. */
+  | { tipo: "guardado"; dia: AdminDia; sitio: EstadoSitio; avisoTraduccion: string | null; unido: boolean; antes: string }
   | { tipo: "avance"; avance: Avance };
 
 /** Cuánto lleva subido cada archivo que está subiendo ahora, de 0 a 1. */
@@ -137,6 +138,7 @@ export function payloadDe(dia: LocalDia): DiaPayload {
     textoEn: dia.textoEn,
     enEstado: dia.enEstado,
     publicado: dia.publicado,
+    base: dia.base ?? null,
     medios: dia.medios.map((m) => ({
       clientId: m.clientId,
       tipo: m.tipo,
@@ -202,15 +204,28 @@ async function subirDia(clientId: string, paisSlug: (paisId: number) => string) 
 
   emitir({ tipo: "avance", avance: null });
   dia = (await store.dia(clientId))!;
-  const respuesta = await api<{ dia: AdminDia; sitio: EstadoSitio; avisoTraduccion: string | null }>(
+  const respuesta = await api<{ dia: AdminDia; sitio: EstadoSitio; avisoTraduccion: string | null; unido?: boolean }>(
     "/api/admin/viaje/dias",
     { method: "PUT", body: JSON.stringify(payloadDe(dia)) },
   );
+  const unido = respuesta.unido === true;
 
-  // Si se editó mientras subía, lo nuevo sigue pendiente y no se borra.
   const ahora = await store.dia(clientId);
-  if (ahora && ahora.editado === dia.editado) await store.borrar(clientId);
-  emitir({ tipo: "guardado", ...respuesta });
+  if (ahora && ahora.editado === dia.editado) {
+    await store.borrar(clientId);
+  } else if (ahora) {
+    // Se editó mientras subía: lo nuevo sigue pendiente, ahora sobre el día que quedó en el
+    // servidor. Si allá se juntó con otro, el teléfono no tiene lo que se sumó: la base
+    // queda vieja a propósito, para que la próxima subida también junte y no lo borre.
+    if (respuesta.dia.clientId !== clientId) await store.borrar(clientId);
+    await store.guardar({
+      ...ahora,
+      clientId: respuesta.dia.clientId,
+      id: respuesta.dia.id,
+      base: unido ? (ahora.base ?? new Date(0).toISOString()) : respuesta.dia.actualizado,
+    });
+  }
+  emitir({ tipo: "guardado", ...respuesta, unido, antes: clientId });
 }
 
 let corriendo = false;
