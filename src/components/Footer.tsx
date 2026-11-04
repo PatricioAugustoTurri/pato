@@ -2,6 +2,7 @@ import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import { SELLER } from "@/lib/seller";
 import { JOURNEY, JOURNEY_LABEL } from "@/lib/journey";
+import SolDeMayo from "@/components/SolDeMayo";
 
 /* La tienda es solo la tienda (2026-11-01): la historia, el contacto y lo que
    cuenta el viaje viven en Rumbo Oeste. Acá queda lo que sirve para comprar:
@@ -24,7 +25,7 @@ export default function Footer() {
 				{JOURNEY ? (
 					/* `/` es Rumbo Oeste, otra app: va un <a> y no <Link> (ver lib/journey.ts). */
 					// eslint-disable-next-line @next/next/no-html-link-for-pages
-					<a className="nav-journey" href="/">{JOURNEY_LABEL}</a>
+					<a className="nav-journey" href="/"><SolDeMayo className="nav-journey-sun" />{JOURNEY_LABEL}</a>
 				) : (
 					<Link href="/">Home</Link>
 				)}

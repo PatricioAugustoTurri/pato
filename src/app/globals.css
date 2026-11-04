@@ -2308,7 +2308,9 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 
 }
 
-/* El enlace al viaje (Rumbo Oeste): el punto es su sol, la misma marca que lleva
-   la barra del viaje. Es lo unico de aquel mundo que entra a la tienda. */
-.nav-journey { align-items: center; display: inline-flex; gap: 7px; }
-.nav-journey::before { background: #ff8a66; border-radius: 50%; content: ""; flex: none; height: 7px; width: 7px; }
+/* El enlace al viaje (Rumbo Oeste): lo marca su sol, el Sol de Mayo que cruza el
+   cielo del viaje. Es lo unico de aquel mundo que entra a la tienda. */
+.nav-journey { align-items: center; display: inline-flex; gap: 6px; }
+.nav-journey-sun { color: #ff8a66; flex: none; height: 15px; width: 15px; }
+.sol { display: block; fill: currentColor; overflow: visible; }
+.sol .face { fill: color-mix(in oklab, currentColor 42%, #4a1a08); }

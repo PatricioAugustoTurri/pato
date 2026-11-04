@@ -10,6 +10,7 @@ import useCart from "@/hooks/use-cart";
 import { useBump } from "@/hooks/use-bump";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JOURNEY, JOURNEY_LABEL } from "@/lib/journey";
+import SolDeMayo from "@/components/SolDeMayo";
 
 /* El mismo corte que usa el CSS para pasar de barra a drawer. */
 const MOBILE_QUERY = "(max-width: 700px)";
@@ -151,7 +152,7 @@ function NavBar() {
                 {JOURNEY ? (
                     /* `/` es Rumbo Oeste, otra app: va un <a> y no <Link> (ver lib/journey.ts). */
                     // eslint-disable-next-line @next/next/no-html-link-for-pages
-                    <a className="nav-journey" href="/">{JOURNEY_LABEL}</a>
+                    <a className="nav-journey" href="/"><SolDeMayo className="nav-journey-sun" />{JOURNEY_LABEL}</a>
                 ) : (
                     <Link href="/" onClick={closeMenu}>Home</Link>
                 )}
