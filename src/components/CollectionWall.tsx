@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CategoryRow } from "@/lib/collections";
 
-function normalizeCategoryImage(images: unknown): string {
+export function normalizeCategoryImage(images: unknown): string {
   if (Array.isArray(images)) {
     const first = images[0];
     if (Array.isArray(first)) {
