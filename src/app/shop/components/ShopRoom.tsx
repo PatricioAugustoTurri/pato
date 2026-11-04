@@ -1,4 +1,5 @@
 import ShopHero from "@/app/shop/components/ShopHero";
+import ShopIndex from "@/app/shop/components/ShopIndex";
 import CollectionWall from "@/components/CollectionWall";
 import type { ArchiveTotals, CategoryRow } from "@/lib/collections";
 
@@ -24,7 +25,10 @@ export default function ShopRoom({
             No collections are published yet. New work goes up here first.
           </p>
         ) : (
-          <CollectionWall categories={categories} />
+          <>
+            <ShopIndex categories={categories} />
+            <CollectionWall categories={categories} />
+          </>
         )}
       </section>
     </>
