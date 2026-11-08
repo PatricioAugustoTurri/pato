@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ShoppingCart, User, X } from "lucide-react";
+import { User, X } from "lucide-react";
+import CameraIcon from "@/components/CameraIcon";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import useCart from "@/hooks/use-cart";
@@ -166,7 +167,7 @@ function NavBar() {
                         <span>{status === "loading" ? <Skeleton className="h-3 w-20" /> : session ? session.user?.name : "Sign in"}</span>
                     </Link>
                     <Link className="nav-drawer-action" href="/cart" onClick={closeMenu}>
-                        <ShoppingCart aria-hidden="true" />
+                        <CameraIcon />
                         <span>Cart</span>
                         <b key={bagBump} data-bump={bagBump > 0 || undefined}>{itemCount}</b>
                     </Link>
@@ -187,8 +188,14 @@ function NavBar() {
                     </span>
                 </Button>
                 <Button className="bag-button" variant="ghost" type="button" aria-label={`Open cart (${itemCount} ${itemCount === 1 ? "item" : "items"})`} onClick={() => router.push("/cart")}>
-                    <span aria-hidden="true"><ShoppingCart /></span>
-                    <b key={bagBump} data-bump={bagBump > 0 || undefined}>{itemCount}</b>
+                    {/* La cámara entera vuelve a montarse con cada obra que entra
+                        (misma `key` que la cifra): dispara una vez y queda quieta.
+                        Con la bolsa vacía no hay cifra: un 0 sobre la cámara es
+                        ruido, y el nombre accesible ya dice "0 items". */}
+                    <span className="bag-camera" key={bagBump} data-bump={bagBump > 0 || undefined} aria-hidden="true">
+                        <CameraIcon />
+                        {itemCount > 0 && <b>{itemCount}</b>}
+                    </span>
                 </Button>
                 <Button
                     ref={menuButtonRef}

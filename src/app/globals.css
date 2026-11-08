@@ -123,7 +123,15 @@ button { background: none; border: 0; color: inherit; cursor: pointer; font: inh
 .account-icon { align-items: center; border: 1px solid currentColor; border-radius: 50%; display: inline-flex; font-size: 8px; height: 17px; justify-content: center; width: 17px; }
 .account-button:hover, .bag-button:hover { color: var(--accent-text); }
 .bag-button { align-items: center; display: flex; gap: 8px; }
-.bag-button b { align-items: center; background: var(--ink); border-radius: 50%; color: var(--paper); display: flex; font-size: 10px; font-weight: 400; height: 19px; justify-content: center; width: 19px; }
+/* La bolsa es una cámara (CameraIcon) y la cifra se apoya en su esquina libre,
+   arriba a la derecha, como el contador de un rollo. Cuelga hacia afuera del
+   cuerpo para no taparlo: así no necesita un aro del color del fondo, que
+   sobre la tapa del shop —una foto— se vería como un halo. */
+.bag-camera { display: block; height: 22px; position: relative; width: 22px; }
+.bag-camera svg { display: block; height: 100%; overflow: visible; width: 100%; }
+.bag-camera b { align-items: center; background: var(--ink); border-radius: 999px; color: var(--paper); display: flex; font-size: 9.5px; font-variant-numeric: tabular-nums; font-weight: 500; height: 15px; justify-content: center; line-height: 1; min-width: 15px; padding: 0 4px; position: absolute; right: -10px; top: -7px; }
+.cam-shutter, .cam-iris, .cam-finder { transform-box: fill-box; transform-origin: center; }
+.cam-iris { transform: scale(0); }
 .menu-button { display: none; }
 h1, h2, h3, p { margin-top: 0; }
 h1 { font-family: var(--font-heading); font-size: clamp(58px, 8.2vw, 125px); font-weight: 500; letter-spacing: -.032em; line-height: .9; margin-bottom: 32px; }
@@ -234,7 +242,7 @@ body:has(.hero-section) .site-nav .account-button,
 body:has(.hero-section) .site-nav .bag-button { color: var(--cream-200); }
 body:has(.hero-section) .site-nav .account-button:hover,
 body:has(.hero-section) .site-nav .bag-button:hover { color: var(--paper); }
-body:has(.hero-section) .site-nav .bag-button b { background: var(--paper); color: var(--ink); }
+body:has(.hero-section) .site-nav .bag-camera b { background: var(--paper); color: var(--ink); }
 body:has(.hero-section) .site-nav .menu-button span { background: var(--paper); }
 body:has(.hero-section) .site-nav .wordmark { color: var(--paper); }
 body:has(.hero-section) .site-nav .wordmark em { color: var(--cream-300); }
@@ -257,8 +265,8 @@ body:has(.contact-page) .site-nav .account-button:hover,
 body:has(.contact-page) .site-nav .bag-button:hover { color: var(--paper); }
 body:has(.is-dark-room) .site-nav .account-button:hover,
 body:has(.is-dark-room) .site-nav .bag-button:hover { color: var(--paper); }
-body:has(.contact-page) .site-nav .bag-button b { background: var(--paper); color: var(--ink); }
-body:has(.is-dark-room) .site-nav .bag-button b { background: var(--paper); color: var(--ink); }
+body:has(.contact-page) .site-nav .bag-camera b { background: var(--paper); color: var(--ink); }
+body:has(.is-dark-room) .site-nav .bag-camera b { background: var(--paper); color: var(--ink); }
 body:has(.contact-page) .site-nav .menu-button span { background: var(--paper); }
 body:has(.is-dark-room) .site-nav .menu-button span { background: var(--paper); }
 body:has(.contact-page) .site-nav .wordmark { color: var(--paper); }
@@ -1846,7 +1854,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .site-footer { align-items: start; background: var(--ink); color: var(--paper); display: grid; gap: 42px 5vw; grid-template-columns: 1.4fr 1fr 3.4fr; padding: 65px 5vw 38px; }
 .footer-brand em { color: var(--accent); }.footer-social { display: flex; gap: 2px; list-style: none; margin: 18px 0 0 -11px; padding: 0; }.footer-social a { align-items: center; color: var(--footer-link); display: flex; height: 44px; justify-content: center; width: 44px; }.footer-social svg { height: 19px; width: 19px; }.footer-social a:hover, .footer-social a:focus-visible { color: var(--accent); }.footer-social a:focus-visible { outline: 2px solid var(--paper); outline-offset: -6px; }.footer-brand p, .copyright { color: var(--footer-muted); font-size: 11px; margin: 28px 0 0; }
 .footer-column { display: flex; flex-direction: column; gap: 11px; }.footer-column a { color: var(--footer-link); font-size: 12px; }.footer-column a:hover, .footer-legal a:hover { color: var(--accent); }.footer-label { color: var(--accent); font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; margin: 0 0 8px; text-transform: uppercase; }.footer-bottom { align-items: end; border-top: 1px solid var(--ink-soft); display: flex; grid-column: 1 / -1; justify-content: space-between; padding-top: 22px; }.footer-bottom .copyright { margin: 0; }.footer-legal { display: flex; flex-wrap: wrap; gap: 6px 25px; }.footer-legal a { color: var(--footer-muted); font-size: 11px; }.sr-only { height: 1px; margin: -1px; overflow: hidden; position: absolute; width: 1px; clip: rect(0,0,0,0); }
-@media (max-width: 700px) { .site-nav { height: 72px; padding: 0 6vw; }.nav-actions { gap: 14px; }.account-button span:last-child, .bag-button span:first-child { display: none; }.text-link { margin-bottom: 38px; }.contact-page { gap: 44px; grid-template-columns: 1fr; padding: 56px 7vw 80px; }.contact-intro h1 { font-size: clamp(38px, 11vw, 56px); }.contact-form-row { grid-template-columns: 1fr; }.admin-page { padding: 70px 7vw 90px; }.admin-heading { align-items: start; }.admin-heading > svg { height: 34px; width: 34px; }.admin-grid-two { grid-template-columns: 1fr; }.admin-section-heading { align-items: start; flex-direction: column; gap: 14px; }.site-footer { grid-template-columns: 1fr 1fr; }.footer-bottom { grid-column: 1 / -1; }.footer-bottom { align-items: start; flex-direction: column; gap: 15px; }.copyright { margin: 0; } }
+@media (max-width: 700px) { .site-nav { height: 72px; padding: 0 6vw; }.nav-actions { gap: 14px; }.account-button span:last-child { display: none; }.text-link { margin-bottom: 38px; }.contact-page { gap: 44px; grid-template-columns: 1fr; padding: 56px 7vw 80px; }.contact-intro h1 { font-size: clamp(38px, 11vw, 56px); }.contact-form-row { grid-template-columns: 1fr; }.admin-page { padding: 70px 7vw 90px; }.admin-heading { align-items: start; }.admin-heading > svg { height: 34px; width: 34px; }.admin-grid-two { grid-template-columns: 1fr; }.admin-section-heading { align-items: start; flex-direction: column; gap: 14px; }.site-footer { grid-template-columns: 1fr 1fr; }.footer-bottom { grid-column: 1 / -1; }.footer-bottom { align-items: start; flex-direction: column; gap: 15px; }.copyright { margin: 0; } }
 
 /* --- Menu movil: drawer lateral -------------------------------------------
    Debajo de 700px los mismos enlaces dejan de ser una fila y pasan a ser un
@@ -2165,7 +2173,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
    nuevo; la primera vez no lleva `data-bump`, así que nada se mueve al
    cargar. Con movimiento reducido la cifra cambia sin desplazarse. */
 @media (prefers-reduced-motion: no-preference) {
-  .bag-button b[data-bump],
+  .bag-camera[data-bump] b { animation: cam-count var(--dur-base) var(--ease) 160ms both; }
   .nav-drawer-action b[data-bump] { animation: badge-bump var(--dur-base) var(--ease) both; }
   .figure-roll[data-bump] { animation: figure-roll var(--dur-base) var(--ease) both; display: inline-block; }
 }
@@ -2178,6 +2186,44 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 @keyframes figure-roll {
   from { clip-path: inset(0 0 100% 0); opacity: 0; transform: translateY(.55em); }
   to { clip-path: inset(0); opacity: 1; transform: none; }
+}
+
+/* --- La cámara del carrito -------------------------------------------------
+   Cuando entra una obra la cámara saca una foto, una sola vez: el disparador
+   baja, el obturador cierra y abre el lente, y el visor destella con el
+   acento. Recién después sube la cifra nueva (el retraso de `badge-bump`
+   arriba), como si la foto quedara contada en el rollo. Todo dura poco más de
+   medio segundo y se mueve dentro del dibujo: la barra no se sacude.
+   Al pasar el mouse el disparador baja a medio recorrido, como un dedo que
+   enfoca. Con movimiento reducido no pasa nada de esto. */
+@media (prefers-reduced-motion: no-preference) {
+  .cam-shutter { transition: transform var(--dur-fast) var(--ease); }
+  .bag-button:hover .cam-shutter, .bag-button:focus-visible .cam-shutter { transform: translateY(.7px); }
+  .bag-camera[data-bump] .cam-shutter { animation: cam-press 520ms var(--ease) both; }
+  .bag-camera[data-bump] .cam-iris { animation: cam-blink 420ms cubic-bezier(.6, 0, .2, 1) 70ms both; }
+  .bag-camera[data-bump] .cam-finder { animation: cam-flash 560ms ease-out 90ms both; }
+}
+/* La cifra sube a su lugar sin el aro de `badge-bump`: el destello del visor
+   ya pone el acento, y dos destellos juntos serían demasiado. */
+@keyframes cam-count {
+  0% { opacity: 0; transform: translateY(4px) scale(.85); }
+  60% { opacity: 1; transform: translateY(0) scale(1.06); }
+  100% { transform: none; }
+}
+@keyframes cam-press {
+  0% { transform: none; }
+  18% { transform: translateY(1.4px); }
+  100% { transform: none; }
+}
+@keyframes cam-blink {
+  0% { transform: scale(0); }
+  38% { transform: scale(1); }
+  100% { transform: scale(0); }
+}
+@keyframes cam-flash {
+  0% { fill: transparent; stroke: currentColor; }
+  12% { fill: var(--accent); stroke: var(--accent); }
+  100% { fill: transparent; stroke: currentColor; }
 }
 
 /* --- Una obra sale del carrito ------------------------------------------------
