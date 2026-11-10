@@ -13,7 +13,30 @@
    sin unidad `lh`. */
 const RESERVED = "\u00a0";
 
-export default function CartCount({ prints = 0, works = 0 }: { prints?: number; works?: number }) {
+export default function CartCount({
+  prints = 0,
+  files = 0,
+  works = 0,
+}: {
+  prints?: number;
+  files?: number;
+  works?: number;
+}) {
+  /* Con archivos digitales la línea dice qué es cada cosa —"1 print · 1 file"—:
+     sumarlos como copias diría "2 prints" de algo que no se imprime. */
+  if (files > 0 && prints + files > 1) {
+    return (
+      <p className="cart-count">
+        {[
+          prints > 0 ? `${prints} ${prints === 1 ? "print" : "prints"}` : null,
+          `${files} ${files === 1 ? "file" : "files"}`,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </p>
+    );
+  }
+
   const says = prints > 1;
 
   return (

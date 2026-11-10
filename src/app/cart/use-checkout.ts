@@ -13,7 +13,9 @@ import type { ShippingRegion } from "@/lib/shipping";
    a los dos. */
 export type Checkout = ReturnType<typeof useCheckout>;
 
-export function useCheckout(items: CartItem[], region: ShippingRegion) {
+/* `region` es null cuando el carrito es solo de archivos digitales: no hay
+   nada que mandar por correo. */
+export function useCheckout(items: CartItem[], region: ShippingRegion | null) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +27,7 @@ export function useCheckout(items: CartItem[], region: ShippingRegion) {
        antes del pedido porque, si el checkout falla, igual se quiere saber
        cuanta gente llego a intentarlo. */
     track("checkout_start", {
-      region,
+      region: region ?? "digital",
       works: items.length,
       prints: items.reduce((sum, item) => sum + item.quantity, 0),
     });
@@ -37,7 +39,7 @@ export function useCheckout(items: CartItem[], region: ShippingRegion) {
           size: item.size,
           quantity: item.quantity,
         })),
-        region,
+        ...(region ? { region } : {}),
       });
 
       if (data.url) {

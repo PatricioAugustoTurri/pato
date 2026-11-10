@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { catalogVariants, replaceVariants } from "@/lib/photo-variants";
 import { revalidateCatalog } from "@/lib/revalidate-catalog";
+import { deleteOriginal } from "@/lib/originals";
 
 type PhotoPayload = {
   categoryId?: number | null;
@@ -160,11 +161,17 @@ export async function DELETE(
   }
 
   try {
-    const result = await pool.query("DELETE FROM photos WHERE id = $1 RETURNING id", [photoId]);
+    const result = await pool.query<{ original_file: string | null }>(
+      "DELETE FROM photos WHERE id = $1 RETURNING id, original_file",
+      [photoId],
+    );
 
     if (result.rowCount === 0) {
       return NextResponse.json({ error: "Fotografía no encontrada." }, { status: 404 });
     }
+
+    /* El JPG original se va con la obra: sin ficha nadie lo puede comprar. */
+    await deleteOriginal(result.rows[0]?.original_file);
 
     revalidateCatalog();
 

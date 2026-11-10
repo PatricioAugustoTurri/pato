@@ -9,6 +9,9 @@ import {
   type OrderAlert,
   type OrderConfirmation,
 } from "@/lib/order-email";
+import { createDownloads, type DownloadLink } from "@/lib/downloads";
+import { isDigital } from "@/lib/digital";
+import { absoluteUrl } from "@/lib/seo";
 
 /** Lo que el checkout guarda en `orders.items`. */
 type OrderItem = {
@@ -69,6 +72,7 @@ export async function POST(request: Request) {
       let alert: OrderAlert | null = null;
       let sold: { id: number; items: OrderItem[]; email: string | null; createdAt: Date | null } | null =
         null;
+      let downloads: DownloadLink[] = [];
 
       const client = await pool.connect();
 
@@ -114,6 +118,18 @@ export async function POST(request: Request) {
            segunda confirmacion de la misma compra. */
         sold = rows[0] ?? null;
 
+        /* Los links de los archivos digitales nacen en la misma transacción que
+           el cobro: si algo falla, el pedido no queda pagado sin sus descargas,
+           y Stripe reintenta el evento entero. */
+        if (sold) {
+          const digitalIds = (sold.items ?? [])
+            .filter((item) => isDigital(item.size))
+            .map((item) => Number(item.photoId));
+          if (digitalIds.length > 0) {
+            downloads = await createDownloads(client, sold.id, digitalIds);
+          }
+        }
+
         await client.query("COMMIT");
       } catch (error) {
         await client.query("ROLLBACK");
@@ -134,6 +150,7 @@ export async function POST(request: Request) {
           shippingAmountCents: session.shipping_cost?.amount_total ?? null,
           totalCents: session.amount_total ?? null,
           shippingAddress,
+          downloads: downloads.map((link) => ({ title: link.title, url: absoluteUrl(link.path) })),
         };
 
         alert = {

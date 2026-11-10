@@ -55,6 +55,8 @@ export default function PhotosList({ photos, onSelect, onCreate, onDelete }: Pho
                   <span className="admin-photo-card-content">
                     <strong>{photo.name}</strong>
                     <small>/{photo.slug}</small>
+                    {/* Para ir viendo cuáles faltan: sin original no se venden en digital. */}
+                    {!photo.original && <small className="admin-photo-card-flag">Sin original</small>}
                     <Pencil aria-hidden="true" />
                   </span>
                 </button>

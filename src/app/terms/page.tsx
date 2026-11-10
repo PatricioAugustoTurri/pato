@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DIGITAL_PRICE, DOWNLOAD_DAYS, MAX_DOWNLOADS } from "@/lib/digital";
 import { pageMetadata } from "@/lib/seo";
 import { MAX_PER_LINE } from "@/lib/cart-limits";
 import { formatPrice } from "@/lib/money";
@@ -53,13 +54,17 @@ export default function TermsPage() {
           The print is yours. The photograph is not: copyright stays with the author, so
           buying a print does not give the right to copy, scan, publish or sell the image.
         </p>
+        <p>
+          Every photograph can also be bought as a <a href="#digital">digital file</a>: the
+          original JPG, for you to print yourself.
+        </p>
       </section>
 
       <section className="doc-section">
         <h2>Prices and payment</h2>
         <p>
           Prices are in euros and are the price you pay; shipping is added at checkout
-          according to where the print goes. Payment is by card on Stripe&apos;s own
+          according to where the print goes. Digital files have no shipping. Payment is by card on Stripe&apos;s own
           page, so card details never reach this site.
         </p>
         <p>
@@ -112,12 +117,40 @@ export default function TermsPage() {
         </p>
       </section>
 
+      <section className="doc-section" id="digital">
+        <h2>Digital files</h2>
+        <p>
+          The digital file is the original JPG of the photograph, at full resolution and
+          without the signature shown on the site. It costs {formatPrice(DIGITAL_PRICE)} and,
+          more than a sale, it is a contribution to the bike ride from Japan to Portugal
+          this shop helps pay for.
+        </p>
+        <p>
+          The download appears on screen as soon as the payment goes through, and the same
+          link goes to the email you gave at checkout. Each link works {MAX_DOWNLOADS} times,
+          for {DOWNLOAD_DAYS} days. If it runs out before you have the file, write and it will
+          be sent again.
+        </p>
+        <p>
+          What you can do with it: print it as many times and as large as you like, for
+          your home or as a gift. What you cannot: sell it or prints of it, use it for
+          anything commercial, or share the file with others. If you post a photo of it on
+          social media, a mention of @patoturri is appreciated. The copyright stays with
+          Pato Turri.
+        </p>
+      </section>
+
       <section className="doc-section" id="returns">
         <h2>Changing your mind</h2>
         <p>
           You can return a print within 14 days of receiving it, for any reason, without
           explaining yourself. That is the right EU law gives you on anything bought at a
           distance, and it applies here.
+        </p>
+        <p>
+          Digital files are the exception the same law makes: they are delivered the moment
+          you pay, and by paying you agree to that and accept that a file cannot be returned.
+          If a file is damaged or does not open, write and it will be replaced.
         </p>
         <p>
           Write to <a href={`mailto:${SELLER.email}`}>{SELLER.email}</a> first so we agree

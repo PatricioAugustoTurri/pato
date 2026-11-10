@@ -11,6 +11,7 @@ import CartList from "./components/CartList";
 import { CartCounterSkeleton, CartLinesSkeleton } from "./components/CartSkeleton";
 import { useCheckout } from "./use-checkout";
 import { useHydrated } from "./use-hydrated";
+import { isDigital } from "@/lib/digital";
 
 export default function CartPage() {
   const items = useCart((state) => state.items);
@@ -23,13 +24,18 @@ export default function CartPage() {
      mayoria de los pedidos; la otra zona esta a un clic y ninguna de las dos
      esta preseleccionada de forma invisible: la fila elegida se ve. */
   const [region, setRegion] = useState<ShippingRegion>("it");
-  const checkout = useCheckout(items, region);
+  /* Un carrito solo de archivos digitales no viaja: sin zona ni envío. */
+  const ships = items.some((item) => !isDigital(item.attributes?.size ?? item.size));
+  const checkout = useCheckout(items, ships ? region : null);
 
   const subtotal = items.reduce(
     (sum, item) => sum + Number(item.attributes?.price ?? item.price) * item.quantity,
     0,
   );
-  const prints = items.reduce((sum, item) => sum + item.quantity, 0);
+  const prints = items
+    .filter((item) => !isDigital(item.attributes?.size ?? item.size))
+    .reduce((sum, item) => sum + item.quantity, 0);
+  const files = items.filter((item) => isDigital(item.attributes?.size ?? item.size)).length;
   const works = new Set(items.map((item) => item.photoId)).size;
 
   if (!hydrated) {
@@ -66,7 +72,7 @@ export default function CartPage() {
             esqueleto: si apareciera y desapareciera, el titulo y la lista
             entera saltarian treinta pixeles cuando localStorage contesta, que
             es el mismo parpadeo que esta pagina vino a sacar. */}
-        <CartCount prints={prints} works={works} />
+        <CartCount prints={prints} files={files} works={works} />
         <h1>Cart</h1>
 
         <CartList items={items} onRemove={removeItem} onQuantity={setQuantity} />
@@ -74,15 +80,16 @@ export default function CartPage() {
 
       <CartCounter
         subtotal={subtotal}
-        region={region}
+        region={ships ? region : null}
         onRegionChange={setRegion}
         checkout={checkout}
         buttonRef={checkoutRef}
       />
 
       <CartBar
-        subtotal={subtotal + shippingRate(region).amount / 100}
+        subtotal={subtotal + (ships ? shippingRate(region).amount / 100 : 0)}
         prints={prints}
+        files={files}
         checkout={checkout}
         watch={checkoutRef}
       />

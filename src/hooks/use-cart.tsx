@@ -3,6 +3,7 @@ import { toast } from "sonner"
 import { create } from "zustand"
 import { MAX_PER_LINE } from "@/lib/cart-limits"
 import { persist, createJSONStorage } from "zustand/middleware"
+import { isDigital } from "@/lib/digital"
 
 export type CartItem = {
     photoId: number,
@@ -41,6 +42,12 @@ export const useCart = create(persist<CartStore>((set, get) => ({
         )
 
         if (existingItem) {
+            /* El archivo digital es uno solo: dos descargas del mismo JPG son el
+               mismo JPG. */
+            if (isDigital(data.size)) {
+                return toast("The digital file is already in your cart")
+            }
+
             /* En el tope no se suma en silencio: el boton dijo "Add to cart" y
                el carrito se quedaria igual sin explicar por que. */
             if (existingItem.quantity >= MAX_PER_LINE) {

@@ -13,11 +13,13 @@ import type { Checkout } from "../use-checkout";
 export default function CartBar({
   subtotal,
   prints,
+  files = 0,
   checkout,
   watch,
 }: {
   subtotal: number;
   prints: number;
+  files?: number;
   checkout: Checkout;
   watch: RefObject<HTMLButtonElement | null>;
 }) {
@@ -37,7 +39,14 @@ export default function CartBar({
   return (
     <div className="cart-bar" data-visible={offScreen ? "" : undefined} aria-hidden={!offScreen}>
       <span className="cart-bar-what">
-        <b>{prints} {prints === 1 ? "print" : "prints"}</b>
+        <b>
+          {[
+            prints > 0 ? `${prints} ${prints === 1 ? "print" : "prints"}` : null,
+            files > 0 ? `${files} ${files === 1 ? "file" : "files"}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </b>
         <span>{formatPrice(subtotal)}</span>
       </span>
       <button

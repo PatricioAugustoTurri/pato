@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     const photoResult = await client.query<{ id: number }>(
       `INSERT INTO photos (category_id, name, slug, description, oferta, preferidos, pais, images)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
        RETURNING id`,
       [categoryId, name, slug, description, Boolean(payload.oferta), Boolean(payload.preferidos), pais, JSON.stringify(images)],
     );
@@ -86,6 +86,10 @@ export async function GET() {
   const { rows } = await pool.query<AdminPhoto>(
     `SELECT p.id, p.category_id AS "categoryId", p.name, p.slug, p.description,
             p.oferta, p.preferidos, p.pais, p.images,
+            CASE WHEN p.original_file IS NULL THEN NULL ELSE json_build_object(
+              'bytes', p.original_bytes, 'width', p.original_width,
+              'height', p.original_height, 'uploadedAt', p.original_uploaded_at
+            ) END AS original,
             ${VARIANTS_SUBQUERY}
      FROM photos p
      ORDER BY p.id DESC`,

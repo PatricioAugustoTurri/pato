@@ -17,4 +17,9 @@ export type PhotoDetailRow = {
   categoryName: string;
   categorySlug: string;
   variants: PhotoVariant[];
+  /* Las medidas del JPG original, o null si todavía no se subió: sin original
+     la obra no se vende en digital. */
+  originalWidth?: number | null;
+  originalHeight?: number | null;
+  hasOriginal?: boolean;
 };

@@ -29,6 +29,9 @@ const getPhotoDetail = cache(async (slug: string, photoSlug: string): Promise<Ph
             p.description,
             p.images,
             p.pais,
+            p.original_file IS NOT NULL AS "hasOriginal",
+            p.original_width AS "originalWidth",
+            p.original_height AS "originalHeight",
             c.name AS "categoryName",
             c.slug AS "categorySlug"
      FROM photos p
@@ -216,6 +219,11 @@ export default async function PhotoDetailPage({
             imageAlt={imageAlt}
             href={`/shop/${photo.categorySlug}/${photo.slug}`}
             variants={photo.variants}
+            digital={
+              photo.hasOriginal && photo.originalWidth && photo.originalHeight
+                ? { width: photo.originalWidth, height: photo.originalHeight }
+                : null
+            }
           />
         </div>
       </section>

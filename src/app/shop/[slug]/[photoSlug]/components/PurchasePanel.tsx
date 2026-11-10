@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useCart, { type CartItem } from "@/hooks/use-cart";
 import { track } from "@/lib/analytics";
@@ -8,6 +8,17 @@ import { useBump } from "@/hooks/use-bump";
 import { formatPrice } from "@/lib/money";
 import { sizeDimensions } from "@/lib/sizes";
 import type { PhotoVariant } from "@/types/PhotoType";
+import {
+  DIGITAL_LICENSE,
+  DIGITAL_PRICE,
+  DIGITAL_SIZE,
+  isDigital,
+  printSizeAt300,
+} from "@/lib/digital";
+
+/* El archivo digital entra en la lista como una fila más, con un id que
+   ninguna variante de la base puede tener. */
+const DIGITAL_ID = -1;
 
 /* Las medidas ISO viven en `@/lib/sizes` porque el carrito dice lo mismo. Este
    panel no dice nada sobre gramaje ni tipo de papel: NO estan confirmados con
@@ -20,7 +31,8 @@ export default function PurchasePanel({
   imageUrl,
   imageAlt,
   href,
-  variants,
+  variants: printVariants,
+  digital,
 }: {
   photoId: number;
   photoName: string;
@@ -28,7 +40,12 @@ export default function PurchasePanel({
   imageAlt: string;
   href: string;
   variants: PhotoVariant[];
+  /** Las medidas del original, o null si la obra no se vende en digital. */
+  digital: { width: number; height: number } | null;
 }) {
+  const variants: PhotoVariant[] = digital
+    ? [...printVariants, { id: DIGITAL_ID, size: DIGITAL_SIZE, price: DIGITAL_PRICE }]
+    : printVariants;
   const addItem = useCart((state) => state.addItem);
   const items = useCart((state) => state.items);
   const [selectedId, setSelectedId] = useState(variants[0]?.id);
@@ -77,13 +94,18 @@ export default function PurchasePanel({
      dibujada solo pasa si la obra no tiene ninguno —y de eso se ocupa el
      `variants.length === 0` de arriba. */
   const noSize = !selected;
-  /* Cuantas copias de ESTA obra ya hay en el carrito, en cualquier tamano. */
+  const digitalSelected = isDigital(selected?.size);
+  /* Cuantas copias impresas de ESTA obra ya hay en el carrito, en cualquier
+     tamano, y si el archivo ya esta: el archivo se compra una sola vez. */
   const inCart = items
-    .filter((item) => item.photoId === photoId)
+    .filter((item) => item.photoId === photoId && !isDigital(item.size))
     .reduce((sum, item) => sum + item.quantity, 0);
+  const fileInCart = items.some((item) => item.photoId === photoId && isDigital(item.size));
+  const blocked = noSize || (digitalSelected && fileInCart);
+  const addLabel = digitalSelected && fileInCart ? "In your cart" : justAdded ? "Added to cart" : "Add to cart";
 
   const handleAdd = () => {
-    if (!selected) return;
+    if (!selected || blocked) return;
 
     const cartItem: CartItem = {
       photoId,
@@ -109,25 +131,31 @@ export default function PurchasePanel({
 
         {variants.map((variant) => {
           return (
-            <label
-              className="buy-size"
-              key={variant.id}
-              data-selected={selectedId === variant.id ? "" : undefined}
-            >
-              <input
-                type="radio"
-                name="photo-size"
-                value={variant.id}
-                checked={selectedId === variant.id}
-                onChange={() => {
-                  setSelectedId(variant.id);
-                  setJustAdded(false);
-                }}
-              />
-              <span className="buy-size-name">{variant.size}</span>
-              <span className="buy-size-note">{sizeDimensions(variant.size)}</span>
-              <span className="buy-size-price">{formatPrice(variant.price)}</span>
-            </label>
+            <Fragment key={variant.id}>
+              {/* El archivo va aparte de los tamaños de papel: es otra cosa, y es
+                  la forma barata de ayudar al viaje. */}
+              {variant.id === DIGITAL_ID && (
+                <span className="buy-or">Or the file — a contribution to the ride</span>
+              )}
+              <label
+                className="buy-size"
+                data-selected={selectedId === variant.id ? "" : undefined}
+              >
+                <input
+                  type="radio"
+                  name="photo-size"
+                  value={variant.id}
+                  checked={selectedId === variant.id}
+                  onChange={() => {
+                    setSelectedId(variant.id);
+                    setJustAdded(false);
+                  }}
+                />
+                <span className="buy-size-name">{variant.size}</span>
+                <span className="buy-size-note">{sizeDimensions(variant.size)}</span>
+                <span className="buy-size-price">{formatPrice(variant.price)}</span>
+              </label>
+            </Fragment>
           );
         })}
       </fieldset>
@@ -137,12 +165,12 @@ export default function PurchasePanel({
         className="buy-add"
         ref={addRef}
         onClick={handleAdd}
-        disabled={noSize}
+        disabled={blocked}
         /* El precio viaja DENTRO del boton: la decision y su costo se leen en
            el mismo golpe de vista, sin una cifra suelta repitiendo lo que la
            fila elegida ya dice. */
       >
-        <span>{justAdded ? "Added to cart" : "Add to cart"}</span>
+        <span>{addLabel}</span>
         {/* Al cambiar de tamaño el precio rota en su lugar: cambiar la cifra
             de golpe dentro de un boton que no se movio es facil de no ver. */}
         {selected && (
@@ -152,15 +180,35 @@ export default function PurchasePanel({
         )}
       </button>
 
-      {inCart > 0 && (
+      {(inCart > 0 || fileInCart) && (
         <p className="buy-incart">
-          {inCart === 1 ? "1 print of this work" : `${inCart} prints of this work`} in your
-          cart. <Link href="/cart">View cart ↗</Link>
+          {[
+            inCart === 1 ? "1 print" : inCart > 1 ? `${inCart} prints` : null,
+            fileInCart ? "the digital file" : null,
+          ]
+            .filter(Boolean)
+            .join(" and ")}{" "}
+          of this work in your cart. <Link href="/cart">View cart ↗</Link>
         </p>
       )}
 
-      {/* Los unicos hechos de envio que estan confirmados. Nada de plazos de
-          impresion ni de papeles mientras no exista el mecanismo detras. */}
+      {/* Con el archivo elegido, el envio no dice nada: lo que importa es que
+          llega en el acto, hasta donde se imprime bien y para que se puede usar. */}
+      {digitalSelected && digital ? (
+        <>
+          <dl className="buy-terms">
+            <div>
+              <dt>Delivery</dt>
+              <dd>Instant download after payment</dd>
+            </div>
+            <div>
+              <dt>Prints sharp up to</dt>
+              <dd>{printSizeAt300(digital.width, digital.height)} at 300 dpi</dd>
+            </div>
+          </dl>
+          <p className="buy-license">{DIGITAL_LICENSE}</p>
+        </>
+      ) : (
       <dl className="buy-terms">
         <div>
           <dt>Shipping in Italy</dt>
@@ -171,6 +219,7 @@ export default function PurchasePanel({
           <dd>€10 · 4–10 working days</dd>
         </div>
       </dl>
+      )}
 
       {/* Fuera del flujo del mostrador y al alcance del pulgar. Repite lo justo:
           que tamano esta elegido, cuanto sale y el boton. */}
@@ -179,8 +228,8 @@ export default function PurchasePanel({
           <b>{selected?.size}</b>
           <span>{selected ? formatPrice(selected.price) : ""}</span>
         </span>
-        <button type="button" onClick={handleAdd} disabled={noSize} tabIndex={addOffScreen ? 0 : -1}>
-          {justAdded ? "Added" : "Add to cart"}
+        <button type="button" onClick={handleAdd} disabled={blocked} tabIndex={addOffScreen ? 0 : -1}>
+          {digitalSelected && fileInCart ? "In your cart" : justAdded ? "Added" : "Add to cart"}
         </button>
       </div>
     </div>

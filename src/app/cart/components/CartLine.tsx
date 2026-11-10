@@ -7,6 +7,7 @@ import type { CartItem } from "@/hooks/use-cart";
 import { formatPrice } from "@/lib/money";
 import { sizeDimensions } from "@/lib/sizes";
 import CartQuantity from "./CartQuantity";
+import { isDigital } from "@/lib/digital";
 
 export default function CartLine({
   item,
@@ -79,12 +80,17 @@ export default function CartLine({
           {dimensions && <span aria-hidden="true"> · </span>}
           {dimensions}
         </p>
-        <CartQuantity
-          quantity={item.quantity}
-          title={item.name}
-          size={size}
-          onChange={(quantity) => onQuantity(item.photoId, size, quantity)}
-        />
+        {/* El archivo se compra una vez: no hay cantidad que elegir. */}
+        {isDigital(size) ? (
+          <p className="cart-line-digital">Download right after payment · no shipping</p>
+        ) : (
+          <CartQuantity
+            quantity={item.quantity}
+            title={item.name}
+            size={size}
+            onChange={(quantity) => onQuantity(item.photoId, size, quantity)}
+          />
+        )}
       </div>
 
       <div className="cart-line-money">

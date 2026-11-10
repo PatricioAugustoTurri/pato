@@ -53,6 +53,9 @@ ENV DATABASE_URL=$DATABASE_URL \
 # que falte y siembra los países de la ruta solo si la tabla está vacía. Va acá porque el
 # build ya llega a la base (DATABASE_URL), y así nadie tiene que acordarse de correrla.
 RUN node scripts/migrate-viaje.mjs scripts/viaje-semilla.json
+# El archivo digital (los JPG originales que se venden para imprimir en casa):
+# columnas en `photos` y la tabla de links de descarga. Idempotente, igual que la de arriba.
+RUN node scripts/migrate-archivo-digital.mjs
 RUN npm run build
 
 
@@ -76,6 +79,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Aca vive el cache de ISR. Montale un volumen desde Coolify para que las
 # paginas regeneradas sobrevivan a los reinicios.
 RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
+
+# Los JPG originales que se venden como archivo digital (ORIGINALS_DIR). En
+# Coolify va un volumen persistente con nombre montado en /app/data/originales:
+# sin volumen, cada deploy arranca vacío y los originales se pierden. La carpeta
+# se crea acá con dueño `nextjs` para que el volumen nazca con ese dueño.
+# ORIGINALS_DIR=/app/data/originales se pone en Coolify junto con el volumen, no acá:
+# sin la variable, subir un original falla con un aviso en vez de perderse.
+RUN mkdir -p data/originales && chown -R nextjs:nodejs data
 
 USER nextjs
 EXPOSE 3000
