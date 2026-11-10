@@ -11,6 +11,7 @@ import {
   stripeShippingOptions,
   type ShippingRegion,
 } from "@/lib/shipping";
+import { DIGITAL_PRICE, DIGITAL_SIZE, isDigital } from "@/lib/digital";
 
 export async function POST(request: Request) {
   /* Comprar no pide cuenta. Antes la ruta rechazaba a quien no hubiera
@@ -28,19 +29,12 @@ export async function POST(request: Request) {
   const userEmail = userId ? (authSession?.user?.email ?? null) : null;
 
   let rawItems: unknown;
-  let region: ShippingRegion;
+  let rawRegion: unknown;
 
   try {
     const body = (await request.json()) as { items?: unknown; region?: unknown };
     rawItems = body.items;
-
-    /* La zona se comprueba acá, como el precio: el navegador propone y el
-       servidor decide. Un valor inventado no cae a la tarifa más barata, se
-       rechaza. */
-    if (!isShippingRegion(body.region)) {
-      return NextResponse.json({ error: "Choose where the order ships to." }, { status: 400 });
-    }
-    region = body.region;
+    rawRegion = body.region;
   } catch {
     return NextResponse.json({ error: "The request body is not valid JSON." }, { status: 400 });
   }
@@ -49,6 +43,20 @@ export async function POST(request: Request) {
 
   if (!cart.ok) {
     return NextResponse.json({ error: cart.error }, { status: 400 });
+  }
+
+  /* Un archivo digital no viaja: si el carrito es solo de archivos, no hay zona,
+     ni dirección, ni envío. Con al menos una copia impresa, la zona se comprueba
+     acá, como el precio: el navegador propone y el servidor decide. Un valor
+     inventado no cae a la tarifa más barata, se rechaza. */
+  const ships = cart.lines.some((line) => !isDigital(line.size));
+  let region: ShippingRegion | null = null;
+
+  if (ships) {
+    if (!isShippingRegion(rawRegion)) {
+      return NextResponse.json({ error: "Choose where the order ships to." }, { status: 400 });
+    }
+    region = rawRegion;
   }
 
   let stripe;
@@ -73,6 +81,42 @@ export async function POST(request: Request) {
     let totalCents = 0;
 
     for (const item of cart.lines) {
+      /* El archivo se vende una vez por obra —dos descargas del mismo JPG son el
+         mismo JPG— y solo si el original está subido. El precio es el de
+         `DIGITAL_PRICE`, no el de una variante: no hay medida de papel. */
+      if (isDigital(item.size)) {
+        const { rows } = await client.query<{ name: string }>(
+          "SELECT name FROM photos WHERE id = $1 AND original_file IS NOT NULL",
+          [item.photoId],
+        );
+
+        if (!rows[0]) {
+          return NextResponse.json(
+            { error: "The digital file of one of these photographs is not available right now." },
+            { status: 400 },
+          );
+        }
+
+        const unitAmount = Math.round(DIGITAL_PRICE * 100);
+        totalCents += unitAmount;
+        lineItems.push({
+          price_data: {
+            currency: SHIPPING_CURRENCY,
+            product_data: { name: `${rows[0].name} (digital file)` },
+            unit_amount: unitAmount,
+          },
+          quantity: 1,
+        });
+        orderItems.push({
+          photoId: item.photoId,
+          size: DIGITAL_SIZE,
+          quantity: 1,
+          unitAmountCents: unitAmount,
+          name: rows[0].name,
+        });
+        continue;
+      }
+
       const { rows } = await client.query<{
         price: string;
         currency: string;
@@ -145,15 +189,19 @@ export async function POST(request: Request) {
       locale: "en",
       line_items: lineItems,
       /* Solo los países de la zona elegida. Stripe se encarga de que no entre
-         una dirección que no corresponda a la tarifa que se está cobrando. */
-      shipping_address_collection: {
-        allowed_countries: SHIPPING_COUNTRIES[
-          region
-        ] as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
-      },
-      phone_number_collection: {
-        enabled: true,
-      },
+         una dirección que no corresponda a la tarifa que se está cobrando. Sin
+         copias impresas no se pide dirección ni teléfono: nada va por correo. */
+      ...(region
+        ? {
+            shipping_address_collection: {
+              allowed_countries: SHIPPING_COUNTRIES[
+                region
+              ] as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
+            },
+            phone_number_collection: { enabled: true },
+            shipping_options: stripeShippingOptions(region),
+          }
+        : {}),
       /* Con sesión, el email de la cuenta llega escrito: es el mismo al que va
          la confirmación y el que liga el pedido a /account. */
       ...(userEmail ? { customer_email: userEmail } : {}),
@@ -162,12 +210,17 @@ export async function POST(request: Request) {
          página. La dirección va escrita y no como enlace: los tipos de Stripe no
          prometen que este campo dibuje vínculos, y una dirección legible sirve
          igual en los dos casos. */
+      /* Con un archivo digital el aviso cambia: la ley europea deja devolver lo
+         comprado a distancia en 14 días, salvo el contenido digital que se
+         entrega en el acto, y para eso el comprador tiene que saberlo y
+         aceptarlo antes de pagar. Esta es la última línea que lee. */
       custom_text: {
         submit: {
-          message: `By paying you accept the Terms of Sale at ${new URL(origin).host}/terms, including the 14-day right to return.`,
+          message: cart.lines.some((line) => isDigital(line.size))
+            ? `By paying you accept the Terms of Sale at ${new URL(origin).host}/terms. Digital files are delivered right away, so they cannot be returned${ships ? "; prints keep the 14-day right to return" : ""}.`
+            : `By paying you accept the Terms of Sale at ${new URL(origin).host}/terms, including the 14-day right to return.`,
         },
       },
-      shipping_options: stripeShippingOptions(region),
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout/cancel`,
     });

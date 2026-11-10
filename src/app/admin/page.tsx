@@ -9,6 +9,8 @@ import AdminHeader from "./components/AdminHeader";
 import AdminNav from "./components/AdminNav";
 import ImagesSection from "./components/ImagesSection";
 import PhotoDetailsSection from "./components/PhotoDetailsSection";
+import OriginalSection from "./components/OriginalSection";
+import type { AdminOriginal } from "./components/types";
 import PhotosList from "./components/PhotosList";
 import PhotosGridSkeleton from "./components/PhotosGridSkeleton";
 import type { AdminCategory, AdminPhoto, PhotoFormValues } from "./components/types";
@@ -95,6 +97,14 @@ export default function AdminPage() {
     }
   };
 
+  /* El original se guarda solo, sin el botón del formulario: se anota en la
+     obra que se está editando y en la lista, para que el aviso "sin original"
+     se apague sin recargar. */
+  const handleOriginal = (photoId: number, original: AdminOriginal | null) => {
+    setEditingPhoto((current) => (current && current.id === photoId ? { ...current, original } : current));
+    setPhotos((current) => current.map((photo) => (photo.id === photoId ? { ...photo, original } : photo)));
+  };
+
   const startCreating = () => {
     setEditingPhoto(null);
     reset(createDefaultValues());
@@ -177,6 +187,7 @@ export default function AdminPage() {
           <form className="admin-form" onSubmit={handleSubmit(onSubmit)}>
             <PhotoDetailsSection register={register} errors={errors} categories={categories} countries={countries} control={control} />
             <ImagesSection register={register} errors={errors} />
+            <OriginalSection photo={editingPhoto} onChange={handleOriginal} />
 
             {feedback && <p className={`admin-feedback ${feedback.type}`}>{feedback.message}</p>}
             <Button className="admin-submit" type="submit" disabled={isSubmitting}>

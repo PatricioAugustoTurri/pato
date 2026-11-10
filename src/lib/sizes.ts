@@ -1,3 +1,5 @@
+import { DIGITAL_NOTE, isDigital } from "@/lib/digital";
+
 /**
  * Las medidas de cada tamaño del catálogo, en un solo lugar.
  *
@@ -36,7 +38,9 @@ export const SIZE_DIMENSIONS: Record<string, string> = {
 /** Los tamaños que el panel puede poner a la venta, del más chico al más grande. */
 export const KNOWN_SIZES = ["A6", "A5", "A4", "A3", "A2", "A1", "A0"] as const;
 
-/** La medida de un tamaño, o cadena vacía si no la conocemos. */
+/** La medida de un tamaño, o cadena vacía si no la conocemos. El archivo
+    digital no mide nada en papel: dice qué es. */
 export function sizeDimensions(size: string): string {
+  if (isDigital(size)) return DIGITAL_NOTE;
   return SIZE_DIMENSIONS[size] ?? "";
 }

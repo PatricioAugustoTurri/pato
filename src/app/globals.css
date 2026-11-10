@@ -1010,6 +1010,10 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .buy-terms dt { color: var(--text-muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; }
 .buy-terms dd { color: var(--ink); font-family: var(--font-mono); font-size: 10.5px; margin: 0; text-align: right; }
 .buy-unavailable { color: var(--text-muted); font-size: 13.5px; line-height: 1.7; margin: clamp(26px, 3vw, 40px) 0 0; }
+/* El archivo digital va aparte de los tamaños de papel: es otra cosa. Un rótulo
+   mono entre las dos listas, sin caja, como la leyenda de arriba. */
+.buy-or { color: var(--accent-text); display: block; font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; padding: 20px 0 10px; text-transform: uppercase; }
+.buy-license { color: var(--text-muted); font-size: 11.5px; line-height: 1.6; margin: 12px 0 0; }
 /* Un lavado del propio filete del mostrador: sobre crema, el gris del sistema
    seria un parche de otro sitio. */
 .skeleton-line { background: var(--line-faint); }
@@ -1243,6 +1247,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .cart-line-what h2 a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 .cart-line-what h2 a:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
 .cart-line-spec { color: var(--cream-300); font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; margin: 0 0 16px; }
+.cart-line-digital { color: var(--cream-300); font-size: 12px; line-height: 1.5; margin: 0; }
 
 /* El stepper. Area tocable amplia, dibujo chico: la misma regla que fijo la
    lupa de la pagina de la obra. */
@@ -1290,6 +1295,7 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 
 /* `--error` sobre crema, no `--accent`: el rojo de marca mide 2,44:1 aca. */
 .cart-error { color: var(--error); font-size: 12.5px; line-height: 1.6; margin: clamp(20px, 2.2vw, 28px) 0 0; }
+.cart-error a { border-bottom: 1px solid currentColor; }
 .cart-terms { color: var(--text-muted); font-size: 12px; line-height: 1.6; margin: 12px 0 0; }
 .cart-terms a { color: var(--ink); white-space: nowrap; text-decoration: underline; text-decoration-color: var(--line-soft); text-underline-offset: 3px; }
 .cart-terms a:hover { color: var(--accent-text); text-decoration-color: currentColor; }
@@ -1299,6 +1305,30 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .cart-note { align-self: center; padding: clamp(56px, 7vw, 100px) clamp(32px, 5vw, 80px); }
 .cart-note h1 { margin-bottom: 22px; max-width: 14ch; }
 .cart-note p { color: var(--cream-200); font-size: 15.5px; line-height: 1.75; margin: 0 0 34px; max-width: 46ch; }
+/* La descarga: la obra grande a un lado y la nota al otro, como la ficha de
+   la obra; en el teléfono, una debajo de la otra. El botón es el mismo
+   "Add to cart" del sitio, en papel sobre la sala oscura. */
+.download-room { align-items: center; background: var(--ink); display: grid; gap: clamp(28px, 4vw, 64px); grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); min-height: calc(100svh - 88px); padding: clamp(28px, 4vw, 56px) clamp(20px, 3vw, 44px); }
+.download-plate { height: min(76svh, 820px); position: relative; }
+.download-note { padding: 0 !important; max-width: 520px; }
+.download-eyebrow { color: var(--cream-300) !important; font-family: var(--font-mono); font-size: 10px !important; letter-spacing: .12em; margin: 0 0 14px !important; text-transform: uppercase; }
+.download-note h1 { color: var(--paper); font-size: clamp(30px, 3vw, 46px); line-height: 1.04; margin-bottom: 14px; max-width: 18ch; }
+.download-facts { color: var(--cream-300) !important; font-family: var(--font-mono); font-size: 11px !important; letter-spacing: .04em; margin: 0 0 22px !important; }
+.download-button { background: var(--paper); color: var(--ink); margin: 0 0 14px; }
+.download-button:hover:not(:disabled) { background: var(--accent); color: var(--ink); }
+.download-button span b { font-family: inherit; font-size: inherit; font-weight: 600; }
+.download-small { color: var(--cream-300) !important; font-size: 12.5px !important; line-height: 1.65 !important; margin: 0 0 18px !important; }
+.download-thanks { border-top: 1px solid var(--footer-line); margin-top: 28px; padding-top: 24px; }
+.download-thanks p { margin-bottom: 22px !important; }
+.download-links { display: flex; flex-wrap: wrap; gap: 0 26px; }
+.download-note .download-links .text-link + .text-link { margin-left: 0; }
+@media (max-width: 900px) {
+  .download-room { align-items: start; grid-template-columns: minmax(0, 1fr); padding: 16px 16px 48px; }
+  .download-plate { aspect-ratio: 3 / 2; height: auto; }
+  .download-links { flex-direction: column; align-items: flex-start; gap: 14px; }
+}
+.success-downloads { display: flex; flex-direction: column; margin: 0 0 26px; }
+.success-waiting { color: var(--cream-300) !important; font-family: var(--font-mono); font-size: 11.5px !important; }
 .cart-note p a { border-bottom: 1px solid var(--footer-line); color: var(--paper); }
 .cart-note p a:hover { border-bottom-color: var(--accent); color: var(--accent); }
 .cart-note .text-link { border-bottom-color: rgba(244,241,235,.34); color: var(--paper); margin-bottom: 0; }
@@ -1758,6 +1788,14 @@ h2 { font-family: var(--font-heading); font-size: clamp(39px, 5vw, 72px); font-w
 .admin-photo-card-content { display: grid; gap: 5px; padding: 15px 16px 18px; position: relative; }
 .admin-photo-card-content strong { font-family: var(--font-heading); font-size: 18px; font-weight: 500; padding-right: 25px; }
 .admin-photo-card-content small { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.admin-photo-card-content .admin-photo-card-flag { color: var(--accent-text); letter-spacing: .06em; text-transform: uppercase; }
+.admin-original { display: flex; flex-direction: column; font-size: 13px; gap: 4px; margin: 4px 0 16px; }
+.admin-original span { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; }
+.admin-original-hint { color: var(--text-muted); display: block; font-size: 12.5px; line-height: 1.6; margin: 4px 0 16px; max-width: 60ch; }
+.admin-original-actions { display: flex; gap: 10px; }
+.admin-original-actions button:first-child { border: 1px solid var(--ink); }
+.admin-original-bar { background: var(--line); height: 3px; margin-top: 12px; max-width: 360px; }
+.admin-original-bar span { background: var(--ink); display: block; height: 100%; transition: width .2s linear; }
 .admin-photo-card-content svg { color: var(--accent-text); height: 16px; position: absolute; right: 16px; top: 17px; width: 16px; }
 .admin-empty { color: var(--text-muted); }
 .admin-close-form { gap: 8px; margin-bottom: 18px; padding-left: 0; }

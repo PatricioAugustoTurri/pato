@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { formatPrice } from "@/lib/money";
 import type { OrderEmailLine } from "@/lib/orders";
 import { deliveryWindow } from "@/lib/shipping";
+import { DIGITAL_LICENSE, DONATE_URL, DOWNLOAD_DAYS, MAX_DOWNLOADS, isDigital } from "@/lib/digital";
 
 /**
  * Los dos mails que salen cuando Stripe confirma un cobro: la confirmación
@@ -43,6 +44,8 @@ type OrderBase = {
   shippingAmountCents: number | null;
   totalCents: number | null;
   shippingAddress: ShippingAddress | null;
+  /** Los archivos digitales del pedido, con el link a su página de descarga. */
+  downloads?: { title: string; url: string }[];
 };
 
 export type OrderConfirmation = OrderBase & {
@@ -194,6 +197,32 @@ function lineRows(lines: OrderEmailLine[], eachLabel: string): string {
     .join("");
 }
 
+/**
+ * Los links de descarga, arriba de todo: es lo único del mail que hay que
+ * hacer. Cada uno es un botón de tinta —el mismo "Add to cart" del sitio— y
+ * lleva a la página de descarga, no al archivo (ver /api/descarga/[token]).
+ */
+function downloadRows(downloads: { title: string; url: string }[], note: string): string {
+  if (downloads.length === 0) return "";
+
+  const buttons = downloads
+    .map(
+      (link) => `
+      <tr><td style="padding:0 0 10px">
+        <a href="${escape(link.url)}" style="background:${INK};color:${PAPER};display:block;font-size:14px;padding:15px 18px;text-decoration:none">
+          Download <b style="font-weight:600">${escape(link.title)}</b> &nbsp;↓
+        </a>
+      </td></tr>`,
+    )
+    .join("");
+
+  return `
+  <tr><td style="border-top:1px solid ${LINE};padding:20px 0 8px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${buttons}</table>
+    <p style="color:${MUTED};font-size:12.5px;margin:4px 0 0">${escape(note)} ${escape(DIGITAL_LICENSE)}</p>
+  </td></tr>`;
+}
+
 /** Envío y total, en filas regladas y con las cifras en mono y alineadas. */
 function moneyRows(order: OrderBase, shippingLabel: string, totalLabel: string): string {
   const shipping =
@@ -304,13 +333,34 @@ export async function sendOrderConfirmation(order: OrderConfirmation): Promise<v
     ? `${formatDate(window.min, "en-GB")} – ${formatDate(window.max, "en-GB")}`
     : null;
   const address = addressLines(order.shippingAddress);
-  const prints = order.lines.reduce((total, line) => total + line.quantity, 0);
+  const prints = order.lines
+    .filter((line) => !isDigital(line.size))
+    .reduce((total, line) => total + line.quantity, 0);
+  const downloads = order.downloads ?? [];
+  const title =
+    prints > 0
+      ? prints === 1
+        ? "Your print is on its way"
+        : "Your prints are on their way"
+      : downloads.length === 1
+        ? "Your photograph is ready to download"
+        : "Your photographs are ready to download";
+  const intro =
+    prints > 0
+      ? "Thank you for your order. Everything below is being prepared and printed by hand."
+      : "Thank you. Buying the file is a contribution to the bike ride from Japan to Portugal — it helps more than you think.";
+  const downloadNote = `Each link works ${MAX_DOWNLOADS} times, for ${DOWNLOAD_DAYS} days.`;
 
   const text = joinLines([
     greeting,
     "",
-    "Thank you for your order. Your prints are being prepared.",
+    prints > 0 ? "Thank you for your order. Your prints are being prepared." : intro,
     "",
+    downloads.length > 0 ? (downloads.length === 1 ? "Download your photograph:" : "Download your photographs:") : null,
+    downloads.length > 0 ? downloads.map((link) => `  ${link.title}\n  ${link.url}`).join("\n\n") : null,
+    downloads.length > 0 ? `  ${downloadNote}` : null,
+    downloads.length > 0 ? `  ${DIGITAL_LICENSE}` : null,
+    downloads.length > 0 ? "" : null,
     `Order #${order.orderId} — placed ${placed}`,
     "",
     plainLines(order.lines, "prints"),
@@ -327,17 +377,20 @@ export async function sendOrderConfirmation(order: OrderConfirmation): Promise<v
     address.length > 0 ? "" : null,
     "If anything is wrong, reply to this email and it reaches us directly.",
     "",
+    downloads.length > 0 ? `Want to add something to the ride? ${DONATE_URL}` : null,
+    downloads.length > 0 ? "" : null,
     "Pato Turri",
     "patoturri.com",
   ]);
 
   const html = shell(`
   ${masthead()}
-  ${heading(prints === 1 ? "Your print is on its way" : "Your prints are on their way", order.orderId, "Placed", placed)}
+  ${heading(title, order.orderId, "Placed", placed)}
   <tr><td style="padding:16px 0 4px;font-size:15px">
     <p style="margin:0 0 10px">${escape(greeting)}</p>
-    <p style="margin:0">Thank you for your order. Everything below is being prepared and printed by hand.</p>
+    <p style="margin:0">${escape(intro)}</p>
   </td></tr>
+  ${downloadRows(downloads, downloadNote)}
   ${lineRows(order.lines, "prints")}
   ${moneyRows(order, "Shipping", "Total")}
   ${
@@ -354,6 +407,11 @@ export async function sendOrderConfirmation(order: OrderConfirmation): Promise<v
     <p style="color:${MUTED};font-size:13px;margin:0 0 6px">
       If anything here is wrong, reply to this email — it reaches us directly.
     </p>
+    ${
+      downloads.length > 0
+        ? `<p style="color:${MUTED};font-size:13px;margin:0 0 6px">Want to add something to the ride? <a href="${escape(DONATE_URL)}" style="color:${ACCENT};text-decoration:none">Buy me something on the road</a>.</p>`
+        : ""
+    }
     <p style="margin:0;font-size:13px">
       <a href="https://patoturri.com" style="color:${ACCENT};text-decoration:none">patoturri.com</a>
     </p>
@@ -403,8 +461,19 @@ export async function sendOrderAlert(order: OrderAlert): Promise<void> {
     return;
   }
 
-  const copies = order.lines.reduce((total, line) => total + line.quantity, 0);
+  const printLines = order.lines.filter((line) => !isDigital(line.size));
+  const fileLines = order.lines.filter((line) => isDigital(line.size));
+  const copies = printLines.reduce((total, line) => total + line.quantity, 0);
+  const files = fileLines.length;
   const total = order.totalCents !== null ? euros(order.totalCents) : "—";
+  /* "2 copias", "1 archivo digital" o las dos cosas: lo que se lee en la
+     notificación del teléfono tiene que decir si hay algo que imprimir. */
+  const what = [
+    copies > 0 ? `${copies} ${copies === 1 ? "copia" : "copias"}` : null,
+    files > 0 ? `${files} ${files === 1 ? "archivo digital" : "archivos digitales"}` : null,
+  ]
+    .filter(Boolean)
+    .join(" + ");
   const placed = formatDate(order.placedAt, "es-AR");
   const window = deliveryWindow(order.shippingOption, order.placedAt);
   const promised = window ? `${formatDate(window.min, "es-AR")} – ${formatDate(window.max, "es-AR")}` : null;
@@ -412,14 +481,17 @@ export async function sendOrderAlert(order: OrderAlert): Promise<void> {
 
   /* El asunto es lo único que se lee en la notificación del teléfono, así que
      dice lo que hay que saber sin abrir: cuántas copias y por cuánto. */
-  const subject = `Venta: ${copies} ${copies === 1 ? "copia" : "copias"} · ${total} · pedido #${order.orderId}`;
+  const subject = `Venta: ${what} · ${total} · pedido #${order.orderId}`;
 
   const text = joinLines([
     `Pedido #${order.orderId} — ${placed}`,
     "",
-    "A imprimir:",
-    plainLines(order.lines, "copias"),
-    "",
+    copies > 0 ? "A imprimir:" : null,
+    copies > 0 ? plainLines(printLines, "copias") : null,
+    copies > 0 ? "" : null,
+    files > 0 ? "Archivos digitales (se descargan solos, no hay que hacer nada):" : null,
+    files > 0 ? plainLines(fileLines, "copias") : null,
+    files > 0 ? "" : null,
     order.shippingAmountCents !== null
       ? `  ${order.shippingOption ?? "Envío"}    ${euros(order.shippingAmountCents)}`
       : null,
@@ -432,16 +504,21 @@ export async function sendOrderAlert(order: OrderAlert): Promise<void> {
     `  ${order.customerEmail ?? "Sin email"}`,
     order.customerPhone ? `  ${order.customerPhone}` : null,
     "",
-    "Enviar a:",
-    address.length > 0 ? address.map((line) => `  ${line}`).join("\n") : "  Sin dirección",
-    "",
+    copies > 0 ? "Enviar a:" : null,
+    copies > 0 ? (address.length > 0 ? address.map((line) => `  ${line}`).join("\n") : "  Sin dirección") : null,
+    copies > 0 ? "" : null,
     "El pedido también está en patoturri.com/admin/orders",
   ]);
 
   const html = shell(`
   ${masthead()}
-  ${heading(`${copies} ${copies === 1 ? "copia vendida" : "copias vendidas"} · ${total}`, order.orderId, "Cobrado el", placed)}
-  ${lineRows(order.lines, "copias")}
+  ${heading(`Vendido: ${what} · ${total}`, order.orderId, "Cobrado el", placed)}
+  ${copies > 0 ? lineRows(printLines, "copias") : ""}
+  ${
+    files > 0
+      ? `${block("Archivos digitales", "Se descargan solos con el link del mail del comprador. No hay nada que imprimir ni que mandar.")}${lineRows(fileLines, "copias")}`
+      : ""
+  }
   ${moneyRows(order, "Envío", "Total cobrado")}
   ${
     promised
@@ -462,7 +539,7 @@ export async function sendOrderAlert(order: OrderAlert): Promise<void> {
       order.customerPhone ? escape(order.customerPhone) : null,
     ]).replace(/\n/g, "<br>"),
   )}
-  ${block("Enviar a", address.length > 0 ? address.map(escape).join("<br>") : "Sin dirección")}
+  ${copies > 0 ? block("Enviar a", address.length > 0 ? address.map(escape).join("<br>") : "Sin dirección") : ""}
   <tr><td style="border-top:1px solid ${LINE};padding:18px 0 0">
     <p style="color:${MUTED};font-size:13px;margin:0">
       Respondiendo a este mail le escribís al comprador.

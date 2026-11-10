@@ -30,6 +30,15 @@ export type AdminPhoto = {
   pais: string | null;
   images: unknown;
   variants: AdminVariant[];
+  /* El JPG original que se vende como archivo digital, o null si no se subió. */
+  original: AdminOriginal | null;
+};
+
+export type AdminOriginal = {
+  bytes: number;
+  width: number;
+  height: number;
+  uploadedAt: string;
 };
 
 export type AdminCategory = {

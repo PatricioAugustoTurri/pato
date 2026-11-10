@@ -15,12 +15,13 @@ export default function CartCounter({
   buttonRef,
 }: {
   subtotal: number;
-  region: ShippingRegion;
+  /** null: el carrito es solo de archivos digitales y no hay envío. */
+  region: ShippingRegion | null;
   onRegionChange: (region: ShippingRegion) => void;
   checkout: Checkout;
   buttonRef: RefObject<HTMLButtonElement | null>;
 }) {
-  const shippingAmount = shippingRate(region).amount;
+  const shippingAmount = region ? shippingRate(region).amount : 0;
   const total = subtotal + shippingAmount / 100;
   const totalBump = useBump(total);
 
@@ -55,29 +56,40 @@ export default function CartCounter({
             Se reusa el juego del selector de tamano de la ficha de obra: es la
             misma decision —elegir una opcion en un mostrador— y el sitio ya
             tiene una forma para eso. */}
-        <fieldset className="buy-sizes">
-          <legend>Ships to</legend>
-          {SHIPPING_RATES.map(({ region: value, label, amount, minDays, maxDays }) => (
-            <label className="buy-size" key={value} data-selected={region === value ? "" : undefined}>
-              <input
-                type="radio"
-                name="shipping-region"
-                value={value}
-                checked={region === value}
-                onChange={() => onRegionChange(value)}
-              />
-              <span className="buy-size-name">{label}</span>
-              <span className="buy-size-note">
-                {minDays}–{maxDays} working days
-              </span>
-              <span className="buy-size-price">{formatPrice(amount / 100)}</span>
-            </label>
-          ))}
-        </fieldset>
+        {region ? (
+          <>
+            <fieldset className="buy-sizes">
+              <legend>Ships to</legend>
+              {SHIPPING_RATES.map(({ region: value, label, amount, minDays, maxDays }) => (
+                <label className="buy-size" key={value} data-selected={region === value ? "" : undefined}>
+                  <input
+                    type="radio"
+                    name="shipping-region"
+                    value={value}
+                    checked={region === value}
+                    onChange={() => onRegionChange(value)}
+                  />
+                  <span className="buy-size-name">{label}</span>
+                  <span className="buy-size-note">
+                    {minDays}–{maxDays} working days
+                  </span>
+                  <span className="buy-size-price">{formatPrice(amount / 100)}</span>
+                </label>
+              ))}
+            </fieldset>
 
-        <p className="cart-shipping-note">
-          The address is asked for on the payment page, within the region you choose here.
-        </p>
+            <p className="cart-shipping-note">
+              The address is asked for on the payment page, within the region you choose here.
+            </p>
+          </>
+        ) : (
+          /* Solo archivos: no hay zona que elegir, y lo que importa saber es
+             cuándo llegan. */
+          <p className="cart-shipping-note cart-digital-note">
+            Nothing to ship. The download links appear right after payment and go to your
+            email too.
+          </p>
+        )}
 
         {checkout.error && (
           <p className="cart-error" role="alert">
