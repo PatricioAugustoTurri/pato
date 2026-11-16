@@ -67,6 +67,8 @@ const nextConfig: NextConfig = {
         { source: "/en/marcas", destination: `${rumbo}/en/marcas` },
         { source: "/_rumbo/:path*", destination: `${rumbo}/_rumbo/:path*` },
         { source: "/rumbo-oeste.svg", destination: `${rumbo}/rumbo-oeste.svg` },
+        // Qué es el sitio y qué páginas tiene, para buscadores con IA (lo arma Rumbo).
+        { source: "/llms.txt", destination: `${rumbo}/llms.txt` },
       ],
       afterFiles: [],
       fallback: [],

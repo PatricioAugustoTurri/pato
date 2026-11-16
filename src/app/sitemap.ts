@@ -92,11 +92,43 @@ async function getCountryRoutes(): Promise<CatalogRow[]> {
  */
 const RUMBO_ROUTES = ["/en", "/historia", "/en/historia", "/marcas", "/en/marcas"];
 
-/* Las fijas no traen fecha: cambian cuando se sube Rumbo y el mapa no lo sabe. */
-type RumboRow = { path: string; updatedAt?: Date };
+/* Las fijas no traen fecha: cambian cuando se sube Rumbo y el mapa no lo sabe.
+   `otra` es la misma página en el otro idioma (hreflang). */
+type RumboRow = { path: string; updatedAt?: Date; lang?: "es" | "en"; otra?: string };
+
+/**
+ * La lista que publica el propio Rumbo (`/paginas.json`): todas sus páginas en los dos
+ * idiomas, con fecha y su par en el otro idioma, incluida la bitácora, que la base de la
+ * tienda no conoce. Se pide directo al servidor del viaje, no por el dominio. Si no
+ * contesta, vale la lista armada acá abajo con la base.
+ */
+async function getRumboPublicadas(origin: string): Promise<RumboRow[] | null> {
+  try {
+    const res = await fetch(`${origin}/paginas.json`, {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return null;
+    const lista = (await res.json()) as Array<{ url: string; otra: string; lang: "es" | "en"; fecha?: string }>;
+    return lista
+      .map((p) => ({
+        path: new URL(p.url).pathname,
+        otra: new URL(p.otra).pathname,
+        lang: p.lang,
+        ...(p.fecha ? { updatedAt: new Date(p.fecha) } : {}),
+      }))
+      /* La portada ya está entre las fijas de la tienda. */
+      .filter((p) => p.path !== "/");
+  } catch {
+    return null;
+  }
+}
 
 async function getRumboRoutes(): Promise<RumboRow[]> {
-  if (!process.env.RUMBO_OESTE_ORIGIN) return [];
+  const origin = process.env.RUMBO_OESTE_ORIGIN?.replace(/\/$/, "");
+  if (!origin) return [];
+  const publicadas = await getRumboPublicadas(origin);
+  if (publicadas?.length) return publicadas;
   const fijas: RumboRow[] = RUMBO_ROUTES.map((path) => ({ path }));
   try {
     const viaje = await readViajePublico();
@@ -155,9 +187,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
-    ...rumbo.map(({ path, updatedAt }) => ({
+    ...rumbo.map(({ path, updatedAt, lang, otra }) => ({
       url: absoluteUrl(path),
       ...(updatedAt ? { lastModified: updatedAt } : {}),
+      /* Cada página del viaje con su par en el otro idioma: Google muestra la que
+         corresponde a quien busca. */
+      ...(lang && otra
+        ? { alternates: { languages: { [lang]: absoluteUrl(path), [lang === "es" ? "en" : "es"]: absoluteUrl(otra) } } }
+        : {}),
       changeFrequency: "weekly" as const,
       priority: path.includes("/dia-") ? 0.6 : 0.8,
     })),
